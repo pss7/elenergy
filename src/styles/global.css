@@ -69,6 +69,10 @@
   font-size: 12px;
 }
 
+.mb-20{
+  margin-bottom: 20px!important;
+}
+
 #main {
   padding: 124px 0 60px;
 }
