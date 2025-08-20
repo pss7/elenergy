@@ -1,0 +1,9 @@
+.link {
+  display: block;
+}
+
+.next {
+  width: 10px;
+  height: 18px;
+  background: url(/assets/images/main/next_arrow_icon.svg)no-repeat center;
+}

@@ -1,0 +1,121 @@
+import { Link } from "react-router-dom";
+
+//컴포넌트
+import ArrowLink from "../components/ui/ArrowLink";
+import Title from "../components/ui/Title";
+
+//스타일
+import styles from "./MainPage.module.css";
+
+//데이터
+import controllerData from "../data/Controllers";
+import savingsData from "../data/Savings";
+
+//차트
+import { PieChart } from 'react-minimal-pie-chart';
+
+export default function MainPage() {
+
+  return (
+    <>
+
+      <section>
+        <Title level={1} className={`mb-20 ${styles.h1} ${styles.mainIcon01}`}>
+          전체제어기
+        </Title>
+
+        <ul className={styles.linkList01}>
+          {
+            controllerData.map(function (ctrl) {
+              return (
+                <li key={ctrl.id}>
+                  <Link to="#">
+                    <h2>
+                      {ctrl.title}
+                    </h2>
+                    <span className={styles.location}>
+                      {ctrl.location}
+                    </span>
+                    <span className={styles.view}>
+                      <em className="blind">
+                        제어기, 공장위치 수정페이지 이동
+                      </em>
+                    </span>
+                  </Link>
+                </li>
+              )
+            })
+          }
+        </ul>
+      </section>
+
+      <section>
+        <Title level={1} className={`mb-20 ${styles.h1} ${styles.mainIcon02}`}>
+          다른 차단 방식이 필요하신가요?
+        </Title>
+
+        <ul className={styles.linkList02}>
+          <li>
+            <Link to="#">
+              <Title level={2}>
+                예약 차단 설정
+              </Title>
+              <span>
+                원하는 시간에 전력 OFF 가능
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link to="#">
+              <Title level={2}>
+                자동 차단 설정
+              </Title>
+              <span>
+                원하는 기준 이하로 전력이 감소하면 자동 OFF 가능
+              </span>
+            </Link>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <div className={`${styles.layoutBox} mb-20`}>
+          <Title level={1} className={`${styles.h1} ${styles.mainIcon03}`}>
+            이번 달 절약한 전력 요금
+          </Title>
+          <ArrowLink to="/" variant="next">
+            <span className="blind">전력 모니터링 이동</span>
+          </ArrowLink>
+        </div>
+
+        <div className={styles.chartBox}>
+          <div className={styles.doughnutChartBox}>
+            <PieChart
+              data={[
+                { value: savingsData.powerReductionRate, color: '#0F7685' },
+              ]}
+              totalValue={100}
+              lineWidth={30}
+              rounded
+              background="#D9D9D9"
+              startAngle={-90}
+              style={{ width: 141, height: 141 }}
+              animate
+            />
+            <div className={styles.doughnutChartText}>
+              <h3>절감한 전력량</h3>
+              <span>{savingsData.powerReductionRate}%</span>
+            </div>
+          </div>
+
+          <div className={styles.chartInfoBox}>
+            <h3>절감한 전력 요금</h3>
+            <span>{savingsData.moneySaved.toLocaleString()}원</span>
+          </div>
+        </div>
+
+      </section>
+    </>
+  )
+
+}

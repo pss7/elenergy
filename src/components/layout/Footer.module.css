@@ -1,0 +1,75 @@
+#footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background: #F1F1F3;
+}
+
+#footer .link {
+  display: flex;
+}
+
+#footer .link li {
+  flex: 1;
+  height: 100%;
+}
+
+#footer .link li a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+  text-align: center;
+}
+
+#footer .link li a span {
+  display: block;
+  position: relative;
+  padding-top: 26px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #646368;
+}
+
+#footer .link li a span::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#footer .link li:nth-child(1) a span::before {
+  width: 18px;
+  height: 18px;
+  background: url(/assets/images/common/footer_icon01.svg)no-repeat center;
+}
+
+#footer .link li:nth-child(2) a span::before {
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  background: url(/assets/images/common/footer_icon02.svg)no-repeat center;
+}
+
+#footer .link li:nth-child(3) a span::before {
+  width: 20px;
+  height: 20px;
+  background: url(/assets/images/common/footer_icon03.svg)no-repeat center;
+}
+
+#footer .link li:nth-child(4) a span::before {
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  background: url(/assets/images/common/footer_icon04.svg)no-repeat center;
+}
+
+#footer .link li:nth-child(5) a span::before {
+  top: 4px;
+  width: 17px;
+  height: 19px;
+  background: url(/assets/images/common/footer_icon05.svg)no-repeat center;
+}

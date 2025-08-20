@@ -48,8 +48,18 @@
 }
 
 #root {
+  /* padding: 55px 13px 0; */
+  /* max-width: 392px; */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  overflow-x: hidden;
+}
+
+#main {
+  padding: 55px 13px 60px;
+  flex: 1;
+  background-color: #F1F1F3;
 }
 
 :disabled {
@@ -69,27 +79,6 @@
   font-size: 12px;
 }
 
-.mb-20{
-  margin-bottom: 20px!important;
-}
-
-#main {
-  padding: 124px 0 60px;
-}
-
-#sub {
-  padding: 114px 0 100px;
-}
-
-.Toastify__close-button {
-  color: #fff !important;
-  opacity: 1 !important;
-}
-
-@media (max-width: 576px) {
-
-  #main {
-    padding: 110px 0 60px;
-  }
-
+.mb-20 {
+  margin-bottom: 20px !important;
 }

@@ -1,0 +1,50 @@
+import { Link } from "react-router-dom";
+import styles from "./Footer.module.css";
+
+export default function Footer() {
+
+  return (
+    <>
+      <footer id={styles.footer}>
+        <ul className={styles.link}>
+          <li>
+            <Link to="/">
+              <span>
+                예약차단
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/">
+              <span>
+                자동차단
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/">
+              <span>
+                메인
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/">
+              <span>
+                모니터링
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/">
+              <span>
+                MY
+              </span>
+            </Link>
+          </li>
+        </ul>
+      </footer>
+    </>
+  )
+
+}
