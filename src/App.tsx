@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import { useEffect, useState } from 'react';
 import FullScreenLoading from './components/ui/FullScreenLoading';
 import ControllerUpdatePage from './pages/ControllerUpdatePage';
+import { ControllerProvider } from './contexts/ControllerContext';
 
 
 function App() {
@@ -26,11 +27,13 @@ function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />}></Route>
-      <Route path="/controller-update" element={<ControllerUpdatePage />}></Route>
-      <Route path="/components-test" element={<Compoents />}></Route>
-    </Routes>
+    <ControllerProvider>
+      <Routes>
+        <Route path="/" element={<Home />}></Route>
+        <Route path="/controller-update/:id" element={<ControllerUpdatePage />}></Route>
+        <Route path="/components-test" element={<Compoents />}></Route>
+      </Routes>
+    </ControllerProvider>
   )
 }
 

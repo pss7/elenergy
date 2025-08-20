@@ -8,13 +8,16 @@ import Title from "../components/ui/Title";
 import styles from "./MainPage.module.css";
 
 //데이터
-import controllerData from "../data/Controllers";
+// import controllerData from "../data/Controllers";
 import savingsData from "../data/Savings";
 
 //차트
 import { PieChart } from 'react-minimal-pie-chart';
+import { useControllerData } from "../contexts/ControllerContext";
 
 export default function MainPage() {
+
+  const { controllers } = useControllerData();
 
   return (
     <>
@@ -26,10 +29,10 @@ export default function MainPage() {
 
         <ul className={styles.linkList01}>
           {
-            controllerData.map(function (ctrl) {
+            controllers.map(function (ctrl) {
               return (
                 <li key={ctrl.id}>
-                  <Link to="#">
+                  <Link to={`/controller-update/${ctrl.id}`}>
                     <h2>
                       {ctrl.title}
                     </h2>
