@@ -31,7 +31,7 @@ export function ControllerProvider({ children }: { children: React.ReactNode }) 
 export function useControllerData() {
   const context = useContext(ControllerContext);
   if (!context) {
-    throw new Error('useControllerData must be used within a ControllerProvider');
+    throw new Error('Context가 없습니다.');
   }
   return context;
 }
