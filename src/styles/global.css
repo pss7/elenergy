@@ -40,6 +40,8 @@
   --gray800: #2b2b2b;
   --gray900: #181818;
 
+  --gray: #D9D9D9;
+  --teal: #0F7685;
   --white: #ffffff;
   --black: #000000;
   --error: #dc3a3a;
@@ -82,3 +84,5 @@
 .mb-20 {
   margin-bottom: 20px !important;
 }
+
+.btnBox{display: flex; gap: 0 12px;}
