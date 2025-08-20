@@ -1,5 +1,5 @@
 //컴포넌트
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Main from "../components/layout/Main";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
