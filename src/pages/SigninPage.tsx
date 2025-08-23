@@ -113,8 +113,8 @@ export default function SigninPage() {
 
           <ul className={styles.link}>
             <li><Link to="/id-find">아이디 찾기</Link></li>
-            <li><Link to="/pw-find">비밀번호 재설정</Link></li>
-            <li><Link to="/signup">회원가입</Link></li>
+            <li><Link to="/password-reset">비밀번호 재설정</Link></li>
+            <li><Link to="/signup-agree">회원가입</Link></li>
           </ul>
         </div>
       </Main>

@@ -5,21 +5,31 @@ interface HeaderProps {
 
   type?: string;
   title?: string;
-
+  prevLink?: string;
+  nextLink?: string;
 }
 
-export default function Header({ type, title }: HeaderProps) {
+export default function Header({ type, title, prevLink, nextLink }: HeaderProps) {
 
   return (
     <header id={styles.header}>
       {
         type === "pageLink" && (
           <div className={styles.titleBox}>
-            <ArrowLink to="" variant="prev" />
+            {
+              prevLink && (
+                <ArrowLink to={prevLink} variant="prev" />
+              )
+            }
+
             <h1>
               {title}
             </h1>
-            <ArrowLink to="" variant="next" />
+            {
+              nextLink && (
+                <ArrowLink to={nextLink} variant="next" />
+              )
+            }
           </div>
         )
       }

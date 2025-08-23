@@ -1,33 +1,35 @@
 import { Routes, Route } from 'react-router-dom';
 import Compoents from './pages/test/Compoents';
 import Home from './pages/Home';
-import { useEffect, useState } from 'react';
-import FullScreenLoading from './components/ui/FullScreenLoading';
+// import { useEffect, useState } from 'react';
+// import FullScreenLoading from './components/ui/FullScreenLoading';
 import ControllerUpdatePage from './pages/ControllerUpdatePage';
 import { ControllerProvider } from './contexts/ControllerContext';
 import SigninPage from './pages/SigninPage';
 import SignupAgreePage from './pages/SignupAgreePage';
 import SignupPage from './pages/SignupPage';
 import SignupCompletePage from './pages/SignupCompletePage';
+import PasswordResetPage from './pages/PasswordResetPage';
+import IdFindPage from './pages/IdFindPage';
 
 
 function App() {
 
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    setTimeout(() => setLoading(false), 1500);
+  //   setTimeout(() => setLoading(false), 1500);
 
-  }, [])
+  // }, [])
 
-  if (loading) {
-    return (
-      <>
-        <FullScreenLoading color="#0F7685" />
-      </>
-    )
-  }
+  // if (loading) {
+  //   return (
+  //     <>
+  //       <FullScreenLoading color="#0F7685" />
+  //     </>
+  //   )
+  // }
 
   return (
     <ControllerProvider>
@@ -39,6 +41,8 @@ function App() {
         <Route path="/signup-agree" element={<SignupAgreePage />}></Route>
         <Route path="/signup" element={<SignupPage />}></Route>
         <Route path="/signup-complete" element={<SignupCompletePage />}></Route>
+        <Route path="/id-find" element={<IdFindPage />}></Route>
+        <Route path="/password-reset" element={<PasswordResetPage />}></Route>
       </Routes>
     </ControllerProvider>
   )

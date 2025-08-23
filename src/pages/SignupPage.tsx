@@ -141,6 +141,7 @@ export default function SignupPage() {
       <Header
         type="pageLink"
         title="회원가입"
+        prevLink="/signup-agree"
       />
 
       <Main id="sub">
