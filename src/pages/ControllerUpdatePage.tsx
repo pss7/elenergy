@@ -38,52 +38,52 @@ export default function ControllerUpdatePage() {
   }
 
   return (
-    <>
 
-      <Main id="main">
-        <Title level={1} className={`mb-20 ${styles.h1} ${styles.mainIcon01}`}>
-          내용변경
-        </Title>
+    <Main id="main">
+      <Title level={1} className={`mb-20 ${styles.h1} ${styles.mainIcon01}`}>
+        내용변경
+      </Title>
 
-        <div className={`${styles.inputTextBox} mb-20`}>
-          <span>
-            명칭
-          </span>
-          <Input
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-          />
-        </div>
+      <div className={`${styles.inputTextBox} mb-20`}>
+        <span>
+          명칭
+        </span>
+        <Input
+          type="text"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+        />
+      </div>
 
-        <div className={`${styles.inputTextBox} mb-20`}>
-          <span>
-            위치
-          </span>
-          <Input
-            value={location}
-            onChange={e => setLocation(e.target.value)}
-          />
-        </div>
+      <div className={`${styles.inputTextBox} mb-20`}>
+        <span>
+          위치
+        </span>
+        <Input
+          type="text"
+          value={location}
+          onChange={e => setLocation(e.target.value)}
+        />
+      </div>
 
-        <div className="btnBox">
-          <Button
-            type="grayType"
-            onClick={handleCancel}
-          >
-            취소
-          </Button>
+      <div className="btnBox">
+        <Button
+          styleType="grayType"
+          onClick={handleCancel}
+        >
+          취소
+        </Button>
 
-          <Button
-            type="tealType"
-            onClick={handleSave}
-          >
-            수정
-          </Button>
-        </div>
+        <Button
+          styleType="tealType"
+          onClick={handleSave}
+        >
+          수정
+        </Button>
+      </div>
 
-      </Main>
+    </Main>
 
-    </>
   )
 
 }

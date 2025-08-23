@@ -17,3 +17,8 @@
   background-color: #0F7685;
   color: #fff;
 }
+
+.button:disabled {
+  background-color: #D9D9D9;
+  color: #767676;
+}

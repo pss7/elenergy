@@ -3,6 +3,8 @@ import styles from "./Footer.module.css";
 
 export default function Footer() {
 
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
   return (
     <>
       <footer id={styles.footer}>
@@ -36,7 +38,7 @@ export default function Footer() {
             </Link>
           </li>
           <li>
-            <Link to="/">
+            <Link to={isLoggedIn ? "/mypage" : "/signin"}>
               <span>
                 MY
               </span>

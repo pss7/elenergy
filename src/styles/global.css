@@ -58,7 +58,7 @@
   height: 100%;
 }
 
-#main {
+main {
   padding: 55px 13px 60px;
   flex: 1;
   background-color: #F1F1F3;
@@ -77,7 +77,7 @@
 .errorMessage {
   margin-top: 4px;
   display: block;
-  color: var(--error);
+  color:#dc3a3a;
   font-size: 12px;
 }
 
@@ -85,4 +85,15 @@
   margin-bottom: 20px !important;
 }
 
-.btnBox{display: flex; gap: 0 12px;}
+.mb-30 {
+  margin-bottom: 30px !important;
+}
+
+.mt-40 {
+  margin-top: 40px !important;
+}
+
+.btnBox {
+  display: flex;
+  gap: 0 12px;
+}
