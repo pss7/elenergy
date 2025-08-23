@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom';
-
 import Compoents from './pages/test/Compoents';
 import Home from './pages/Home';
 import { useEffect, useState } from 'react';
@@ -14,21 +13,21 @@ import SignupCompletePage from './pages/SignupCompletePage';
 
 function App() {
 
-  // const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
+  useEffect(() => {
 
-  //   setTimeout(() => setLoading(false), 1500);
+    setTimeout(() => setLoading(false), 1500);
 
-  // }, [])
+  }, [])
 
-  // if (loading) {
-  //   return (
-  //     <>
-  //       <FullScreenLoading color="#0F7685" />
-  //     </>
-  //   )
-  // }
+  if (loading) {
+    return (
+      <>
+        <FullScreenLoading color="#0F7685" />
+      </>
+    )
+  }
 
   return (
     <ControllerProvider>
