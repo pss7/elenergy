@@ -1,11 +1,11 @@
-import Main from "../components/layout/Main";
-import Header from "../components/layout/Header";
+import Main from "../../components/layout/Main";
+import Header from "../../components/layout/Header";
 import styles from "./Auth.module.css";
-import Input from "../components/ui/Input";
+import Input from "../../components/ui/Input";
 import { useState } from "react";
-import Button from "../components/ui/Button";
-import PasswordInput from "../components/ui/PasswordInput";
-import { validateUserId, validateEmail, validatePassword } from "../utils/validation";
+import Button from "../../components/ui/Button";
+import PasswordInput from "../../components/ui/PasswordInput";
+import { validateUserId, validateEmail, validatePassword } from "../../utils/validation";
 import { useNavigate } from "react-router-dom";
 
 export default function SignupPage() {

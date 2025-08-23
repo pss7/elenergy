@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
-import Main from "../components/layout/Main";
-import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
+import Main from "../../components/layout/Main";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
 import styles from "./Auth.module.css";
-import Header from "../components/layout/Header";
+import Header from "../../components/layout/Header";
 import { useState } from "react";
-import PasswordInput from "../components/ui/PasswordInput";
+import PasswordInput from "../../components/ui/PasswordInput";
 
 export default function SigninPage() {
 

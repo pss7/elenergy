@@ -1,7 +1,7 @@
-import Header from "../components/layout/Header";
-import Main from "../components/layout/Main";
-import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
+import Header from "../../components/layout/Header";
+import Main from "../../components/layout/Main";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
 import styles from "./Auth.module.css";
 
 export default function IdFindPage() {

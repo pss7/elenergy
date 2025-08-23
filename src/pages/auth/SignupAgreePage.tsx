@@ -1,9 +1,9 @@
-import Main from "../components/layout/Main";
-import Header from "../components/layout/Header";
+import Main from "../../components/layout/Main";
+import Header from "../../components/layout/Header";
 import styles from "./Auth.module.css";
-import InputCheckbox from "../components/ui/InputCheckbox";
-import Textarea from "../components/ui/Textarea";
-import Button from "../components/ui/Button";
+import InputCheckbox from "../../components/ui/InputCheckbox";
+import Textarea from "../../components/ui/Textarea";
+import Button from "../../components/ui/Button";
 import { useState } from "react";
 
 export default function SignupAgreePage() {

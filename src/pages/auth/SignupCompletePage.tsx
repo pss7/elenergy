@@ -1,7 +1,7 @@
-import Main from "../components/layout/Main";
-import Header from "../components/layout/Header";
+import Main from "../../components/layout/Main";
+import Header from "../../components/layout/Header";
 import styles from "./Auth.module.css";
-import Button from "../components/ui/Button";
+import Button from "../../components/ui/Button";
 
 export default function SignupCompletePage() {
 

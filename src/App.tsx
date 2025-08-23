@@ -1,17 +1,18 @@
 import { Routes, Route } from 'react-router-dom';
-import Compoents from './pages/test/Compoents';
-import Home from './pages/Home';
+import { ControllerProvider } from './contexts/ControllerContext';
 // import { useEffect, useState } from 'react';
 // import FullScreenLoading from './components/ui/FullScreenLoading';
-import ControllerUpdatePage from './pages/ControllerUpdatePage';
-import { ControllerProvider } from './contexts/ControllerContext';
-import SigninPage from './pages/SigninPage';
-import SignupAgreePage from './pages/SignupAgreePage';
-import SignupPage from './pages/SignupPage';
-import SignupCompletePage from './pages/SignupCompletePage';
-import PasswordResetPage from './pages/PasswordResetPage';
-import IdFindPage from './pages/IdFindPage';
+import Compoents from './pages/test/Compoents';
 
+import Home from './pages/Home';
+import ControllerUpdatePage from './pages/ControllerUpdatePage';
+
+import SigninPage from './pages/auth/SigninPage';
+import SignupAgreePage from './pages/auth/SignupAgreePage';
+import SignupPage from './pages/auth/SignupPage';
+import SignupCompletePage from './pages/auth/SignupCompletePage';
+import PasswordResetPage from './pages/auth/PasswordResetPage';
+import IdFindPage from './pages/auth/IdFindPage';
 
 function App() {
 
@@ -34,9 +35,15 @@ function App() {
   return (
     <ControllerProvider>
       <Routes>
+
+        {/* test */}
+        <Route path="/components-test" element={<Compoents />}></Route>
+
+        {/* home */}
         <Route path="/" element={<Home />}></Route>
         <Route path="/controller-update/:id" element={<ControllerUpdatePage />}></Route>
-        <Route path="/components-test" element={<Compoents />}></Route>
+
+        {/* auth */}
         <Route path="/signin" element={<SigninPage />}></Route>
         <Route path="/signup-agree" element={<SignupAgreePage />}></Route>
         <Route path="/signup" element={<SignupPage />}></Route>
