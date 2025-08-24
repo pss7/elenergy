@@ -18,6 +18,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 }
 
 export default function NotificationSettingsPage() {
+
   const [allOn, setAllOn] = useState(false);
   const [appPush, setAppPush] = useState(false);
   const [sms, setSms] = useState(false);

@@ -63,7 +63,7 @@ export default function MyPage() {
               </Link>
             </li>
             <li>
-              <Link to="/">
+              <Link to="/privacy">
                 개인정보보호
               </Link>
             </li>

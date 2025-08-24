@@ -81,6 +81,10 @@ main {
   font-size: 12px;
 }
 
+.mb-10 {
+  margin-bottom: 10px !important;
+}
+
 .mb-20 {
   margin-bottom: 20px !important;
 }

@@ -19,7 +19,12 @@ import WithdrawAgreePage from './pages/my/WithdrawAgreePage';
 import WithdrawConfirmPage from './pages/my/WithdrawConfirmPage';
 import EditProfilePage from './pages/my/EditProfilePage';
 import MembersPage from './pages/my/MembersPage';
-import NotificationSettingsPage from './pages/my/NotificationSettingsPage';
+import PrivacyPage from './pages/my/PrivacyPage';
+import TermsOfUsePage from './pages/my/TermsOfUsePage';
+import EventNotificationPage from './pages/my/EventNotificationPage';
+import DataCollectionPage from './pages/my/DataCollectionPage';
+import LoginHistoryPage from './pages/my/LoginHistoryPage';
+
 
 function App() {
 
@@ -65,7 +70,11 @@ function App() {
         <Route path="/withdraw-confirm" element={<WithdrawConfirmPage />}></Route>
         <Route path="/edit-profile" element={<EditProfilePage />}></Route>
         <Route path="/member-management" element={<MembersPage />}></Route>
-        <Route path="/notifications-settings" element={<NotificationSettingsPage />}></Route>
+        <Route path="/privacy" element={<PrivacyPage />}></Route>
+        <Route path="/terms" element={<TermsOfUsePage />}></Route>
+        <Route path="/data-collection" element={<DataCollectionPage />} />
+        <Route path="/event-notifications" element={<EventNotificationPage />} />
+        <Route path="/login-history" element={<LoginHistoryPage />} />
 
       </Routes>
     </ControllerProvider>
