@@ -6,10 +6,11 @@ interface InputProps {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   type?: string;
+  placeholder?: string;
 
 }
 
-export default function Input({ id, value, onChange, type }: InputProps) {
+export default function Input({ id, value, onChange, type, placeholder }: InputProps) {
 
   return (
     <>
@@ -19,6 +20,7 @@ export default function Input({ id, value, onChange, type }: InputProps) {
         id={id}
         className={styles.input}
         onChange={onChange}
+        placeholder={placeholder}
       />
     </>
   )

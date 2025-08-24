@@ -13,6 +13,13 @@ import SignupPage from './pages/auth/SignupPage';
 import SignupCompletePage from './pages/auth/SignupCompletePage';
 import PasswordResetPage from './pages/auth/PasswordResetPage';
 import IdFindPage from './pages/auth/IdFindPage';
+import MyPage from './pages/my/MyPage';
+import MyAccountPage from './pages/my/MyAccountPage';
+import WithdrawAgreePage from './pages/my/WithdrawAgreePage';
+import WithdrawConfirmPage from './pages/my/WithdrawConfirmPage';
+import EditProfilePage from './pages/my/EditProfilePage';
+import MembersPage from './pages/my/MembersPage';
+import NotificationSettingsPage from './pages/my/NotificationSettingsPage';
 
 function App() {
 
@@ -50,6 +57,16 @@ function App() {
         <Route path="/signup-complete" element={<SignupCompletePage />}></Route>
         <Route path="/id-find" element={<IdFindPage />}></Route>
         <Route path="/password-reset" element={<PasswordResetPage />}></Route>
+
+        {/* my */}
+        <Route path="/my" element={<MyPage />}></Route>
+        <Route path="/my-account" element={<MyAccountPage />}></Route>
+        <Route path="/withdraw-agree" element={<WithdrawAgreePage />}></Route>
+        <Route path="/withdraw-confirm" element={<WithdrawConfirmPage />}></Route>
+        <Route path="/edit-profile" element={<EditProfilePage />}></Route>
+        <Route path="/member-management" element={<MembersPage />}></Route>
+        <Route path="/notifications-settings" element={<NotificationSettingsPage />}></Route>
+
       </Routes>
     </ControllerProvider>
   )

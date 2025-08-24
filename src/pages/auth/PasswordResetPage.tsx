@@ -48,7 +48,7 @@ export default function PasswordResetPage() {
               휴대전화번호
             </span>
 
-            <div className={styles.inputButtonBox}>
+            <div className="inputButtonBox">
               <Input
                 type="text"
                 id="phone"
@@ -58,7 +58,7 @@ export default function PasswordResetPage() {
               </label>
               <Button
                 type="button"
-                className={styles.button}
+                className="button"
               >
                 인증
               </Button>
@@ -69,7 +69,7 @@ export default function PasswordResetPage() {
             <span className={styles.label}>
               인증번호
             </span>
-            <div className={styles.inputButtonBox}>
+            <div className="inputButtonBox">
               <Input
                 type="text"
                 id="number"
@@ -79,7 +79,7 @@ export default function PasswordResetPage() {
               </label>
               <Button
                 type="button"
-                className={styles.button}
+                className="button"
               >
                 확인
               </Button>

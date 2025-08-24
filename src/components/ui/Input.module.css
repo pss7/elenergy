@@ -8,6 +8,10 @@
   background-color: #F1F1F3;
 }
 
+.input::placeholder {
+  color: #A3A3A3;
+}
+
 .input:focus {
   outline: 0;
   border-bottom: 2px solid #000;

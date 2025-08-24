@@ -101,20 +101,6 @@
 
 }
 
-.inputButtonBox {
-  position: relative;
-}
-
-.inputButtonBox .button {
-  width: 60px;
-  height: 30px;
-  line-height: 28px;
-  position: absolute;
-  right: 0;
-  top: -5px;
-  font-size: 13px;
-}
-
 .signupCompleteBox p {
   display: flex;
   flex-direction: column;
