@@ -2,8 +2,15 @@ import Main from "../../components/layout/Main";
 import Header from "../../components/layout/Header";
 import styles from "./Auth.module.css";
 import Button from "../../components/ui/Button";
+import { useNavigate } from "react-router-dom";
 
 export default function SignupCompletePage() {
+
+  const navigate = useNavigate();
+
+  const handleGoToSignin = () => {
+    navigate("/signin");
+  };
 
   return (
 
@@ -22,6 +29,7 @@ export default function SignupCompletePage() {
           </p>
           <Button
             className="mt-40"
+            onClick={handleGoToSignin}
           >
             로그인
           </Button>

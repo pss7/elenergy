@@ -38,7 +38,7 @@ export default function Footer() {
             </Link>
           </li>
           <li>
-            <Link to={isLoggedIn ? "/mypage" : "/signin"}>
+            <Link to={isLoggedIn ? "/my" : "/signin"}>
               <span>
                 MY
               </span>

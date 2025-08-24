@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import styles from "./MyPage.module.css";
