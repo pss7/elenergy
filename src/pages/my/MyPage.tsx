@@ -5,6 +5,30 @@ import styles from "./MyPage.module.css";
 
 export default function MyPage() {
 
+  // interface UserInfo {
+  //   authNumber: string;
+  //   companyCode: string;
+  //   userEmail: string;
+  //   userId: string;
+  //   userName: string;
+  //   userPassword: string;
+  //   userPhone: string;
+  //   userRank: string;
+  // }
+
+  // const [user, setUser] = useState<UserInfo | null>(null);
+
+  // useEffect(() => {
+  //   const storedUser = localStorage.getItem("signupData"); // 로컬스토리지 키
+  //   if (storedUser) {
+  //     try {
+  //       setUser(JSON.parse(storedUser));
+  //     } catch (e) {
+  //       console.error("로컬스토리지 파싱 오류:", e);
+  //     }
+  //   }
+  // }, []);
+
   return (
     <>
 
