@@ -4,9 +4,13 @@ import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import styles from "./MyPage.module.css";
 
-import { type Member, type Applicant, members, myInfo, pendingMembers } from "../../data/Members";
+import membersData from "../../data/Members";
+import type { Member, Applicant } from "../../data/Members";
 
 export default function MembersPage() {
+
+  const { myInfo, members, pendingMembers } = membersData;
+
   const [activeMemberId, setActiveMemberId] = useState<number | null>(null);
 
   function handleSettingToggle(id: number) {
