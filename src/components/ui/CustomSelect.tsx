@@ -1,52 +1,49 @@
+// src/components/ui/CustomSelect.tsx
+
 import { useState } from "react";
 import styles from "./CustomSelect.module.css";
+import type { Controller } from "../../data/Controllers";
 
-export default function CustomSelect() {
+interface CustomSelectProps {
+  controllers: Controller[];
+  selectedControllerId: number;
+  onChange: (id: number) => void;
+}
 
+export default function CustomSelect({
+  controllers,
+  selectedControllerId,
+  onChange,
+}: CustomSelectProps) {
   const [selectToggle, setSelectToggle] = useState(false);
 
-  function handleSelectToggle() {
-
-    if (selectToggle === false) {
-      setSelectToggle(true);
-    } else {
-      setSelectToggle(false);
-    }
-
-  }
+  const selectedController = controllers.find(c => c.id === selectedControllerId);
 
   return (
-    <>
-      <div className={`${styles.selectBox} ${selectToggle ? `${styles.active}` : ""}`}>
-        <button 
-          className={styles.btn}
-          onClick={handleSelectToggle}
-        >
-          제어기 1 - <em>#공장위치</em>
-        </button>
+    <div className={`${styles.selectBox} ${selectToggle ? styles.active : ""}`}>
+      <button className={styles.btn} onClick={() => setSelectToggle(prev => !prev)}>
+        {selectedController?.title} - <em>{selectedController?.location}</em>
+      </button>
+
+      {selectToggle && (
         <div className={styles.selectListBox}>
-          <span>전체제어기</span>
           <ul className={styles.selectList}>
-            <li>
-              <button className={styles.selectListBtn}>
-                제어기 2 - <em>#공장위치</em>
-              </button>
-            </li>
-            <li>
-              <button className={styles.selectListBtn}>
-                제어기 3 - <em>#공장위치</em>
-              </button>
-            </li>
-            <li>
-              <button className={styles.selectListBtn}>
-                제어기 4 - <em>#공장위치</em>
-              </button>
-            </li>
+            {controllers.map(controller => (
+              <li key={controller.id}>
+                <button
+                  className={styles.selectListBtn}
+                  onClick={() => {
+                    onChange(controller.id);
+                    setSelectToggle(false);
+                  }}
+                >
+                  {controller.title} - <em>{controller.location}</em>
+                </button>
+              </li>
+            ))}
           </ul>
         </div>
-        
-      </div>
-    </>
-  )
-
+      )}
+    </div>
+  );
 }

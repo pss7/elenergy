@@ -14,3 +14,11 @@ export const members = [
 export const pendingMembers = [
   { id: 101, name: "하예슬", position: "대리", date: "2025.12.01" },
 ];
+
+const membersData = {
+  myInfo,
+  members,
+  pendingMembers,
+};
+
+export default membersData;

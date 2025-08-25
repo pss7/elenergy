@@ -3,9 +3,7 @@ import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import styles from "./MyPage.module.css";
-
-//데이터
-import { myInfo, members, pendingMembers } from "../../data/members";
+import { myInfo, members, pendingMembers } from "../../data/Members";
 
 export default function MembersPage() {
 

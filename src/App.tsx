@@ -26,6 +26,7 @@ import EventNotificationPage from './pages/my/EventNotificationPage';
 import DataCollectionPage from './pages/my/DataCollectionPage';
 import LoginHistoryPage from './pages/my/LoginHistoryPage';
 import MonitoringPage from './pages/monitoring/MonitoringPage';
+import NotificationSettingsPage from './pages/my/NotificationSettingsPage';
 
 
 function App() {
@@ -74,6 +75,7 @@ function App() {
         <Route path="/member-management" element={<MembersPage />}></Route>
         <Route path="/privacy" element={<PrivacyPage />}></Route>
         <Route path="/terms" element={<TermsOfUsePage />}></Route>
+        <Route path="/notifications-settings" element={<NotificationSettingsPage />} />
         <Route path="/data-collection" element={<DataCollectionPage />} />
         <Route path="/event-notifications" element={<EventNotificationPage />} />
         <Route path="/login-history" element={<LoginHistoryPage />} />
