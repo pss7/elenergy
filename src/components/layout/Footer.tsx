@@ -31,7 +31,7 @@ export default function Footer() {
             </Link>
           </li>
           <li>
-            <Link to="/">
+            <Link to="/monitoring">
               <span>
                 모니터링
               </span>

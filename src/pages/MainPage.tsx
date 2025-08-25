@@ -12,8 +12,8 @@ import styles from "./MainPage.module.css";
 import savingsData from "../data/Savings";
 
 //차트
-import { PieChart } from 'react-minimal-pie-chart';
 import { useControllerData } from "../contexts/ControllerContext";
+import PowerDoughnutChart from "../components/ui/PowerDoughnutChart";
 
 export default function MainPage() {
 
@@ -86,30 +86,21 @@ export default function MainPage() {
           <Title level={1} className={`${styles.h1} ${styles.mainIcon03}`}>
             이번 달 절약한 전력 요금
           </Title>
-          <ArrowLink to="/" variant="next">
+          <ArrowLink to="/monitoring" variant="next">
             <span className="blind">전력 모니터링 이동</span>
           </ArrowLink>
         </div>
 
         <div className={styles.chartBox}>
-          <div className={styles.doughnutChartBox}>
-            <PieChart
-              data={[
-                { value: savingsData.powerReductionRate, color: '#0F7685' },
-              ]}
-              totalValue={100}
-              lineWidth={30}
-              rounded
-              background="#D9D9D9"
-              startAngle={-90}
-              style={{ width: 141, height: 141 }}
-              animate
-            />
-            <div className={styles.doughnutChartText}>
-              <h3>절감한 전력량</h3>
-              <span>{savingsData.powerReductionRate}%</span>
-            </div>
-          </div>
+
+          <PowerDoughnutChart
+            powerReductionRate={25}
+            textTitle="절감한 전력량"
+            valueText="25%"
+            lineWidth={35}
+            titleFontSize="10px"
+            valueFontSize="20px"
+          />
 
           <div className={styles.chartInfoBox}>
             <h3>절감한 전력 요금</h3>

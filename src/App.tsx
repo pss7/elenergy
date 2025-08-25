@@ -25,6 +25,7 @@ import TermsOfUsePage from './pages/my/TermsOfUsePage';
 import EventNotificationPage from './pages/my/EventNotificationPage';
 import DataCollectionPage from './pages/my/DataCollectionPage';
 import LoginHistoryPage from './pages/my/LoginHistoryPage';
+import MonitoringPage from './pages/monitoring/MonitoringPage';
 
 
 function App() {
@@ -76,6 +77,9 @@ function App() {
         <Route path="/data-collection" element={<DataCollectionPage />} />
         <Route path="/event-notifications" element={<EventNotificationPage />} />
         <Route path="/login-history" element={<LoginHistoryPage />} />
+
+        {/* monitoring */}
+        <Route path="/monitoring" element={<MonitoringPage />} />
 
       </Routes>
     </ControllerProvider>
