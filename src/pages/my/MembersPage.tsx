@@ -4,9 +4,9 @@ import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import styles from "./MyPage.module.css";
 import { myInfo, members, pendingMembers } from "../../data/Members";
+import type { Member, Applicant } from "../../data/Members";
 
 export default function MembersPage() {
-
   const [activeMemberId, setActiveMemberId] = useState<number | null>(null);
 
   function handleSettingToggle(id: number) {
@@ -40,7 +40,7 @@ export default function MembersPage() {
           <div className={styles.memberListBox}>
             <h2 className={styles.title}>구성원</h2>
             <ul className={styles.memberList}>
-              {members.map(member => (
+              {members.map((member: Member) => (
                 <li key={member.id}>
                   <div className={styles.textBox}>
                     <h3>{member.name}<em>{member.position}</em></h3>
@@ -79,7 +79,7 @@ export default function MembersPage() {
           <div className={styles.memberListBox}>
             <h2 className={styles.title}>신청관리</h2>
             <ul className={styles.memberList}>
-              {pendingMembers.map(applicant => (
+              {pendingMembers.map((applicant: Applicant) => (
                 <li key={applicant.id}>
                   <div className={styles.textBox}>
                     <h3>{applicant.name}<em>{applicant.position}</em></h3>
