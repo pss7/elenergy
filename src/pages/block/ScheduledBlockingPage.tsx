@@ -11,18 +11,18 @@ import type { Reservation } from "../../data/ScheduledBlockings";
 export default function ScheduledBlockingPage() {
   const [selectedControllerId, setSelectedControllerId] = useState<number>(1);
 
-  // ✅ 로컬스토리지에서 초기값 가져오기
+  // 로컬스토리지에서 초기값 가져오기
   const [reservations, setReservations] = useState<Reservation[]>(() => {
     const saved = localStorage.getItem("reservations");
     return saved ? JSON.parse(saved) : scheduledBlockingsData;
   });
 
-  // ✅ 변경될 때마다 저장
+  // 변경될 때마다 저장
   useEffect(() => {
     localStorage.setItem("reservations", JSON.stringify(reservations));
   }, [reservations]);
 
-  // ✅ ON/OFF 토글
+  // ON/OFF 토글
   function toggleReservation(id: number) {
     setReservations(prev =>
       prev.map(item =>
