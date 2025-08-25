@@ -59,7 +59,7 @@ export default function MainPage() {
 
         <ul className={styles.linkList02}>
           <li>
-            <Link to="#">
+            <Link to="/scheduled-block">
               <Title level={2}>
                 예약 차단 설정
               </Title>

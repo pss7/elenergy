@@ -8,6 +8,8 @@ import styles from "./MonitoringPage.module.css";
 import CustomSelect from "../../components/ui/CustomSelect";
 import PowerDoughnutChart from "../../components/ui/PowerDoughnutChart";
 import { addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, addYears, subYears } from "date-fns";
+
+//데이터
 import controllerData from "../../data/Controllers";
 import monitoringData, { type TabType } from "../../data/Monitoring";
 
@@ -92,7 +94,6 @@ export default function MonitoringPage() {
             selectedControllerId={selectedControllerId}  // number 타입 (선택된 제어기 ID)
             onChange={setSelectedControllerId}       // (id: number) => void 함수
           />
-
 
           <div className={styles.dateTabBox}>
             <button

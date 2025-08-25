@@ -25,9 +25,11 @@ import TermsOfUsePage from './pages/my/TermsOfUsePage';
 import EventNotificationPage from './pages/my/EventNotificationPage';
 import DataCollectionPage from './pages/my/DataCollectionPage';
 import LoginHistoryPage from './pages/my/LoginHistoryPage';
-import MonitoringPage from './pages/monitoring/MonitoringPage';
 import NotificationSettingsPage from './pages/my/NotificationSettingsPage';
 
+import MonitoringPage from './pages/monitoring/MonitoringPage';
+import ScheduledBlockingPage from './pages/block/ScheduledBlockingPage';
+import ScheduledDeletePage from './pages/block/ScheduledDeletePage';
 
 function App() {
 
@@ -82,6 +84,10 @@ function App() {
 
         {/* monitoring */}
         <Route path="/monitoring" element={<MonitoringPage />} />
+
+        {/* monitoring */}
+        <Route path="/scheduled-block" element={<ScheduledBlockingPage />} />
+        <Route path="/scheduled-delete" element={<ScheduledDeletePage />} />
 
       </Routes>
     </ControllerProvider>

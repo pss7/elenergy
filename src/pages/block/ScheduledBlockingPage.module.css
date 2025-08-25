@@ -1,0 +1,153 @@
+.scheduledBlockingBox .topBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 30px 0 13px;
+}
+
+.scheduledBlockingBox .topBox h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+}
+
+.scheduledBlockingBox .topBox .btnBox {
+  display: flex;
+  align-items: center;
+  gap: 0 26px;
+}
+
+.scheduledBlockingBox .topBox .reservationAddBtn {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: url(/assets/images/sub/plus_icon.svg)no-repeat center;
+}
+
+.scheduledBlockingBox .topBox .delBtn {
+  display: block;
+  width: 4px;
+  height: 14px;
+  background: url(/assets/images/sub/del_icon.svg)no-repeat center;
+}
+
+.scheduledBlockingBox .reservationList li {
+  position: relative;
+  margin-bottom: 12px;
+  height: 105px;
+  padding: 0 56px 0 17px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  border-radius: 23px;
+}
+
+.scheduledBlockingBox .reservationList li .timeBox {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0 5px;
+  line-height: 1;
+}
+
+.scheduledBlockingBox .reservationList li .timeBox span {
+  position: relative;
+  align-self: flex-end;
+  top: -3px;
+  color: #000;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.scheduledBlockingBox .reservationList li .timeBox strong {
+  color: #000;
+  font-size: 32px;
+  font-weight: 500;
+}
+
+.scheduledBlockingBox .reservationList li .dateBox span {
+  font-weight: 700;
+  color: #A6A6A8;
+  font-size: 10px;
+  display: block;
+}
+
+.scheduledBlockingBox .reservationList li .toggleSwitch {
+  width: 30px;
+  height: 20px;
+  border-radius: 20px;
+  background-color: #9A999E;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 17px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.scheduledBlockingBox .reservationList li .toggleSwitch.on {
+  background-color: #0F7685;
+}
+
+.scheduledBlockingBox .reservationList li .toggleKnob {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: white;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: left 0.3s ease;
+}
+
+.scheduledBlockingBox .reservationList li .toggleSwitch.on .toggleKnob {
+  left: 13px;
+}
+
+.scheduledBlockingBox .reservationList li .timeBox.off span,
+.scheduledBlockingBox .reservationList li .timeBox.off strong {
+  color: #A6A6A8;
+}
+
+/* 에약 삭제 */
+
+.scheduledDeleteBox .topBox .btnBox button {
+  width: auto;
+  height: auto;
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+  background: 0;
+}
+
+.scheduledDeleteBox .topBox .selectText {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+}
+
+.scheduledDeleteBox .reservationList li {
+  padding: 0 17px 0 63px;
+}
+
+.scheduledDeleteBox .reservationList li .inputChkBox {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 23px;
+}
+
+.scheduledDeleteBox .reservationList li .inputChkBox label {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #A4A4A4;
+  border-radius: 50%;
+  background-color: #fff;
+}
+
+.scheduledDeleteBox .reservationList li .inputChkBox input:checked+label {
+  border: 0;
+  background: url(/assets/images/sub/chk_icon02.svg)no-repeat center;
+  background-size: contain !important;
+}

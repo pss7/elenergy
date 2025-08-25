@@ -10,7 +10,7 @@ export default function Footer() {
       <footer id={styles.footer}>
         <ul className={styles.link}>
           <li>
-            <Link to="/">
+            <Link to="/scheduled-block">
               <span>
                 예약차단
               </span>
