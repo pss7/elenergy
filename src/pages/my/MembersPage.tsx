@@ -3,8 +3,8 @@ import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import styles from "./MyPage.module.css";
-import { myInfo, members, pendingMembers } from "../../data/Members";
-import type { Member, Applicant } from "../../data/Members";
+
+import { type Member, type Applicant, members, myInfo, pendingMembers } from "../../data/Members";
 
 export default function MembersPage() {
   const [activeMemberId, setActiveMemberId] = useState<number | null>(null);
