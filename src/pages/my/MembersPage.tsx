@@ -3,7 +3,9 @@ import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import styles from "./MyPage.module.css";
-import membersData, { type Applicant, type Member } from "../../data/members";
+import membersData, { type Applicant, type Member } from "../../data/Members";
+
+
 
 export default function MembersPage() {
 
