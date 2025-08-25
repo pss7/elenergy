@@ -3,13 +3,12 @@ import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import styles from "./MyPage.module.css";
-
-import membersData from "../../data/Members";
-import type { Member, Applicant } from "../../data/Members";
+import membersData from "../../data/Savings";
+import type { Applicant, Member } from "../../data/members";
 
 export default function MembersPage() {
 
-  const { myInfo, members, pendingMembers } = membersData;
+  const { myInfo, members, pendingMembers } = membersData
 
   const [activeMemberId, setActiveMemberId] = useState<number | null>(null);
 
