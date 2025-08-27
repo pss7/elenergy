@@ -1,0 +1,7 @@
+#header{padding: 39px 13px 0; background-color: #F1F1F3;}
+#header h1 a{display: block;}
+#header h1 a img{display: block;}
+
+#header .logoBox{display: flex; justify-content: flex-start;}
+#header .titleBox{display: flex; justify-content: center; align-items: center;}
+#header .titleBox h1{width: 100%; font-size: 20px; color: #000; text-align: center;}

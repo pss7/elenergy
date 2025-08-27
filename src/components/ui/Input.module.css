@@ -1,0 +1,74 @@
+.input {
+  padding: 5px 10px 5px 0;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #ddd;
+  font-size: 13px;
+  color: #000;
+  background-color: #F1F1F3;
+}
+
+.input::placeholder {
+  color: #A3A3A3;
+}
+
+.input:focus {
+  outline: 0;
+  border-bottom: 2px solid #000;
+}
+
+.inputCheckBox label {
+  display: block;
+  position: relative;
+  padding-left: 24px;
+  color: #000;
+}
+
+.inputCheckBox label::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+}
+
+.inputCheckBox input:checked+label::before {
+  background: url(/assets/images/sub/chk_icon.svg)no-repeat center;
+  background-size: contain !important;
+  border: 0;
+}
+
+@media (max-width: 360px) {
+
+  .inputCheckBox label {
+    padding-left: 20px;
+    font-size: 12px;
+  }
+
+  .inputCheckBox label::before {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+  }
+
+}
+
+
+.inputPasswordBox {
+  position: relative;
+}
+
+.inputPasswordBox .pwToggleBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+}
+
+.inputPasswordBox .pwToggleBtn img {
+  display: block;
+}

@@ -1,0 +1,305 @@
+.scheduledBlockingBox .topBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 30px 0 13px;
+}
+
+.scheduledBlockingBox .topBox h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+}
+
+.scheduledBlockingBox .topBox .btnBox {
+  display: flex;
+  align-items: center;
+  gap: 0 26px;
+}
+
+.scheduledBlockingBox .topBox .reservationAddBtn {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: url(/assets/images/sub/plus_icon.svg)no-repeat center;
+}
+
+.scheduledBlockingBox .topBox .delBtn {
+  display: block;
+  width: 4px;
+  height: 14px;
+  background: url(/assets/images/sub/del_icon.svg)no-repeat center;
+}
+
+.scheduledBlockingBox .reservationList li {
+  position: relative;
+  margin-bottom: 12px;
+  height: 105px;
+  padding: 0 56px 0 17px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  border-radius: 23px;
+}
+
+.scheduledBlockingBox .reservationList li .timeBox {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0 5px;
+  line-height: 1;
+}
+
+.scheduledBlockingBox .reservationList li .timeBox span {
+  position: relative;
+  align-self: flex-end;
+  top: -3px;
+  color: #000;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.scheduledBlockingBox .reservationList li .timeBox strong {
+  color: #000;
+  font-size: 32px;
+  font-weight: 500;
+}
+
+.scheduledBlockingBox .reservationList li .dateBox span {
+  font-weight: 700;
+  color: #A6A6A8;
+  font-size: 10px;
+  display: block;
+}
+
+.scheduledBlockingBox .reservationList li .toggleSwitch {
+  width: 30px;
+  height: 20px;
+  border-radius: 20px;
+  background-color: #9A999E;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 17px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.scheduledBlockingBox .reservationList li .toggleSwitch.on {
+  background-color: #0F7685;
+}
+
+.scheduledBlockingBox .reservationList li .toggleKnob {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: white;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: left 0.3s ease;
+}
+
+.scheduledBlockingBox .reservationList li .toggleSwitch.on .toggleKnob {
+  left: 13px;
+}
+
+.scheduledBlockingBox .reservationList li .timeBox.off span,
+.scheduledBlockingBox .reservationList li .timeBox.off strong {
+  color: #A6A6A8;
+}
+
+/* 에약 삭제 */
+
+.scheduledDeleteBox .topBox .btnBox button {
+  width: auto;
+  height: auto;
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+  background: 0;
+}
+
+.scheduledDeleteBox .topBox .selectText {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+}
+
+.scheduledDeleteBox .reservationList li {
+  padding: 0 17px 0 63px;
+}
+
+.scheduledDeleteBox .reservationList li .inputChkBox {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 23px;
+}
+
+.scheduledDeleteBox .reservationList li .inputChkBox label {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #A4A4A4;
+  border-radius: 50%;
+  background-color: #fff;
+}
+
+.scheduledDeleteBox .reservationList li .inputChkBox input:checked+label {
+  border: 0;
+  background: url(/assets/images/sub/chk_icon02.svg)no-repeat center;
+  background-size: contain !important;
+}
+
+/* 예약 추가 */
+.scheduledAddBox .dateBox {
+  margin-bottom: 26px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 109px;
+  padding: 0 17px;
+  background-color: #fff;
+  border-radius: 23px;
+}
+
+.scheduledAddBox .dateBox .date {
+  display: block;
+  margin-bottom: 25px;
+  font-size: 13px;
+  color: #000;
+  font-weight: 500;
+}
+
+.scheduledAddBox .dateList {
+  display: flex;
+}
+
+.scheduledAddBox .dateList li {
+  flex: 1;
+
+}
+
+.scheduledAddBox .dateList li .btn {
+  display: block;
+  width: 100%;
+  height: 24px;
+  line-height: 22px;
+  text-align: center;
+}
+
+.scheduledAddBox .dateList li .btn span {
+  font-size: 12px;
+  font-weight: 500;
+  color: #000;
+}
+
+.scheduledAddBox .dateList li.sunday .btn span {
+  color: #C9443F;
+}
+
+.scheduledAddBox .dateList li.saturday .btn span {
+  color: #406ECC;
+}
+
+.scheduledAddBox .dateList li.active .btn span {
+  display: block;
+  margin: 0 auto;
+  width: 28px;
+  height: 28px;
+  line-height: 24px;
+  border-radius: 50%;
+  border: 1px solid #0F7685;
+  color: #0F7685;
+  font-weight: 700;
+}
+
+.scheduledAddBox .calendarBtn {
+  width: 18px;
+  height: 18px;
+  position: absolute;
+  top: 29px;
+  right: 17px;
+  background: url(/assets/images/sub/calendar_icon.svg)no-repeat center;
+}
+
+.scheduledAddBox .infoText {
+  margin-bottom: 28px;
+  padding: 16px 14px;
+  background-color: #fff;
+  border-radius: 15px;
+}
+
+.scheduledAddBox .infoText h2 {
+  margin-bottom: 2px;
+  font-weight: 500;
+  color: #000;
+  font-size: 16px;
+}
+
+.scheduledAddBox .infoText p {
+  font-size: 12px;
+  font-weight: 500;
+  color: #4E4D52;
+}
+
+.scheduledAddBox .timeBox {
+  margin-bottom: 52px;
+  position: relative;
+  height: 198px;
+  overflow: hidden;
+}
+
+.scheduledAddBox .timeSelector {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  height: 100%;
+}
+
+.scheduledAddBox .column {
+  flex: 1;
+  height: 100%;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  text-align: center;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+.scheduledAddBox .column::-webkit-scrollbar {
+  display: none;
+}
+
+.scheduledAddBox .column ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.scheduledAddBox .column li {
+  height: 66px;
+  line-height: 66px;
+  scroll-snap-align: center;
+  color: #aaa;
+  font-size: 45px;
+  transition: color 0.2s;
+}
+
+.scheduledAddBox .column:first-child li {
+  font-size: 28px;
+}
+
+.scheduledAddBox .colon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 45px;
+  color: #000;
+  font-weight: 500;
+  margin: 0 4px;
+}

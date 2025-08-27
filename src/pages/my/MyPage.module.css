@@ -1,0 +1,523 @@
+.tit {
+  font-size: 24px;
+  color: #000;
+  font-weight: 700;
+}
+
+/* 마이페이지 */
+.mypageBox .link li a {
+  position: relative;
+  display: block;
+  padding: 20px 0;
+  font-weight: 700;
+  color: #000;
+  border-bottom: 1px solid #DDD;
+}
+
+.mypageBox .link li a::after {
+  content: '';
+  width: 8px;
+  height: 14px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  background: url(/assets/images/sub/arrow_icon01.svg)no-repeat center;
+}
+
+.mypageBox .versionBox {
+  padding: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mypageBox .versionBox span {
+  font-weight: 700;
+  color: #000;
+}
+
+.mypageBox .versionBox em {
+  font-size: 14px;
+  font-weight: 500;
+  color: #696969;
+}
+
+.mypageBox .mypageInfoBox {
+  margin-bottom: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mypageBox .mypageInfoBox .textBox h2 {
+  margin-bottom: 6px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+}
+
+.mypageBox .mypageInfoBox .textBox span {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #6A6A6A;
+}
+
+.mypageBox .mypageInfoBox .textBox .memberList {
+  display: flex;
+  align-items: center;
+}
+
+.mypageBox .mypageInfoBox .textBox .memberList li {
+  margin-right: -7px;
+}
+
+.mypageBox .mypageInfoBox .textBox .memberList li img {
+  display: block;
+}
+
+.mypageBox h3 {
+  margin-bottom: 15px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6A6A6A;
+}
+
+.mypageBox .imgBox img {
+  display: block;
+}
+
+/* 내계정 */
+.myAccountBox .infoBox {
+  margin-bottom: 23px;
+  padding: 6px 20px;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.myAccountBox .infoBox .box {
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.myAccountBox .infoBox .box span {
+  font-size: 15px;
+  font-weight: 500;
+  color: #666;
+}
+
+.myAccountBox .infoBox .box em {
+  font-size: 15px;
+  font-weight: 500;
+  color: #000;
+}
+
+.myAccountBox .cancelAccountBox {
+  display: flex;
+  justify-content: center;
+}
+
+.myAccountBox .cancelAccount {
+  margin-top: 80px;
+  text-decoration: underline;
+  color: #666;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* 회원탈퇴 */
+.withdrawBox .infoText01 {
+  margin-bottom: 30px;
+  font-weight: 500;
+  color: #000;
+}
+
+.withdrawBox .infoTitle {
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #000;
+}
+
+.withdrawBox .infoText02 {
+  margin-bottom: 25px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  font-weight: 500;
+  color: #000;
+}
+
+.withdrawBox .inputBox {
+  margin-top: 80px;
+}
+
+/* 구성원관리 */
+.memberBox .memberListBox {
+  margin-bottom: 37px;
+}
+
+.memberBox .title {
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #666;
+}
+
+.memberBox .memberList>li {
+  position: relative;
+  margin-bottom: 13px;
+  padding: 0 20px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.memberBox .memberList li:last-child {
+  margin-bottom: 0;
+}
+
+.memberBox .memberList li .textBox h3 {
+  gap: 0 5px;
+  display: flex;
+  align-items: flex-end;
+  font-size: 18px;
+  font-weight: 700;
+  color: #000;
+  line-height: 1;
+}
+
+.memberBox .memberList li .textBox h3 em {
+  line-height: 1;
+  font-size: 10px;
+  font-weight: 700;
+  color: #666;
+}
+
+.memberBox .memberList li .textBox span {
+  display: block;
+  margin-top: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.memberBox .memberList li .imgBox {
+  width: 42px;
+  height: 42px;
+}
+
+.memberBox .memberList li .imgBox img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.memberBox .memberList li .btnBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0;
+}
+
+.memberBox .btn {
+  width: 61px;
+  height: 21px;
+  line-height: 21px;
+  font-size: 11px;
+  border-radius: 2px;
+  font-weight: 500;
+}
+
+.memberBox .memberList li .settingBtnBox {
+  position: relative;
+  position: absolute;
+  top: 12px;
+  right: 15px;
+}
+
+.memberBox .memberList li .settingBtnBox .settingBtn {
+  width: 15px;
+  height: 14px;
+  background: url(/assets/images/sub/setting_icon.svg)no-repeat center;
+}
+
+.memberBox .memberList li .settingBtnBox .settingSelectBtn {
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px 0;
+  width: 79px;
+  height: 63px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+  background-color: #fff;
+  border-radius: 10px;
+  visibility: hidden;
+  transition: all .3s;
+}
+
+.memberBox .memberList li .settingBtnBox .settingSelectBtn.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.memberBox .memberList li .settingBtnBox .settingSelectBtn .selectBtn {
+  display: block;
+  width: 100%;
+  padding-left: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #000;
+  text-align: left;
+}
+
+/* 알림설정 */
+.notificationBox h2 {
+  margin-bottom: 8px;
+  font-size: 18px;
+  color: #000;
+}
+
+.notificationBox p {
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.notificationBox .notificationList {
+  padding: 0 20px 10px;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.notificationBox .notificationList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.notificationBox .notificationList li:first-child {
+  margin-bottom: 10px;
+  padding: 20px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.notificationBox .notificationList li .textBox h3 {
+  margin-bottom: 4px;
+  color: #000;
+}
+
+.notificationBox .notificationList li .textBox a {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  text-decoration: underline;
+}
+
+.notificationBox .notificationList li span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.notificationBox .notificationList li .toggleSwitch {
+  position: relative;
+  width: 69px;
+  height: 37px;
+  border-radius: 50px;
+  background-color: #A8A8A8;
+  transition: all 0.3s;
+  overflow: hidden;
+}
+
+.notificationBox .notificationList li .toggleSwitch.on {
+  background-color: #0F7685;
+}
+
+.notificationBox .notificationList li .toggleCircle {
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  transform: translateY(-48%);
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background-color: #fff;
+  transition: all 0.3s;
+  z-index: 2;
+}
+
+.notificationBox .notificationList li .toggleSwitch.on .toggleCircle {
+  left: 35px;
+}
+
+.notificationBox .notificationList li .toggleText {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  z-index: 1;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.notificationBox .notificationList li .offText {
+  right: 10px;
+  color: #F1F1F3;
+  opacity: 1;
+}
+
+.notificationBox .notificationList li .onText {
+  left: 10px;
+  color: #FFF;
+  opacity: 0;
+}
+
+.notificationBox .notificationList li .toggleSwitch.on .onText {
+  opacity: 1;
+}
+
+.notificationBox .notificationList li .toggleSwitch.on .offText {
+  opacity: 0;
+}
+
+/* 개인정보보호 */
+.privacyBox .box {
+  margin-bottom: 35px;
+}
+
+.privacyBox .box h2 {
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #666;
+}
+
+.privacyBox .box .linkList {
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.privacyBox .box .linkList li a {
+  position: relative;
+  padding: 0 23px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 60px;
+  font-weight: 500;
+  color: #000;
+}
+
+.privacyBox .box .linkList li a::before {
+  content: '';
+  position: absolute;
+  left: 23px;
+  right: 23px;
+  bottom: 0;
+  height: 1px;
+  background-color: #ddd;
+}
+
+.privacyBox .box .linkList li:last-child a::before {
+  display: none;
+}
+
+.privacyBox .box .linkList li a::after {
+  content: '';
+  width: 8px;
+  height: 15px;
+  right: 23px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: url(/assets/images/sub/arrow_icon02.svg)no-repeat;
+}
+
+.privacyBox .contentBox h3 {
+  margin: 5px 0;
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.privacyBox .contentBox p {
+  font-size: 10px;
+  font-weight: 500;
+  color: #000;
+}
+
+/* 로그인 이력 조회 */
+.loginHistoryBox .infoText {
+  margin-bottom: 20px;
+
+  font-weight: 500;
+  color: #000;
+}
+
+.loginHistoryBox h3 {
+  margin-bottom: 13px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #656565;
+}
+
+.loginHistoryBox .loginHistoryList li {
+  padding: 9px 10px 9px 18px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background-color: #fff;
+}
+
+.loginHistoryBox .loginHistoryList li .box {
+  display: flex;
+  align-items: center;
+  gap: 0 16px;
+  padding: 7px 0;
+}
+
+.loginHistoryBox .loginHistoryList li .box span {
+  flex-shrink: 0;
+  width: 70px;
+  font-weight: 500;
+  color: #000;
+}
+
+.loginHistoryBox .loginHistoryList li .box em {
+  font-weight: 500;
+  color: #000;
+}
+
+.loginHistoryBox .viewBtnBox {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.loginHistoryBox .viewBtnBox .viewBtn {
+  display: flex;
+  align-items: center;
+  gap: 0 5px;
+  font-size: 13px;
+  color: #000;
+}
+
+.loginHistoryBox .viewBtnBox .viewBtn::after {
+  content: '';
+  width: 11px;
+  height: 5px;
+  background: url(/assets/images/sub/arrow_icon03.svg)no-repeat center;
+}

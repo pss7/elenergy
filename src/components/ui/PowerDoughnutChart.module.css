@@ -1,0 +1,24 @@
+.doughnutChartBox {
+  position: relative;
+  width: 141px;
+  height: 141px;
+}
+
+.doughnutChartText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  word-break: keep-all;
+}
+
+.doughnutChartText .title {
+  margin-bottom: 5px;
+  color: #000;
+}
+
+.doughnutChartText span {
+  font-weight: 700;
+  color: #000;
+}

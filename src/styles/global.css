@@ -1,0 +1,143 @@
+@charset "utf-8";
+
+:root {
+
+  --primary: #9935ff;
+  --purple100: #f8f0ff;
+  --purple200: #ecd9ff;
+  --purple300: #dcb9ff;
+  --purple400: #c894fd;
+  --purple500: #ab57ff;
+  --purple600: #861dee;
+  --purple700: #6e0ad1;
+  --purple800: #5603a7;
+
+  --beige100: #fff0d6;
+  --beige200: #ffe2ad;
+  --beige300: #ffc583;
+  --beige400: #ffae65;
+  --beige500: #ff8832;
+
+  --blue100: #e2f5ff;
+  --blue200: #b1e4ff;
+  --blue300: #7cd2ff;
+  --blue400: #34b9ff;
+  --blue500: #00a2fe;
+
+  --green100: #e4fbdc;
+  --green200: #d0f5c3;
+  --green300: #9be282;
+  --green400: #60cf37;
+  --green500: #2ba600;
+
+  --gray100: #f6f6f6;
+  --gray200: #eeeeee;
+  --gray300: #cccccc;
+  --gray400: #999999;
+  --gray500: #555555;
+  --gray600: #4a4a4a;
+  --gray700: #3a3a3a;
+  --gray800: #2b2b2b;
+  --gray900: #181818;
+
+  --gray: #D9D9D9;
+  --teal: #0F7685;
+  --white: #ffffff;
+  --black: #000000;
+  --error: #dc3a3a;
+  --surface: #f6f8ff;
+
+}
+
+#root {
+  /* padding: 55px 13px 0; */
+  /* max-width: 392px; */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+main {
+  padding: 55px 13px 60px;
+  flex: 1;
+  background-color: #F1F1F3;
+}
+
+:disabled {
+  background-color: var(--gray100);
+  color: var(--gray400);
+  pointer-events: none;
+}
+
+.error {
+  border: 1px solid var(--error) !important;
+}
+
+.errorMessage {
+  margin-top: 4px;
+  display: block;
+  color: #dc3a3a;
+  font-size: 12px;
+}
+
+.mb-10 {
+  margin-bottom: 10px !important;
+}
+
+.mb-20 {
+  margin-bottom: 20px !important;
+}
+
+.mb-30 {
+  margin-bottom: 30px !important;
+}
+
+.mt-30 {
+  margin-top: 30px !important;
+}
+
+.mt-40 {
+  margin-top: 40px !important;
+}
+
+.btnBox {
+  display: flex;
+  gap: 0 12px;
+}
+
+.linkBtn {
+  display: block;
+  width: 100%;
+  height: 46px;
+  line-height: 46px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  background-color: #0F7685;
+  color: #fff;
+}
+
+
+/* 폼 */
+.inputButtonBox {
+  position: relative;
+}
+
+.inputButtonBox .button {
+  width: 60px;
+  height: 30px;
+  line-height: 28px;
+  position: absolute;
+  right: 0;
+  top: -5px;
+  font-size: 13px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #767676;
+}

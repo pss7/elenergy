@@ -1,0 +1,16 @@
+.link {
+  display: block;
+}
+
+.prev {
+  width: 10px;
+  height: 18px;
+  background: url(/assets/images/main/next_arrow_icon.svg)no-repeat center;
+  transform: rotate(-180deg);
+}
+
+.next {
+  width: 10px;
+  height: 18px;
+  background: url(/assets/images/main/next_arrow_icon.svg)no-repeat center;
+}

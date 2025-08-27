@@ -1,0 +1,118 @@
+.monitoringBox .dateTabBox {
+  display: flex;
+  margin: 36px 0;
+}
+
+.monitoringBox .dateTabBox .btn {
+  display: block;
+  flex: 1;
+  width: 78px;
+  height: 34px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #777;
+  text-align: center;
+}
+
+.monitoringBox .dateTabBox .btn.active {
+  border-radius: 50px;
+  background-color: #E4E4E6;
+  color: #777;
+  font-weight: 700;
+}
+
+.monitoringBox .dateBox {
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.monitoringBox .dateBox .dateBtn {
+  display: flex;
+  align-items: center;
+  gap: 0 7px;
+  font-weight: 500;
+  color: #4F4E52;
+}
+
+.monitoringBox .dateBox .dateBtn::after {
+  content: '';
+  width: 9px;
+  height: 6px;
+  background: url(/assets/images/sub/select_arrow_icon.svg)no-repeat center;
+}
+
+.monitoringBox .dateBox .prev {
+  width: 7px;
+  height: 11px;
+  background: url(/assets/images/sub/arrow_icon04.svg)no-repeat center;
+}
+
+.monitoringBox .dateBox .next {
+  width: 7px;
+  height: 11px;
+  background: url(/assets/images/sub/arrow_icon04.svg)no-repeat center;
+  transform: rotate(180deg);
+}
+
+.monitoringBox .chartBox {
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+}
+
+.monitoringBox .amountUsedBox {
+  display: flex;
+  justify-content: center;
+}
+
+.monitoringBox .amountUsedBox .box {
+  flex: 1;
+  text-align: center;
+}
+
+.monitoringBox .amountUsedBox .box h2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0 4px;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #515153;
+}
+
+.monitoringBox .amountUsedBox .box strong {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 30px;
+  font-weight: 500;
+  color: #000;
+}
+
+.monitoringBox .amountUsedBox .box strong em {
+  font-weight: 500;
+  color: #000;
+}
+
+.monitoringBox .amountUsedBox .box span {
+  display: block;
+  font-size: 12px;
+  color: #0F7685;
+  font-weight: 700;
+}
+
+.monitoringBox .amountUsedBox .box h2::before {
+  content: '';
+  width: 11px;
+  height: 11px;
+}
+
+.monitoringBox .amountUsedBox .box:nth-child(1) h2::before {
+  background: url(/assets/images/sub/icon01.svg)no-repeat center;
+}
+
+.monitoringBox .amountUsedBox .box:nth-child(2) h2::before {
+  background: url(/assets/images/sub/icon02.svg)no-repeat center;
+}

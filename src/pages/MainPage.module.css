@@ -1,0 +1,206 @@
+.h1 {
+  position: relative;
+  padding-left: 35px;
+}
+
+.h1::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.mainIcon01::before {
+  width: 27px;
+  height: 27px;
+  background: url(/assets/images/main/main_icon01.svg)no-repeat center;
+}
+
+.mainIcon02::before {
+  top: 2px;
+  left: 5px;
+  width: 22px;
+  height: 22px;
+  background: url(/assets/images/main/main_icon02.svg)no-repeat center;
+}
+
+.mainIcon03::before {
+  top: 1px;
+  left: 5px;
+  width: 24px;
+  height: 24px;
+  background: url(/assets/images/main/main_icon03.svg)no-repeat center;
+}
+
+.linkList01 {
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 11px;
+}
+
+.linkList01 li {
+  width: calc(50% - 5.5px);
+}
+
+.linkList01 li a {
+  position: relative;
+  padding: 49px 15px 13px 16px;
+  display: block;
+  height: 94px;
+  background-color: #fff;
+  border-radius: 18px;
+}
+
+.linkList01 li a::after {
+  content: '';
+  width: 17px;
+  height: 25px;
+  position: absolute;
+  top: 13px;
+  left: 16px;
+  background: url(/assets/images/main/icon01.svg)no-repeat center;
+}
+
+.linkList01 li a h2 {
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.linkList01 li a .location {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8A8A8C;
+}
+
+.linkList01 li a .view {
+  width: 16px;
+  height: 16px;
+  position: absolute;
+  top: 17px;
+  right: 15px;
+  background: url(/assets/images/main/view.svg)no-repeat;
+}
+
+.linkList02 {
+  margin-bottom: 30px;
+}
+
+.linkList02 li {
+  margin-bottom: 15px;
+}
+
+.linkList02 li a {
+  position: relative;
+  padding: 0 20px 0 55px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px 0;
+  height: 66px;
+  background-color: #fff;
+  border-radius: 23px;
+}
+
+.linkList02 li a::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.linkList02 li:nth-child(1) a::before {
+  left: 18px;
+  width: 21px;
+  height: 21px;
+  background: url(/assets/images/main/time_icon.svg)no-repeat center;
+}
+
+.linkList02 li:nth-child(2) a::before {
+  left: 20px;
+  width: 20px;
+  height: 20px;
+  background: url(/assets/images/main/setting_icon.svg)no-repeat center;
+}
+
+.linkList02 li:nth-child(3) a::before {
+  left: 20px;
+  width: 20px;
+  height: 20px;
+  background: url(/assets/images/main/setting_icon.svg)no-repeat center;
+}
+
+.linkList02 li a span {
+  font-size: 12px;
+  color: #0F7685;
+  font-weight: 500;
+}
+
+.layoutBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 차트 */
+.chartBox {
+  display: flex;
+  align-items: center;
+  gap: 0 34px;
+}
+
+.chartBox .doughnutChartBox {
+  position: relative;
+  width: 141px;
+  height: 141px;
+}
+
+.chartBox .doughnutChartBox .doughnutChartText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.chartBox .doughnutChartBox .doughnutChartText h3 {
+  margin-bottom: 5px;
+  font-size: 10px;
+  color: #000;
+  font-weight: 700;
+  text-align: center;
+}
+
+.chartBox .doughnutChartBox .doughnutChartText span {
+  display: block;
+  font-weight: 700;
+  font-size: 20px;
+  color: #000;
+  text-align: center;
+}
+
+.chartBox .chartInfoBox {
+  text-align: center;
+}
+
+.chartBox .chartInfoBox h3 {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #515153;
+}
+
+.chartBox .chartInfoBox span {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0F7685;
+}
+
+.inputTextBox span {
+  margin-bottom: 5px;
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #000;
+}

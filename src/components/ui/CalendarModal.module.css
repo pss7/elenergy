@@ -1,0 +1,96 @@
+.overlay {
+  display: block !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.modal {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 70px;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  max-width: 372px;
+  width: 90%;
+  background: #fff;
+  border-radius: 25px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  font-size: 15px;
+  padding: 29px 0;
+  font-weight: 500;
+  color: #4E4D52;
+}
+
+.header button {
+  color: #4E4D52;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+table thead tr th {
+  padding-bottom: 7px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #4E4D52;
+}
+
+table tbody tr td {
+  padding: 7px 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4E4D52;
+}
+
+.selectedDay {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  color: #fff !important;
+}
+
+.selectedDay::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 27px;
+  height: 27px;
+  line-height: 12px;
+  background-color: #0F7685;
+  z-index: -1;
+  border-radius: 50%;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.footer button {
+  display: block;
+  width: 100%;
+  height: 76px;
+  text-align: center;
+  font-weight: 700;
+  color: #000;
+}

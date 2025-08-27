@@ -1,0 +1,120 @@
+.signinBox .link {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0 20px;
+}
+
+.signinBox .link li {
+  position: relative;
+}
+
+.signinBox .link li::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: -10px;
+  width: 1px;
+  height: 11px;
+  background-color: #b5b5b5;
+}
+
+.signinBox .link li:last-child:after {
+  display: none;
+}
+
+.signinBox .link li a {
+  display: block;
+  font-size: 13px;
+  color: #767676;
+}
+
+.label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #767676;
+}
+
+/* 회원가입 */
+.signupAgreeBox {
+  padding: 0 20px 0 0;
+}
+
+.signupAgreeBox .infoText {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #767676;
+}
+
+.signupAgreeBox .view {
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0 4px;
+  color: #767676;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.signupAgreeBox .view::after {
+  content: "";
+  margin-top: 1px;
+  width: 5px;
+  height: 5px;
+  border-top: 1px solid #767676;
+  border-right: 1px solid #767676;
+  transform: rotate(45deg);
+}
+
+.signupAgreeBox .box {
+  margin: 10px 0 0 24px;
+}
+
+@media (max-width: 360px) {
+
+  .signupAgreeBox .infoText,
+  .signupAgreeBox .view {
+    font-size: 12px;
+  }
+
+  .signupAgreeBox .view {
+    gap: 0 3px;
+  }
+
+}
+
+.layoutBox {
+  display: flex;
+  align-items: center;
+  gap: 0 8px;
+}
+
+
+@media (max-width: 360px) {
+
+  .layoutBox {
+    justify-content: space-between;
+  }
+
+}
+
+.signupCompleteBox p {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  gap: 49px 0;
+  font-size: 13px;
+  color: #767676;
+}
+
+.signupCompleteBox p::after {
+  content: '';
+  margin: 0 auto;
+  width: 109px;
+  height: 103px;
+  background: url(/assets/images/sub/complete_icon.svg)no-repeat center;
+}
