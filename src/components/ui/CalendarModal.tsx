@@ -4,9 +4,12 @@ import DatePickerModal from "./DatePickerModal";
 
 interface Props {
   isOpen: boolean;
-  initial: { year: number; month: number };
+  initial: { year: number; month: number; day: number };
   onCancel: () => void;
   onConfirm: (value: { year: number; month: number; day: number }) => void;
+  showMonth?: boolean;
+  showDay?: boolean;
+  tab: "daily" | "hourly" | "weekly" | "monthly";  // 필수 prop으로 추가
 }
 
 function getDaysInMonth(year: number, month: number) {
@@ -19,7 +22,15 @@ function getFirstDayOfWeek(year: number, month: number) {
 
 const today = new Date();
 
-export default function CalendarModal({ isOpen, initial, onCancel, onConfirm }: Props) {
+export default function CalendarModal({
+  isOpen,
+  initial,
+  onCancel,
+  onConfirm,
+  showMonth = true,
+  showDay = true,
+  tab,
+}: Props) {
   const [selected, setSelected] = useState<{ year: number; month: number; day: number }>({ ...initial, day: 1 });
 
   const [showPickerModal, setShowPickerModal] = useState(false);
@@ -149,7 +160,7 @@ export default function CalendarModal({ isOpen, initial, onCancel, onConfirm }: 
         </div>
       </div>
 
-      {showPickerModal && (
+       {showPickerModal && (
         <DatePickerModal
           initial={selected}
           onCancel={() => setShowPickerModal(false)}
@@ -159,6 +170,9 @@ export default function CalendarModal({ isOpen, initial, onCancel, onConfirm }: 
             onConfirm(value);
             onCancel();
           }}
+          showMonth={showMonth}
+          showDay={showDay}
+          tab={tab}  // CalendarModal의 tab prop 전달
         />
       )}
 

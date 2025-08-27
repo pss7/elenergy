@@ -21,6 +21,7 @@ import {
 } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Link } from "react-router-dom";
+import DatePickerModal from "../../components/ui/DatePickerModal";
 
 export default function AutoBlockPage() {
   const [tab, setTab] = useState<TabType>("hourly");
@@ -84,17 +85,38 @@ export default function AutoBlockPage() {
       case "hourly":
         return format(currentDate, "yyyy년 MM월 dd일", { locale: ko });
       case "daily": {
+        return format(currentDate, "yyyy년 MM월", { locale: ko });
+      }
+      case "weekly":
         const start = startOfWeek(currentDate, { weekStartsOn: 1 });
         const end = endOfWeek(currentDate, { weekStartsOn: 1 });
         return `${format(start, "yyyy년 MM월 dd일", { locale: ko })} ~ ${format(end, "dd일", { locale: ko })}`;
-      }
-      case "weekly":
-        return format(currentDate, "yyyy년 MM월", { locale: ko });
       case "monthly":
         return format(currentDate, "yyyy년", { locale: ko });
       default:
         return "";
     }
+  }
+
+  //모달 상태 관리
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // 날짜 버튼 클릭 → 모달 열기
+  function openDatePicker() {
+    setShowDatePicker(true);
+  }
+
+  // 모달 닫기
+  function closeDatePicker() {
+    setShowDatePicker(false);
+  }
+
+  //날짜 선택 후 currentDate 갱신 함수
+  function handleDateConfirm({ year, month, day }: { year: number; month: number; day: number }) {
+    // 월은 0부터 시작하므로 -1
+    const newDate = new Date(year, month - 1, day ?? 1);
+    setCurrentDate(newDate);
+    closeDatePicker();
   }
 
   return (
@@ -137,7 +159,7 @@ export default function AutoBlockPage() {
             <button className={styles.prev} onClick={handlePrevDate}>
               <span className="blind">이전버튼</span>
             </button>
-            <button className={styles.dateBtn}>
+            <button className={styles.dateBtn} onClick={openDatePicker}>
               {getFormattedDate()}
             </button>
             <button className={styles.next} onClick={handleNextDate}>
@@ -177,6 +199,20 @@ export default function AutoBlockPage() {
             </div>
           )}
         </div>
+
+        {showDatePicker && (
+          <DatePickerModal
+            initial={{
+              year: currentDate.getFullYear(),
+              month: currentDate.getMonth() + 1,
+              day: currentDate.getDate(),
+            }}
+            onCancel={closeDatePicker}
+            onConfirm={handleDateConfirm}
+            tab={tab} // 탭 정보를 넘겨줍니다
+          />
+        )}
+
       </Main>
     </>
   );

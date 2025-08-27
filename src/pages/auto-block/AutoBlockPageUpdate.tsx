@@ -7,7 +7,6 @@ import PowerBarChart from "../../components/ui/PowerBarChart";
 import Button from "../../components/ui/Button";
 import { useNavigate } from "react-router-dom";
 
-
 export default function AutoBlockUpdagePage() {
 
   //경로이동
@@ -29,6 +28,7 @@ export default function AutoBlockUpdagePage() {
 
   }, []);
 
+  //변경 데이터 저장 시 함수
   function handleSave() {
 
     if (!powerData) {

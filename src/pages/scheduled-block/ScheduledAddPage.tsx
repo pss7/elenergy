@@ -192,15 +192,19 @@ export default function ScheduledAddPage() {
 
           <CalendarModal
             isOpen={isCalendarOpen}
-            initial={{ year: 2025, month: 8 }}
-            onCancel={function () { setIsCalendarOpen(false); }}
-            onConfirm={function (value) {
+            initial={{ year: 2025, month: 8, day: 1 }}
+            onCancel={() => setIsCalendarOpen(false)}
+            onConfirm={(value) => {
               console.log("선택된 날짜:", value);
               setSelectedDate(value);
-              setSelectedDays([]); // 달력 선택 시 요일 선택 초기화
+              setSelectedDays([]);
               setIsCalendarOpen(false);
             }}
+            showDay={true}
+            showMonth={true}
+            tab="daily"  // 여기에 tab prop 추가
           />
+
         </div>
       </div>
     </Main>
