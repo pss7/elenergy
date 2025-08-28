@@ -34,6 +34,7 @@ import ScheduledDeletePage from './pages/scheduled-block/ScheduledDeletePage';
 import ScheduledAddPage from './pages/scheduled-block/ScheduledAddPage';
 import AutoBlockPage from './pages/auto-block/AutoBlockPage';
 import AutoBlockUpdagePage from './pages/auto-block/AutoBlockPageUpdate';
+import ManualControlPage from './pages/manual-control/ManualControlPage ';
 
 
 function App() {
@@ -58,14 +59,19 @@ function App() {
     <ControllerProvider>
       <Routes>
 
-        {/* test */}
+        {/* 테스트페이지 */}
         <Route path="/components-test" element={<Compoents />}></Route>
 
-        {/* home */}
+        {/* 메인 */}
         <Route path="/" element={<Home />}></Route>
+
+        {/* 제어기 내용 변경 페이지 */}
         <Route path="/controller-update/:id" element={<ControllerUpdatePage />}></Route>
 
-        {/* auth */}
+        {/* 수동제어 페이지 */}
+        <Route path="/manual-control/:id" element={<ManualControlPage />} />
+
+        {/* 인증페이지 */}
         <Route path="/signin" element={<SigninPage />}></Route>
         <Route path="/signup-agree" element={<SignupAgreePage />}></Route>
         <Route path="/signup" element={<SignupPage />}></Route>
@@ -73,7 +79,7 @@ function App() {
         <Route path="/id-find" element={<IdFindPage />}></Route>
         <Route path="/password-reset" element={<PasswordResetPage />}></Route>
 
-        {/* my */}
+        {/* 마이페이지 */}
         <Route path="/my" element={<MyPage />}></Route>
         <Route path="/my-account" element={<MyAccountPage />}></Route>
         <Route path="/withdraw-agree" element={<WithdrawAgreePage />}></Route>
@@ -87,15 +93,15 @@ function App() {
         <Route path="/event-notifications" element={<EventNotificationPage />} />
         <Route path="/login-history" element={<LoginHistoryPage />} />
 
-        {/* monitoring */}
+        {/* 모니터링페이지 */}
         <Route path="/monitoring" element={<MonitoringPage />} />
 
-        {/* scheduled-block */}
+        {/* 예약차단페이지 */}
         <Route path="/scheduled-block" element={<ScheduledBlockingPage />} />
         <Route path="/scheduled-delete" element={<ScheduledDeletePage />} />
         <Route path="/scheduled-add" element={<ScheduledAddPage />} />
 
-        {/* auto-block */}
+        {/* 자동차단페이지 */}
         <Route path="/auto-block" element={<AutoBlockPage />} />
         <Route path="/auto-block-update" element={<AutoBlockUpdagePage />} />
 

@@ -1,0 +1,255 @@
+.manualControlBox .title {
+  margin-top: -45px;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #777;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.manualControlBox .title02 {
+  color: #000;
+  font-size: 20px;
+  font-weight: 700;
+
+}
+
+.manualControlBox .amountUsedBox {
+  margin-bottom: 17px;
+  display: flex;
+}
+
+.manualControlBox .amountUsedBox .box {
+  flex: 1;
+  text-align: center;
+}
+
+.manualControlBox .amountUsedBox .box span {
+  margin-bottom: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0 3px;
+  color: #515153;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.manualControlBox .amountUsedBox .box strong {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.manualControlBox .amountUsedBox .box span::before {
+  content: '';
+}
+
+.manualControlBox .amountUsedBox .averageBox strong {
+  color: #FF1E00;
+}
+
+.manualControlBox .amountUsedBox .averageBox span::before {
+  position: relative;
+  top: -2px;
+  width: 11px;
+  height: 11px;
+  background: url(/assets/images/sub/icon21.svg)no-repeat center;
+}
+
+.manualControlBox .amountUsedBox .minimumBox strong {
+  color: #4F4E52;
+}
+
+.manualControlBox .amountUsedBox .minimumBox span::before {
+  position: relative;
+  top: -3px;
+  width: 11px;
+  height: 11px;
+  background: url(/assets/images/sub/icon22.svg)no-repeat center;
+}
+
+.manualControlBox .amountUsedBox .currentBox strong {
+  color: #4328DB;
+}
+
+.manualControlBox .amountUsedBox .currentBox span::before {
+  position: relative;
+  top: -2px;
+  width: 9px;
+  height: 11px;
+  background: url(/assets/images/sub/icon23.svg)no-repeat center;
+}
+
+.manualControlBox .amountUsedBox .box strong em {
+  font-size: 14px;
+}
+
+
+.manualControlBox .linkList02 {
+  margin-bottom: 30px;
+}
+
+.manualControlBox .linkList02 li {
+  margin-bottom: 15px;
+}
+
+.manualControlBox .linkList02 li a {
+  position: relative;
+  padding: 0 20px 0 55px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px 0;
+  height: 66px;
+  background-color: #fff;
+  border-radius: 23px;
+}
+
+.manualControlBox .linkList02 li a::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.manualControlBox .linkList02 li:nth-child(1) a::before {
+  left: 18px;
+  width: 21px;
+  height: 21px;
+  background: url(/assets/images/main/time_icon.svg)no-repeat center;
+}
+
+.manualControlBox .linkList02 li:nth-child(2) a::before {
+  left: 20px;
+  width: 20px;
+  height: 20px;
+  background: url(/assets/images/main/setting_icon.svg)no-repeat center;
+}
+
+.manualControlBox .linkList02 li:nth-child(3) a::before {
+  left: 20px;
+  width: 20px;
+  height: 20px;
+  background: url(/assets/images/main/setting_icon.svg)no-repeat center;
+}
+
+.manualControlBox .linkList02 li a span {
+  font-size: 12px;
+  color: #0F7685;
+  font-weight: 500;
+}
+
+.manualControlBox .infoText {
+  margin-bottom: 24px;
+  padding: 5px;
+  background-color: #fff;
+  border-radius: 5px;
+  text-align: center;
+  color: #777;
+  font-weight: 500;
+  font-size: 10px;
+}
+
+.manualControlBox .infoText .color01 {
+  font-weight: 700;
+  color: #4328DB;
+}
+
+.manualControlBox .infoText .color02 {
+  font-weight: 700;
+  color: #FF1E00;
+}
+
+.manualControlBox .toggleSwitch {
+  position: relative;
+  width: 100%;
+  height: 71px;
+  margin: 0 auto 31px;
+  border-radius: 50px;
+  background-color: #A8A8A8;
+  transition: all 0.3s;
+
+}
+
+.manualControlBox .toggleBox {
+  position: relative;
+  width: 134px;
+  margin: 0 auto;
+}
+
+.manualControlBox .toggleBox .toggleInfoText {
+  position: absolute;
+  top: -17px;
+  right: -94px;
+  padding: 6px;
+  background-color: #0F7685;
+  text-align: center;
+  border-radius: 2px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  z-index: 99999;
+}
+
+.manualControlBox .toggleBox .toggleInfoText::before {
+  width: 12px;
+  height: 12px;
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -11px;
+  background: url(/assets/images/sub/arrow_icon05.svg)no-repeat center;
+}
+
+.manualControlBox .toggleSwitch.on {
+  background-color: #0F7685;
+}
+
+.manualControlBox .toggleCircle {
+  position: absolute;
+  top: 50%;
+  left: 13px;
+  transform: translateY(-48%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #fff;
+  transition: all 0.3s;
+  z-index: 2;
+}
+
+.manualControlBox .toggleSwitch.on .toggleCircle {
+  left: 70px;
+}
+
+.manualControlBox .toggleText {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  font-weight: 700;
+  z-index: 1;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.manualControlBox .offText {
+  right: 20px;
+  color: #F1F1F3;
+  opacity: 1;
+}
+
+.manualControlBox .onText {
+  left: 20px;
+  color: #FFF;
+  opacity: 0;
+}
+
+.manualControlBox .toggleSwitch.on .onText {
+  opacity: 1;
+}
+
+.manualControlBox .toggleSwitch.on .offText {
+  opacity: 0;
+}

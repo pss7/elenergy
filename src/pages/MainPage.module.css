@@ -43,7 +43,7 @@
   width: calc(50% - 5.5px);
 }
 
-.linkList01 li a {
+.linkList01 li .box {
   position: relative;
   padding: 49px 15px 13px 16px;
   display: block;
@@ -52,7 +52,7 @@
   border-radius: 18px;
 }
 
-.linkList01 li a::after {
+.linkList01 li .box::after {
   content: '';
   width: 17px;
   height: 25px;
@@ -62,26 +62,27 @@
   background: url(/assets/images/main/icon01.svg)no-repeat center;
 }
 
-.linkList01 li a h2 {
+.linkList01 li .box h2 {
   color: #000;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
 }
 
-.linkList01 li a .location {
+.linkList01 li .box .location {
   font-size: 12px;
   font-weight: 700;
   color: #8A8A8C;
 }
 
-.linkList01 li a .view {
+.linkList01 li .box .view {
   width: 16px;
   height: 16px;
   position: absolute;
   top: 17px;
   right: 15px;
   background: url(/assets/images/main/view.svg)no-repeat;
+  z-index: 99999;
 }
 
 .linkList02 {

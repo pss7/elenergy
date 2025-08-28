@@ -101,6 +101,10 @@ main {
   margin-top: 40px !important;
 }
 
+.mt-50 {
+  margin-top: 50px !important;
+}
+
 .btnBox {
   display: flex;
   gap: 0 12px;

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 //컴포넌트
 import ArrowLink from "../components/ui/ArrowLink";
@@ -19,6 +19,20 @@ export default function MainPage() {
 
   const { controllers } = useControllerData();
 
+  //경로이동
+  const navigate = useNavigate();
+  function handleUpdate(id: number) {
+
+    navigate(`/controller-update/${id}`);
+
+  }
+
+  function handleControl(id: number) {
+
+    navigate(`/manual-control/${id}`);
+
+  }
+
   return (
     <>
 
@@ -32,19 +46,17 @@ export default function MainPage() {
             controllers.map(function (ctrl) {
               return (
                 <li key={ctrl.id}>
-                  <Link to={`/controller-update/${ctrl.id}`}>
+                  <div className={styles.box} onClick={() => handleControl(ctrl.id)}>
                     <h2>
                       {ctrl.title}
                     </h2>
                     <span className={styles.location}>
                       {ctrl.location}
                     </span>
-                    <span className={styles.view}>
-                      <em className="blind">
-                        제어기, 공장위치 수정페이지 이동
-                      </em>
-                    </span>
-                  </Link>
+                    <button type="button" className={styles.view} onClick={() => handleUpdate(ctrl.id)}>
+                      <em className="blind">제어기, 공장위치 수정페이지 이동</em>
+                    </button>
+                  </div>
                 </li>
               )
             })
