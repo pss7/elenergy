@@ -1,8 +1,6 @@
 import { useState } from "react";
 import {
   format,
-  startOfWeek,
-  endOfWeek,
   addHours,
   subHours,
   addDays,
@@ -24,10 +22,15 @@ import PowerDoughnutChart from "../../components/ui/PowerDoughnutChart";
 import controllerData from "../../data/Controllers";
 import monitoringData, { type TabType } from "../../data/Monitoring";
 
+// 모달
+import DatePickerModal from "../../components/ui/DatePickerModal"; // 경로 맞게 조정
+
 export default function MonitoringPage() {
   const [tab, setTab] = useState<TabType>("daily");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedControllerId, setSelectedControllerId] = useState<number>(1);
+  const [showModal, setShowModal] = useState(false);
+
   const data = monitoringData[tab];
 
   function handlePrevDate() {
@@ -43,8 +46,6 @@ export default function MonitoringPage() {
         break;
       case "monthly":
         setCurrentDate(prev => subMonths(prev, 1));
-        break;
-      default:
         break;
     }
   }
@@ -63,24 +64,22 @@ export default function MonitoringPage() {
       case "monthly":
         setCurrentDate(prev => addMonths(prev, 1));
         break;
-      default:
-        break;
     }
   }
 
   function getFormattedDate() {
     switch (tab) {
       case "hourly":
-        return format(currentDate, "yyyy년 MM월 dd일 HH시", { locale: ko });
+        return format(currentDate, "yyyy년 MM월 dd일", { locale: ko }); // 00시 제거됨
       case "daily":
-        return format(currentDate, "yyyy년 MM월 dd일", { locale: ko });
+        return format(currentDate, "yyyy년 MM월", { locale: ko });
       case "weekly": {
-        const start = startOfWeek(currentDate, { weekStartsOn: 1 });
-        const end = endOfWeek(currentDate, { weekStartsOn: 1 });
-        return `${format(start, "yyyy년 MM월 dd일", { locale: ko })} ~ ${format(end, "dd일", { locale: ko })}`;
+        const start = currentDate;
+        const end = addDays(currentDate, 6);
+        return `${format(start, "yyyy년 MM월 dd일", { locale: ko })} ~ ${format(end, "MM월 dd일", { locale: ko })}`;
       }
       case "monthly":
-        return format(currentDate, "yyyy년 MM월", { locale: ko });
+        return format(currentDate, "yyyy년", { locale: ko });
       default:
         return "";
     }
@@ -129,9 +128,11 @@ export default function MonitoringPage() {
             <button className={styles.prev} onClick={handlePrevDate}>
               <span className="blind">이전버튼</span>
             </button>
-            <button className={styles.dateBtn}>
+
+            <button className={styles.dateBtn} onClick={() => setShowModal(true)}>
               {getFormattedDate()}
             </button>
+
             <button className={styles.next} onClick={handleNextDate}>
               <span className="blind">다음버튼</span>
             </button>
@@ -168,6 +169,22 @@ export default function MonitoringPage() {
           </div>
         </div>
       </Main>
+
+      {/* 날짜 선택 모달 */}
+      {showModal && (
+        <DatePickerModal
+          initial={{
+            year: currentDate.getFullYear(),
+            month: currentDate.getMonth() + 1,
+            day: currentDate.getDate(),
+          }}
+          tab={tab}
+          onCancel={() => setShowModal(false)}
+          onConfirm={({ year, month, day }) => {
+            setCurrentDate(new Date(year, month - 1, day));
+          }}
+        />
+      )}
     </>
   );
 }
