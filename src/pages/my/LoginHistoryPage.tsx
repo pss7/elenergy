@@ -42,7 +42,7 @@ export default function LoginHistoryPage() {
                 <em>175.000.000.000</em>
               </div>
             </li>
-                <li>
+            <li>
               <div className={styles.box}>
                 <span>일시</span>
                 <em>2025-10-15 12:55:21</em>
@@ -56,7 +56,7 @@ export default function LoginHistoryPage() {
                 <em>175.000.000.000</em>
               </div>
             </li>
-                <li>
+            <li>
               <div className={styles.box}>
                 <span>일시</span>
                 <em>2025-10-15 12:55:21</em>
@@ -70,7 +70,7 @@ export default function LoginHistoryPage() {
                 <em>175.000.000.000</em>
               </div>
             </li>
-                <li>
+            <li>
               <div className={styles.box}>
                 <span>일시</span>
                 <em>2025-10-15 12:55:21</em>
@@ -84,7 +84,7 @@ export default function LoginHistoryPage() {
                 <em>175.000.000.000</em>
               </div>
             </li>
-                <li>
+            <li>
               <div className={styles.box}>
                 <span>일시</span>
                 <em>2025-10-15 12:55:21</em>
@@ -102,7 +102,9 @@ export default function LoginHistoryPage() {
 
           <div className={styles.viewBtnBox}>
             <button className={styles.viewBtn}>
-              더보기
+              <span>
+                더보기
+              </span>
             </button>
           </div>
 

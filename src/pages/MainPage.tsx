@@ -36,7 +36,7 @@ export default function MainPage() {
   return (
     <>
 
-      <section>
+      <section className={styles.titleBox}>
         <Title level={1} className={`mb-20 ${styles.h1} ${styles.mainIcon01}`}>
           전체제어기
         </Title>
@@ -62,6 +62,11 @@ export default function MainPage() {
             })
           }
         </ul>
+
+        <Link to="/alarm" className={styles.alarmLink}>
+          <img src="/public/assets/images/common/alarm_icon.svg" alt="알림" />
+        </Link>
+
       </section>
 
       <section>

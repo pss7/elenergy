@@ -10,6 +10,16 @@
   left: 0;
 }
 
+.titleBox {
+  position: relative;
+}
+
+.alarmLink {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
 .mainIcon01::before {
   width: 27px;
   height: 27px;

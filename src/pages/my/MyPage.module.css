@@ -508,15 +508,22 @@
 }
 
 .loginHistoryBox .viewBtnBox .viewBtn {
-  display: flex;
-  align-items: center;
-  gap: 0 5px;
+  width: 100%;
+}
+
+.loginHistoryBox .viewBtnBox .viewBtn span {
+  position: relative;
+  padding-right: 15px;
   font-size: 13px;
   color: #000;
 }
 
-.loginHistoryBox .viewBtnBox .viewBtn::after {
+.loginHistoryBox .viewBtnBox .viewBtn span::after {
   content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
   width: 11px;
   height: 5px;
   background: url(/assets/images/sub/arrow_icon03.svg)no-repeat center;

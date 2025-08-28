@@ -35,6 +35,8 @@ import ScheduledAddPage from './pages/scheduled-block/ScheduledAddPage';
 import AutoBlockPage from './pages/auto-block/AutoBlockPage';
 import AutoBlockUpdagePage from './pages/auto-block/AutoBlockPageUpdate';
 import ManualControlPage from './pages/manual-control/ManualControlPage ';
+import AlarmPage from './pages/AlarmPage';
+import AlarmFilterPage from './pages/AlarmFilterPage';
 
 
 function App() {
@@ -62,7 +64,11 @@ function App() {
         {/* 테스트페이지 */}
         <Route path="/components-test" element={<Compoents />}></Route>
 
-        {/* 메인 */}
+        {/* 알림페이지 */}
+        <Route path="/alarm" element={<AlarmPage />}></Route>
+        <Route path="/alarm-filter" element={<AlarmFilterPage />}></Route>
+
+        {/* 메인페이지 */}
         <Route path="/" element={<Home />}></Route>
 
         {/* 제어기 내용 변경 페이지 */}
