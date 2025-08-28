@@ -175,7 +175,7 @@ export default function ManualControlPage() {
                   </button>
                   <button
                     className={styles.btn}
-                    onClick={() => navigate("/scheduled-block")}
+                    onClick={() => navigate("/auto-block")}
                   >
                     전력차단
                   </button>
