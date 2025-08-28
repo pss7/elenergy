@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import { useControllerData } from "../../contexts/ControllerContext";
@@ -10,6 +10,8 @@ import autoBlockData from "../../data/AutoBlock";
 import Title from "../../components/ui/Title";
 
 export default function ManualControlPage() {
+
+  const navigate = useNavigate();
 
   const { id } = useParams();
   const { controllers } = useControllerData();
@@ -54,6 +56,10 @@ export default function ManualControlPage() {
         <p>제어기 정보를 찾을 수 없습니다.</p>
       </Main>
     );
+  }
+
+  function handleCancle() {
+    setAllOn(false);
   }
 
   return (
@@ -145,9 +151,40 @@ export default function ManualControlPage() {
               </li>
             </ul>
           </section>
-
-
         </div>
+
+        {
+          allOn && (
+            <div className={`${styles.modalWrap} ${styles.active}`}>
+              <div className={styles.modalBox}>
+                <h3>
+                  주의사항
+                </h3>
+                <p>
+                  원격 전력 차단 시 공장 비가동 여부를 <br />
+                  반드 시 확인한 후 OFF 해주시기 바랍니다. <br />
+                  공장 가동 중 전력 차단할 경우 안전상의 문제와 <br />
+                  경제적인 문제가 발생할 수 있습니다.
+                </p>
+                <div className={styles.btnBox}>
+                  <button
+                    className={styles.btn}
+                    onClick={handleCancle}
+                  >
+                    취소
+                  </button>
+                  <button
+                    className={styles.btn}
+                    onClick={() => navigate("/scheduled-block")}
+                  >
+                    전력차단
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
       </Main>
 
     </>
