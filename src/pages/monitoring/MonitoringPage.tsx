@@ -1,5 +1,17 @@
 import { useState } from "react";
-import { format, startOfWeek, endOfWeek } from "date-fns";
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  addHours,
+  subHours,
+  addDays,
+  subDays,
+  addWeeks,
+  subWeeks,
+  addMonths,
+  subMonths,
+} from "date-fns";
 import { ko } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import Main from "../../components/layout/Main";
@@ -7,118 +19,109 @@ import Header from "../../components/layout/Header";
 import styles from "./MonitoringPage.module.css";
 import CustomSelect from "../../components/ui/CustomSelect";
 import PowerDoughnutChart from "../../components/ui/PowerDoughnutChart";
-import { addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, addYears, subYears } from "date-fns";
 
-//데이터
+// 데이터
 import controllerData from "../../data/Controllers";
 import monitoringData, { type TabType } from "../../data/Monitoring";
 
 export default function MonitoringPage() {
-
-  const [tab, setTab] = useState<TabType>("day");
+  const [tab, setTab] = useState<TabType>("daily");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedControllerId, setSelectedControllerId] = useState<number>(1);
   const data = monitoringData[tab];
 
   function handlePrevDate() {
     switch (tab) {
-      case "day":
+      case "hourly":
+        setCurrentDate(prev => subHours(prev, 1));
+        break;
+      case "daily":
         setCurrentDate(prev => subDays(prev, 1));
         break;
-      case "week":
+      case "weekly":
         setCurrentDate(prev => subWeeks(prev, 1));
         break;
-      case "month":
+      case "monthly":
         setCurrentDate(prev => subMonths(prev, 1));
-        break;
-      case "year":
-        setCurrentDate(prev => subYears(prev, 1));
         break;
       default:
         break;
     }
-  };
+  }
 
   function handleNextDate() {
     switch (tab) {
-      case "day":
+      case "hourly":
+        setCurrentDate(prev => addHours(prev, 1));
+        break;
+      case "daily":
         setCurrentDate(prev => addDays(prev, 1));
         break;
-      case "week":
+      case "weekly":
         setCurrentDate(prev => addWeeks(prev, 1));
         break;
-      case "month":
+      case "monthly":
         setCurrentDate(prev => addMonths(prev, 1));
-        break;
-      case "year":
-        setCurrentDate(prev => addYears(prev, 1));
         break;
       default:
         break;
     }
-  };
+  }
 
   function getFormattedDate() {
     switch (tab) {
-      case "day":
+      case "hourly":
+        return format(currentDate, "yyyy년 MM월 dd일 HH시", { locale: ko });
+      case "daily":
         return format(currentDate, "yyyy년 MM월 dd일", { locale: ko });
-      case "week": {
+      case "weekly": {
         const start = startOfWeek(currentDate, { weekStartsOn: 1 });
         const end = endOfWeek(currentDate, { weekStartsOn: 1 });
         return `${format(start, "yyyy년 MM월 dd일", { locale: ko })} ~ ${format(end, "dd일", { locale: ko })}`;
       }
-      case "month":
+      case "monthly":
         return format(currentDate, "yyyy년 MM월", { locale: ko });
-      case "year":
-        return format(currentDate, "yyyy년", { locale: ko });
       default:
         return "";
     }
-  };
+  }
 
   return (
-
     <>
-
-      <Header
-        type="pageLink"
-        title="전력모니터링"
-        prevLink="/"
-      />
+      <Header type="pageLink" title="전력모니터링" prevLink="/" />
 
       <Main id="sub">
         <div className={styles.monitoringBox}>
-
           <CustomSelect
-            controllers={controllerData}             // Controller[] 타입의 배열
-            selectedControllerId={selectedControllerId}  // number 타입 (선택된 제어기 ID)
-            onChange={setSelectedControllerId}       // (id: number) => void 함수
+            controllers={controllerData}
+            selectedControllerId={selectedControllerId}
+            onChange={setSelectedControllerId}
           />
 
           <div className={styles.dateTabBox}>
             <button
-              className={`${styles.btn} ${tab === "day" ? styles.active : ""}`}
-              onClick={() => setTab("day")}
+              className={`${styles.btn} ${tab === "hourly" ? styles.active : ""}`}
+              onClick={() => setTab("hourly")}
+            >
+              시간별
+            </button>
+            <button
+              className={`${styles.btn} ${tab === "daily" ? styles.active : ""}`}
+              onClick={() => setTab("daily")}
             >
               일별
             </button>
             <button
-              className={`${styles.btn} ${tab === "week" ? styles.active : ""}`}
-              onClick={() => setTab("week")}
+              className={`${styles.btn} ${tab === "weekly" ? styles.active : ""}`}
+              onClick={() => setTab("weekly")}
             >
               주별
             </button>
             <button
-              className={`${styles.btn} ${tab === "month" ? styles.active : ""}`}
-              onClick={() => setTab("month")}
+              className={`${styles.btn} ${tab === "monthly" ? styles.active : ""}`}
+              onClick={() => setTab("monthly")}
             >
               월별
-            </button>
-            <button
-              className={`${styles.btn} ${tab === "year" ? styles.active : ""}`}
-              onClick={() => setTab("year")}
-            >
-              연도별
             </button>
           </div>
 
@@ -126,7 +129,7 @@ export default function MonitoringPage() {
             <button className={styles.prev} onClick={handlePrevDate}>
               <span className="blind">이전버튼</span>
             </button>
-            <button className={styles.dateBtn}>{/* onClick={() => setShowModal(true)} */}
+            <button className={styles.dateBtn}>
               {getFormattedDate()}
             </button>
             <button className={styles.next} onClick={handleNextDate}>
@@ -165,9 +168,6 @@ export default function MonitoringPage() {
           </div>
         </div>
       </Main>
-
     </>
-
-  )
-
+  );
 }

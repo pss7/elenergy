@@ -1,4 +1,4 @@
-export type TabType = "day" | "week" | "month" | "year";
+export type TabType = "hourly" | "daily" | "weekly" | "monthly";
 
 type MonitoringEntry = {
   powerReductionRate: number;
@@ -9,28 +9,28 @@ type MonitoringEntry = {
 };
 
 const monitoringData: Record<TabType, MonitoringEntry> = {
-  day: {
+  hourly: {
     powerReductionRate: 40,
     powerSaved: 40,
     powerUsed: 200,
     savedCost: 3000000,
     usedCost: 12000000,
   },
-  week: {
+  daily: {
     powerReductionRate: 35,
     powerSaved: 280,
     powerUsed: 1400,
     savedCost: 21000000,
     usedCost: 84000000,
   },
-  month: {
+  weekly: {
     powerReductionRate: 30,
     powerSaved: 1200,
     powerUsed: 4000,
     savedCost: 90000000,
     usedCost: 300000000,
   },
-  year: {
+  monthly: {
     powerReductionRate: 25,
     powerSaved: 14400,
     powerUsed: 57600,
