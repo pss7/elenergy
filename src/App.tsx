@@ -37,25 +37,27 @@ import AutoBlockUpdagePage from './pages/auto-block/AutoBlockPageUpdate';
 import ManualControlPage from './pages/manual-control/ManualControlPage ';
 import AlarmPage from './pages/AlarmPage';
 import AlarmFilterPage from './pages/AlarmFilterPage';
+import FullScreenLoading from './components/ui/FullScreenLoading';
+import { useEffect, useState } from 'react';
 
 
 function App() {
 
-  // const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
+  useEffect(() => {
 
-  //   setTimeout(() => setLoading(false), 1500);
+    setTimeout(() => setLoading(false), 1500);
 
-  // }, [])
+  }, [])
 
-  // if (loading) {
-  //   return (
-  //     <>
-  //       <FullScreenLoading color="#0F7685" />
-  //     </>
-  //   )
-  // }
+  if (loading) {
+    return (
+      <>
+        <FullScreenLoading color="#0F7685" />
+      </>
+    )
+  }
 
   return (
     <ControllerProvider>
