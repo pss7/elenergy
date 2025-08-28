@@ -3,8 +3,11 @@ import Main from "../../components/layout/Main";
 import styles from "./MyPage.module.css";
 import Button from "../../components/ui/Button";
 import InputCheckbox from "../../components/ui/InputCheckbox";
+import { useNavigate } from "react-router-dom";
 
 export default function WithdrawAgreePage() {
+
+  const navigate = useNavigate();
   
   return (
     <>
@@ -41,6 +44,7 @@ export default function WithdrawAgreePage() {
 
           <Button
             className="mt-40"
+            onClick={() => navigate("/withdraw-confirm")}
           >
             다음
           </Button>

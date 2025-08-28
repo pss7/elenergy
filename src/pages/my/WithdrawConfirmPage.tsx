@@ -3,8 +3,18 @@ import Main from "../../components/layout/Main";
 import styles from "./MyPage.module.css";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
+import { useNavigate } from "react-router-dom";
 
 export default function WithdrawConfirmPage() {
+
+  const navigate = useNavigate();
+
+  function handleWithdraw() {
+
+    localStorage.removeItem("signupData");
+    navigate("/signin");
+
+  }
 
   return (
     <>
@@ -34,6 +44,7 @@ export default function WithdrawConfirmPage() {
 
           <Button
             className="mt-30"
+            onClick={handleWithdraw}
           >
             탈퇴하기
           </Button>

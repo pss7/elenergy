@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import styles from "./MyPage.module.css";
@@ -28,6 +28,15 @@ export default function MyPage() {
   //     }
   //   }
   // }, []);
+
+  const navigate = useNavigate();
+
+  function handleLogout() {
+
+    localStorage.setItem("isLoggedIn", "false");
+    navigate("/signin");
+
+  }
 
   return (
     <>
@@ -92,7 +101,9 @@ export default function MyPage() {
               </Link>
             </li>
             <li>
-              <Link to="/">
+              <Link to="/"
+                onClick={handleLogout}
+              >
                 로그아웃
               </Link>
             </li>

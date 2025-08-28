@@ -74,7 +74,10 @@ export default function MyAccountPage() {
           </Link>
 
           <div className={styles.cancelAccountBox}>
-            <Link to="/withdraw-agree" className={styles.cancelAccount}>
+            <Link
+              to="/withdraw-agree"
+              className={styles.cancelAccount}
+            >
               회원탈퇴
             </Link>
           </div>
