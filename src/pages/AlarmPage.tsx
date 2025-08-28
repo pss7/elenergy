@@ -26,7 +26,7 @@ export default function AlarmPage() {
           <ul className={styles.alarmList}>
             <li>
               <div className={styles.imgBox}>
-                <img src="/public/assets/images/common/control_icon01.svg" alt="수동제어아이콘" />
+                <img src="/assets/images/common/control_icon01.svg" alt="수동제어아이콘" />
               </div>
               <div className={styles.textBox}>
                 <h2>
@@ -42,7 +42,7 @@ export default function AlarmPage() {
             </li>
             <li>
               <div className={styles.imgBox}>
-                <img src="/public/assets/images/common/control_icon02.svg" alt="자동제어아이콘" />
+                <img src="/assets/images/common/control_icon02.svg" alt="자동제어아이콘" />
               </div>
               <div className={styles.textBox}>
                 <h2>
@@ -58,7 +58,7 @@ export default function AlarmPage() {
             </li>
             <li>
               <div className={styles.imgBox}>
-                <img src="/public/assets/images/common/control_icon03.svg" alt="예약제어아이콘" />
+                <img src="/assets/images/common/control_icon03.svg" alt="예약제어아이콘" />
               </div>
               <div className={styles.textBox}>
                 <h2>

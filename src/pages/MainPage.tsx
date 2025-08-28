@@ -64,7 +64,7 @@ export default function MainPage() {
         </ul>
 
         <Link to="/alarm" className={styles.alarmLink}>
-          <img src="/public/assets/images/common/alarm_icon.svg" alt="알림" />
+          <img src="/assets/images/common/alarm_icon.svg" alt="알림" />
         </Link>
 
       </section>
