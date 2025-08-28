@@ -92,3 +92,71 @@
   font-weight: 500;
   color: #747475;
 }
+
+.alarmBox .filterBox {
+  margin-bottom: 20px;
+  padding: 17px 10px 30px 22px;
+  background-color: #fff;
+}
+
+.alarmBox .filterBox h2 {
+  margin-bottom: 25px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #000;
+}
+
+.alarmBox .filterBox .inputRadioBox label {
+  position: relative;
+  padding-left: 21px;
+}
+
+.alarmBox .filterBox label{
+  font-size: 13px;
+  font-weight: 500;
+  color: #000;
+}
+
+.alarmBox .filterBox input[type="checkbox"] + label::before{
+  width: 15px;
+  height: 15px;
+}
+
+.alarmBox .filterBox .inputRadioBox .box {
+  margin-bottom: 15px;
+}
+
+.alarmBox .filterBox .inputRadioBox .box:last-child {
+  margin-bottom: 0;
+}
+
+.alarmBox .filterBox .inputRadioBox label::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-46%);
+  left: 0;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid #a4a4a4;
+}
+
+.alarmBox .filterBox .inputRadioBox input:checked+label::before {
+  border: 0;
+  width: 15px;
+  height: 15px;
+  background: url(/assets/images/sub/chk_icon02.svg)no-repeat center;
+  background-size: contain !important;
+}
+
+.alarmBox .filterBox .layoutBox {
+  display: flex;
+  gap: 20px 0;
+  flex-wrap: wrap;
+}
+
+.alarmBox .filterBox .layoutBox div {
+  width: 50%;
+}
+
