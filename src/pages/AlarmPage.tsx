@@ -7,7 +7,6 @@ import type { Alarm, AlarmFilters } from "../data/Alarms";
 import alarmData from "../data/Alarms";
 
 // 데이터와 타입 가져오기
-
 export default function AlarmPage() {
   const [filteredAlarms, setFilteredAlarms] = useState<Alarm[]>([]);
 
@@ -73,7 +72,7 @@ export default function AlarmPage() {
             ))}
 
             {filteredAlarms.length === 0 && (
-              <div className={styles.noResult}>조건에 맞는 알림이 없습니다.</div>
+              <p className={styles.noResult}>조건에 맞는 알림이 없습니다.</p>
             )}
           </div>
 
