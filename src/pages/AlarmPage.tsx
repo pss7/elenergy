@@ -1,91 +1,89 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Header from "../components/layout/Header";
 import Main from "../components/layout/Main";
 import styles from "./AlarmPage.module.css";
+import type { Alarm, AlarmFilters } from "../data/Alarms";
+import alarmData from "../data/Alarms";
+
+// 데이터와 타입 가져오기
 
 export default function AlarmPage() {
+  const [filteredAlarms, setFilteredAlarms] = useState<Alarm[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("alarmFilters");
+    let filters: AlarmFilters | null = null;
+
+    if (stored) {
+      filters = JSON.parse(stored);
+    }
+
+    let filtered = alarmData;
+
+    if (filters) {
+      const { controllers, admins, types, sortOrder } = filters;
+
+      // 필터 조건 적용
+      if (controllers.length > 0) {
+        filtered = filtered.filter((alarm) => controllers.includes(alarm.controller));
+      }
+
+      if (admins.length > 0) {
+        filtered = filtered.filter((alarm) => admins.includes(alarm.adminId));
+      }
+
+      if (types.length > 0) {
+        filtered = filtered.filter((alarm) => types.includes(alarm.type));
+      }
+
+      // 정렬 적용
+      if (sortOrder === "latest") {
+        filtered = filtered.slice().reverse();
+      }
+    }
+
+    setFilteredAlarms(filtered);
+  }, []);
 
   return (
     <>
-
-      <Header
-        type="pageLink"
-        title="알림"
-        prevLink="/"
-      />
+      <Header type="pageLink" title="알림" prevLink="/" />
 
       <Main id="sub">
         <div className={styles.alarmBox}>
-
           <div className={styles.filterLinkBox}>
             <Link to="/alarm-filter" className={styles.filterLink}>
               필터
             </Link>
           </div>
 
-          <ul className={styles.alarmList}>
-            <li>
-              <div className={styles.imgBox}>
-                <img src="/assets/images/common/control_icon01.svg" alt="수동제어아이콘" />
+          <div className={styles.alarmList}>
+            {filteredAlarms.map((alarm) => (
+              <div key={alarm.id} className={styles.box}>
+                <div className={styles.imgBox}>
+                  <img src={alarm.icon} alt={`${alarm.type} 아이콘`} />
+                </div>
+                <div className={styles.textBox}>
+                  <h2>{`${alarm.type} - ${alarm.adminId}`}</h2>
+                  <span>{`${alarm.controller} - # 공장 위치 ${alarm.status}`}</span>
+                  <em className={styles.date}>{alarm.date}</em>
+                </div>
               </div>
-              <div className={styles.textBox}>
-                <h2>
-                  수동 제어 - ID 1
-                </h2>
-                <span>
-                  제어기 1 - # 공장 위치 OFF
-                </span>
-                <em className={styles.date}>
-                  2025.08.14 오후 10:10
-                </em>
-              </div>
-            </li>
-            <li>
-              <div className={styles.imgBox}>
-                <img src="/assets/images/common/control_icon02.svg" alt="자동제어아이콘" />
-              </div>
-              <div className={styles.textBox}>
-                <h2>
-                  자동 제어 - ID 2
-                </h2>
-                <span>
-                  제어기 2 - # 공장 위치 OFF
-                </span>
-                <em className={styles.date}>
-                  2025.08.14 오후 10:10
-                </em>
-              </div>
-            </li>
-            <li>
-              <div className={styles.imgBox}>
-                <img src="/assets/images/common/control_icon03.svg" alt="예약제어아이콘" />
-              </div>
-              <div className={styles.textBox}>
-                <h2>
-                  예약 제어 - ID 1
-                </h2>
-                <span>
-                  제어기 1 - # 공장 위치 OFF
-                </span>
-                <em className={styles.date}>
-                  2025.08.14 오후 10:10
-                </em>
-              </div>
-            </li>
-          </ul>
+            ))}
+
+            {filteredAlarms.length === 0 && (
+              <div className={styles.noResult}>조건에 맞는 알림이 없습니다.</div>
+            )}
+          </div>
 
           <div className={styles.viewBtnBox}>
             <button className={styles.viewBtn}>
-              <span>
-                더보기
-              </span>
+              <span>더보기</span>
             </button>
           </div>
-
         </div>
       </Main>
-
     </>
-  )
-
+  );
 }

@@ -1,34 +1,34 @@
-.alarmBox .alarmList li {
+.alarmBox .alarmList .box {
   display: flex;
   align-items: center;
   padding: 18px 0;
 }
 
-.alarmBox .alarmList li .textBox {
+.alarmBox .alarmList .box .textBox {
   padding-left: 60px;
 }
 
-.alarmBox .alarmList li .textBox h2 {
+.alarmBox .alarmList .box .textBox h2 {
   margin-bottom: 7px;
   font-size: 13px;
   font-weight: 700;
   color: #000;
 }
 
-.alarmBox .alarmList li .textBox span {
+.alarmBox .alarmList .box .textBox span {
   display: block;
   margin-bottom: 7px;
   font-size: 13px;
   color: #000;
 }
 
-.alarmBox .alarmList li .textBox .date {
+.alarmBox .alarmList .box .textBox .date {
   display: block;
   font-size: 10px;
   color: #696969;
 }
 
-.alarmBox .alarmList li .imgBox {
+.alarmBox .alarmList .box .imgBox {
   position: absolute;
   left: 20px;
   display: flex;
@@ -42,8 +42,13 @@
   border: 1px solid #EEECED;
 }
 
-.alarmBox .alarmList li .imgBox img {
+.alarmBox .alarmList .box .imgBox img {
   display: block;
+}
+
+.alarmBox .alarmList .noResult {
+  font-weight: 500;
+  color: #696969;
 }
 
 .alarmBox .viewBtnBox {
@@ -111,13 +116,13 @@
   padding-left: 21px;
 }
 
-.alarmBox .filterBox label{
+.alarmBox .filterBox label {
   font-size: 13px;
   font-weight: 500;
   color: #000;
 }
 
-.alarmBox .filterBox input[type="checkbox"] + label::before{
+.alarmBox .filterBox input[type="checkbox"]+label::before {
   width: 15px;
   height: 15px;
 }
@@ -159,4 +164,3 @@
 .alarmBox .filterBox .layoutBox div {
   width: 50%;
 }
-

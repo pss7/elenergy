@@ -92,7 +92,7 @@
   top: 17px;
   right: 15px;
   background: url(/assets/images/main/view.svg)no-repeat;
-  z-index: 99999;
+  z-index: 9999999999999;
 }
 
 .linkList02 {

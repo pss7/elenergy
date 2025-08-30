@@ -46,8 +46,8 @@ export default function MainPage() {
             controllers.map(function (ctrl) {
               return (
                 <li key={ctrl.id}>
-                  <div className={styles.box} onClick={() => handleControl(ctrl.id)}>
-                    <h2>
+                  <div className={styles.box}>
+                    <h2 onClick={() => handleControl(ctrl.id)}>
                       {ctrl.title}
                     </h2>
                     <span className={styles.location}>
