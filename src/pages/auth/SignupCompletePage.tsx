@@ -2,14 +2,15 @@ import Main from "../../components/layout/Main";
 import Header from "../../components/layout/Header";
 import styles from "./Auth.module.css";
 import Button from "../../components/ui/Button";
-import { useNavigate } from "react-router-dom";
+import useNavigateTo from "../../hooks/useNavigateTo";
 
 export default function SignupCompletePage() {
 
-  const navigate = useNavigate();
+  //링크 이동
+  const { navigateTo } = useNavigateTo();
 
-  const handleGoToSignin = () => {
-    navigate("/signin");
+  function handleClick(){
+    navigateTo("/signup");
   };
 
   return (
@@ -29,7 +30,7 @@ export default function SignupCompletePage() {
           </p>
           <Button
             className="mt-40"
-            onClick={handleGoToSignin}
+            onClick={handleClick}
           >
             로그인
           </Button>
