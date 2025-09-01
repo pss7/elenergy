@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 //컴포넌트
 import ArrowLink from "../components/ui/ArrowLink";
@@ -14,22 +14,24 @@ import savingsData from "../data/Savings";
 //차트
 import { useControllerData } from "../contexts/ControllerContext";
 import PowerDoughnutChart from "../components/ui/PowerDoughnutChart";
+import useNavigateTo from "../hooks/useNavigateTo";
 
 export default function MainPage() {
 
   const { controllers } = useControllerData();
 
+  const { navigateTo } = useNavigateTo();
+
   //경로이동
-  const navigate = useNavigate();
   function handleUpdate(id: number) {
 
-    navigate(`/controller-update/${id}`);
+    navigateTo(`/controller-update/${id}`);
 
   }
 
   function handleControl(id: number) {
 
-    navigate(`/manual-control/${id}`);
+    navigateTo(`/manual-control/${id}`);
 
   }
 

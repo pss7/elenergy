@@ -12,10 +12,11 @@ const ControllerContext = createContext<ControllerContextType | null>(null);
 const STORAGE_KEY = 'controllerData';
 
 export function ControllerProvider({ children }: { children: React.ReactNode }) {
-
-  const savedData = localStorage.getItem(STORAGE_KEY);
-  const initialData: Controller[] = savedData ? JSON.parse(savedData) : controllerData;
-  const [controllers, setControllers] = useState<Controller[]>(initialData);
+  
+  const [controllers, setControllers] = useState<Controller[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : controllerData;
+  });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(controllers));
@@ -30,8 +31,6 @@ export function ControllerProvider({ children }: { children: React.ReactNode }) 
 
 export function useControllerData() {
   const context = useContext(ControllerContext);
-  if (!context) {
-    throw new Error('Context가 없습니다.');
-  }
+  if (!context) throw new Error('ControllerContext가 없습니다.');
   return context;
 }

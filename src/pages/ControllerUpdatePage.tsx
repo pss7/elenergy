@@ -1,5 +1,5 @@
 //컴포넌트
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Main from "../components/layout/Main";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -9,11 +9,12 @@ import Title from "../components/ui/Title";
 import styles from "./MainPage.module.css";
 import { useControllerData } from "../contexts/ControllerContext";
 import { useState } from "react";
+import useNavigateTo from "../hooks/useNavigateTo";
 
 export default function ControllerUpdatePage() {
 
   const { id } = useParams();
-  const navigator = useNavigate();
+  const { navigateTo } = useNavigateTo();
   const { controllers, setControllers } = useControllerData();
 
   const target = controllers.find(c => c.id === Number(id));
@@ -26,11 +27,11 @@ export default function ControllerUpdatePage() {
         c.id === Number(id) ? { ...c, title, location } : c
       )
     );
-    navigator('/');
+    navigateTo('/');
   };
 
   function handleCancel() {
-    navigator('/');
+    navigateTo('/');
   }
 
   if (!target) {

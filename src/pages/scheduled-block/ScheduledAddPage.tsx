@@ -3,7 +3,7 @@ import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import styles from "./ScheduledBlockingPage.module.css";
 import CalendarModal from "../../components/ui/CalendarModal";
-import { useNavigate } from "react-router-dom";
+import useNavigateTo from "../../hooks/useNavigateTo";
 
 type Time = {
   ampm: "오전" | "오후";
@@ -15,10 +15,10 @@ type SelectedDate = { year: number; month: number; day: number } | null;
 
 export default function ScheduledAddPage() {
 
-  const navigate = useNavigate();
+  const { navigateTo } = useNavigateTo();
 
   function handleCancel() {
-    navigate("/scheduled-block");
+    navigateTo("/scheduled-block");
   }
 
   const itemHeight = 66;
