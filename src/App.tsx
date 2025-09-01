@@ -1,7 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 import { ControllerProvider } from './contexts/ControllerContext';
-// import { useEffect, useState } from 'react';
-// import FullScreenLoading from './components/ui/FullScreenLoading';
+import FullScreenLoading from './components/ui/FullScreenLoading';
+import { useEffect, useState } from 'react';
+
 import Compoents from './pages/test/Compoents';
 
 import Home from './pages/Home';
@@ -37,9 +38,6 @@ import AutoBlockUpdagePage from './pages/auto-block/AutoBlockPageUpdate';
 import ManualControlPage from './pages/manual-control/ManualControlPage ';
 import AlarmPage from './pages/AlarmPage';
 import AlarmFilterPage from './pages/AlarmFilterPage';
-import FullScreenLoading from './components/ui/FullScreenLoading';
-import { useEffect, useState } from 'react';
-
 
 function App() {
 
