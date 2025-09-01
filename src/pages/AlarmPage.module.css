@@ -100,8 +100,9 @@
 
 .alarmBox .filterBox {
   margin-bottom: 20px;
-  padding: 17px 10px 30px 22px;
+  padding: 17px 10px 26px 26px;
   background-color: #fff;
+  border-radius: 20px;
 }
 
 .alarmBox .filterBox h2 {

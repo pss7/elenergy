@@ -6,6 +6,7 @@ export interface Alarm {
   status: "ON" | "OFF";
   date: string;
   icon: string;
+  isRead?: boolean;
 }
 
 export interface AlarmFilters {

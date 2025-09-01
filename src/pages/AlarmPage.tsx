@@ -8,6 +8,7 @@ import alarmData from "../data/Alarms";
 
 // 데이터와 타입 가져오기
 export default function AlarmPage() {
+  
   const [filteredAlarms, setFilteredAlarms] = useState<Alarm[]>([]);
 
   useEffect(() => {
