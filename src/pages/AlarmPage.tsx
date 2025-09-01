@@ -8,7 +8,7 @@ import alarmData from "../data/Alarms";
 
 // 데이터와 타입 가져오기
 export default function AlarmPage() {
-  
+
   const [filteredAlarms, setFilteredAlarms] = useState<Alarm[]>([]);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function AlarmPage() {
           </div>
 
           <div className={styles.alarmList}>
-            {filteredAlarms.map((alarm) => (
+            {filteredAlarms.slice(0, 5).map((alarm) => (
               <div key={alarm.id} className={styles.box}>
                 <div className={styles.imgBox}>
                   <img src={alarm.icon} alt={`${alarm.type} 아이콘`} />
