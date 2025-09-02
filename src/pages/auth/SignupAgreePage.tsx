@@ -129,7 +129,6 @@ export default function SignupAgreePage() {
         </div>
 
         <Button
-          disabled={!agreeTerms || !agreePrivacy || !agreeInfo}
           onClick={handleConfirm}
         >
           확인

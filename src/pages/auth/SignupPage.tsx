@@ -170,6 +170,34 @@ export default function SignupPage() {
               }
             </div>
 
+            <div className={`${styles.inputTextBox} mb-20`}>
+              <span className={styles.label}>
+                비밀번호
+              </span>
+              <PasswordInput
+                id="password"
+                onChange={handleUserPasswordChange}
+              />
+              <label htmlFor="password" className="blind">비밀번호</label>
+              {
+                userPassword && <p className="errorMessage">{userPasswordError}</p>
+              }
+            </div>
+
+            <div className={`${styles.inputTextBox} mb-20`}>
+              <span className={styles.label}>
+                비밀번호 재입력
+              </span>
+              <PasswordInput
+                id="password02"
+                onChange={handleUserPwConfirmChange}
+              />
+              <label htmlFor="password02" className="blind">비밀번호 재입력</label>
+              {
+                userPwConfirm && <p className="errorMessage">{userPwConfirmError}</p>
+              }
+            </div>
+
             <div className={`${styles.formBox} mb-30`}>
               <span className={styles.label}>
                 이름
@@ -181,34 +209,6 @@ export default function SignupPage() {
               />
               <label htmlFor="name" className="blind">
                 이름입력
-              </label>
-            </div>
-
-            <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                회사코드
-              </span>
-              <Input
-                type="text"
-                id="code"
-                onChange={handleCompanyCodeChange}
-              />
-              <label htmlFor="code" className="blind">
-                회사코드입력
-              </label>
-            </div>
-
-            <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                직급
-              </span>
-              <Input
-                type="text"
-                id="rank"
-                onChange={handleUserRankChange}
-              />
-              <label htmlFor="rank" className="blind">
-                직급입력
               </label>
             </div>
 
@@ -279,32 +279,32 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <div className={`${styles.inputTextBox} mb-20`}>
+            <div className={`${styles.formBox} mb-30`}>
               <span className={styles.label}>
-                비밀번호
+                회사코드
               </span>
-              <PasswordInput
-                id="password"
-                onChange={handleUserPasswordChange}
+              <Input
+                type="text"
+                id="code"
+                onChange={handleCompanyCodeChange}
               />
-              <label htmlFor="password" className="blind">비밀번호</label>
-              {
-                userPassword && <p className="errorMessage">{userPasswordError}</p>
-              }
+              <label htmlFor="code" className="blind">
+                회사코드입력
+              </label>
             </div>
 
-            <div className={`${styles.inputTextBox} mb-20`}>
+            <div className={`${styles.formBox} mb-30`}>
               <span className={styles.label}>
-                비밀번호 재입력
+                직급
               </span>
-              <PasswordInput
-                id="password02"
-                onChange={handleUserPwConfirmChange}
+              <Input
+                type="text"
+                id="rank"
+                onChange={handleUserRankChange}
               />
-              <label htmlFor="password02" className="blind">비밀번호 재입력</label>
-              {
-                userPwConfirm && <p className="errorMessage">{userPwConfirmError}</p>
-              }
+              <label htmlFor="rank" className="blind">
+                직급입력
+              </label>
             </div>
 
             <Button

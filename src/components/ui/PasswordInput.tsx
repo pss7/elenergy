@@ -39,7 +39,7 @@ export default function PasswordInput({ id, value, onChange, error }: InputProps
           onClick={togglePasswordVisibility}
           type="button"
         >
-          <img src="/assets/images/sub/toggle_icon.svg" alt={showPassword ? "비밀번호숨기기" : "비밀번호 보기"} />
+          <img src={showPassword ? "/assets/images/sub/toggle_icon02.svg" : "/assets/images/sub/toggle_icon.svg"} alt={showPassword ? "비밀번호숨기기" : "비밀번호 보기"} />
         </button>
       </div>
       {value && error && <p className="errorMessage">{error}</p>}

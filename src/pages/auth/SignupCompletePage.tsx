@@ -10,7 +10,7 @@ export default function SignupCompletePage() {
   const { navigateTo } = useNavigateTo();
 
   function handleClick() {
-    navigateTo("/signup");
+    navigateTo("/signin");
   };
 
   return (
