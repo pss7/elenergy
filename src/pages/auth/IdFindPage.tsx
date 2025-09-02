@@ -39,7 +39,7 @@ export default function IdFindPage() {
 
           <div className={`${styles.formBox} mb-30`}>
             <span className={styles.label}>
-              휴대전화번호
+              전화번호
             </span>
 
             <div className="inputButtonBox">
