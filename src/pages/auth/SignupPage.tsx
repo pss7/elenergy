@@ -144,9 +144,11 @@ export default function SignupPage() {
         type="pageLink"
         title="회원가입"
         prevLink="/signup-agree"
+        className="white-bg"
       />
 
-      <Main id="sub">
+      <Main id="sub"
+        className="white-bg">
         <div className={styles.signupBox}>
 
           <form onSubmit={handleSubmit}>

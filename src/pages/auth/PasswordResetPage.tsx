@@ -16,9 +16,11 @@ export default function PasswordResetPage() {
         type="pageLink"
         title="비밀번호 재설정"
         prevLink="/signin"
+        className="white-bg"
       />
 
-      <Main id="sub">
+      <Main id="sub"
+        className="white-bg">
         <form>
 
           <div className={`${styles.formBox} mb-30`}>

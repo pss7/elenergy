@@ -9,7 +9,7 @@ export default function SignupCompletePage() {
   //링크 이동
   const { navigateTo } = useNavigateTo();
 
-  function handleClick(){
+  function handleClick() {
     navigateTo("/signup");
   };
 
@@ -20,9 +20,11 @@ export default function SignupCompletePage() {
       <Header
         type="pageLink"
         title="회원가입"
+        className="white-bg"
       />
 
-      <Main id="sub">
+      <Main id="sub"
+        className="white-bg">
         <div className={styles.signupCompleteBox}>
           <p>
             회원가입이 완료되었습니다. <br />

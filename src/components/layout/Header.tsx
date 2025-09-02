@@ -7,12 +7,14 @@ interface HeaderProps {
   title?: string;
   prevLink?: string;
   nextLink?: string;
+  className?: string;
+
 }
 
-export default function Header({ type, title, prevLink, nextLink }: HeaderProps) {
+export default function Header({ type, title, prevLink, nextLink, className }: HeaderProps) {
 
   return (
-    <header id={styles.header}>
+    <header id={styles.header} className={className}>
       {
         type === "pageLink" && (
           <div className={styles.titleBox}>

@@ -81,6 +81,7 @@ main {
   font-size: 12px;
 }
 
+/* 공통 - 여백 */
 .mb-10 {
   margin-bottom: 10px !important;
 }
@@ -103,6 +104,11 @@ main {
 
 .mt-50 {
   margin-top: 50px !important;
+}
+
+/* 공통 - 배경색 */
+.white-bg{
+  background-color: #fff!important;
 }
 
 .btnBox {
@@ -134,7 +140,8 @@ main {
   line-height: 28px;
   position: absolute;
   right: 0;
-  top: -5px;
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 13px;
 }
 

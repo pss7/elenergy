@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Footer from "./Footer";
 
 interface mainProps {
 
@@ -9,7 +8,6 @@ interface mainProps {
   style?: React.CSSProperties;
 
 }
-
 
 export default function Main({ id, children, className, style }: mainProps) {
 
@@ -22,7 +20,6 @@ export default function Main({ id, children, className, style }: mainProps) {
       >
         {children}
       </main>
-      <Footer />
     </>
   )
 

@@ -7,7 +7,7 @@ import styles from "./Auth.module.css";
 
 export default function IdFindPage() {
 
-  const phoneInput = useCodeInput(6);   
+  const phoneInput = useCodeInput(6);
   const verifyCodeInput = useCodeInput(6);
 
   return (
@@ -16,9 +16,12 @@ export default function IdFindPage() {
         type="pageLink"
         title="아아디 찾기"
         prevLink="/signin"
+        className="white-bg"
       />
 
-      <Main id="sub">
+      <Main id="sub"
+        className="white-bg"
+      >
         <form>
 
           <div className={`${styles.formBox} mb-30`}>

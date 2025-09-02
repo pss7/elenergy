@@ -43,9 +43,11 @@ export default function SignupAgreePage() {
         type="pageLink"
         title="회원가입"
         prevLink="/signin"
+        className="white-bg"
       />
 
-      <Main id="sub">
+      <Main id="sub"
+        className="white-bg">
         <div className={styles.signupAgreeBox}>
 
           <form>

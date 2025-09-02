@@ -73,9 +73,9 @@ export default function SigninPage() {
 
   return (
     <>
-      <Header type="logo" />
+      <Header type="logo" className="white-bg" />
 
-      <Main id="sub">
+      <Main id="sub" className="white-bg">
         <div className={styles.signinBox}>
           <form onSubmit={handleLogin}>
             <div className={`${styles.inputTextBox} mb-20`}>
