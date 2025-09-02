@@ -7,8 +7,12 @@ import Button from "../../components/ui/Button";
 import PasswordInput from "../../components/ui/PasswordInput";
 import { validateUserId, validateEmail, validatePassword } from "../../utils/validation";
 import { useNavigate } from "react-router-dom";
+import useCodeInput from "../../hooks/useCodeInput";
 
 export default function SignupPage() {
+
+  const phoneInput = useCodeInput(6);
+  const verifyCodeInput = useCodeInput(6);
 
   //경로이동
   const navigate = useNavigate();
@@ -25,8 +29,8 @@ export default function SignupPage() {
   const [userName, setUserName] = useState('');
   const [companyCode, setCompanyCode] = useState('');
   const [userRank, setUserRank] = useState('');
-  const [userPhone, setUserPhone] = useState('');
-  const [authNumber, setAuthNumber] = useState('');
+  const [userPhone] = useState('');
+  const [authNumber] = useState('');
 
   //아이디 변경 핸들러
   function handleUseridChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -75,15 +79,13 @@ export default function SignupPage() {
     setUserRank(e.target.value);
   }
 
-  // 전화번호 변경 핸들러
-  function handleUserPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setUserPhone(e.target.value);
-  }
+  // function handleUserPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
+  //   setUserPhone(e.target.value);
+  // }
 
-  // 인증번호 변경 핸들러
-  function handleAuthNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setAuthNumber(e.target.value);
-  }
+  // function handleAuthNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
+  //   setAuthNumber(e.target.value);
+  // }
 
   // 제출 핸들러
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -234,7 +236,8 @@ export default function SignupPage() {
                 <Input
                   type="text"
                   id="phone"
-                  onChange={handleUserPhoneChange}
+                  value={phoneInput.value}
+                  onChange={phoneInput.onChange}
                 />
                 <label htmlFor="phone" className="blind">
                   전화번호입력
@@ -242,6 +245,7 @@ export default function SignupPage() {
                 <Button
                   type="button"
                   className="button"
+                  disabled={!phoneInput.isValid}
                 >
                   인증
                 </Button>
@@ -257,7 +261,8 @@ export default function SignupPage() {
                 <Input
                   type="text"
                   id="number"
-                  onChange={handleAuthNumberChange}
+                  value={verifyCodeInput.value}
+                  onChange={verifyCodeInput.onChange}
                 />
                 <label htmlFor="number" className="blind">
                   인증번호입력
@@ -265,6 +270,7 @@ export default function SignupPage() {
                 <Button
                   type="button"
                   className="button"
+                  disabled={!verifyCodeInput.isValid}
                 >
                   확인
                 </Button>

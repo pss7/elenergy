@@ -2,9 +2,13 @@ import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
+import useCodeInput from "../../hooks/useCodeInput";
 import styles from "./Auth.module.css";
 
 export default function IdFindPage() {
+
+  const phoneInput = useCodeInput(6);   
+  const verifyCodeInput = useCodeInput(6);
 
   return (
     <>
@@ -39,13 +43,16 @@ export default function IdFindPage() {
               <Input
                 type="text"
                 id="phone"
+                value={phoneInput.value}
+                onChange={phoneInput.onChange}
               />
               <label htmlFor="phone" className="blind">
-                휴대전화번호입력
+                전화번호입력
               </label>
               <Button
                 type="button"
                 className="button"
+                disabled={!phoneInput.isValid}
               >
                 인증
               </Button>
@@ -60,6 +67,8 @@ export default function IdFindPage() {
               <Input
                 type="text"
                 id="number"
+                value={verifyCodeInput.value}
+                onChange={verifyCodeInput.onChange}
               />
               <label htmlFor="number" className="blind">
                 인증번호입력
@@ -67,6 +76,7 @@ export default function IdFindPage() {
               <Button
                 type="button"
                 className="button"
+                disabled={!verifyCodeInput.isValid}
               >
                 확인
               </Button>

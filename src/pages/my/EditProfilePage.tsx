@@ -4,11 +4,12 @@ import styles from "./MyPage.module.css";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import PasswordInput from "../../components/ui/PasswordInput";
+import useCodeInput from "../../hooks/useCodeInput";
 
 export default function EditProfilePage() {
 
-
-
+  const phoneInput = useCodeInput(6);     // 전화번호
+  const verifyCodeInput = useCodeInput(6); // 인증번호
 
   return (
     <>
@@ -98,6 +99,8 @@ export default function EditProfilePage() {
                 <Input
                   type="text"
                   id="phone"
+                  value={phoneInput.value}
+                  onChange={phoneInput.onChange}
                 />
                 <label htmlFor="phone" className="blind">
                   전화번호입력
@@ -105,6 +108,7 @@ export default function EditProfilePage() {
                 <Button
                   type="button"
                   className="button"
+                  disabled={!phoneInput.isValid}
                 >
                   인증
                 </Button>
@@ -120,6 +124,8 @@ export default function EditProfilePage() {
                 <Input
                   type="text"
                   id="number"
+                  value={verifyCodeInput.value}
+                  onChange={verifyCodeInput.onChange}
                 />
                 <label htmlFor="number" className="blind">
                   인증번호입력
@@ -127,6 +133,7 @@ export default function EditProfilePage() {
                 <Button
                   type="button"
                   className="button"
+                  disabled={!verifyCodeInput.isValid}
                 >
                   확인
                 </Button>
