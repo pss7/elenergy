@@ -13,10 +13,12 @@ export default function SigninPage() {
   const navigate = useNavigate();
 
   //상태관리
-  const [userId, setUserId] = useState('');
-  const [userIdError, setUserIdError] = useState('');
-  const [userPassword, setUserPassword] = useState('');
-  const [userPasswordError, setUserPasswordError] = useState('');
+  const [userId, setUserId] = useState("");
+  const [userIdError, setUserIdError] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+  const [userPasswordError, setUserPasswordError] = useState("");
+  
+  const [loginErrorMessage, setLoginErrorMessage] = useState("");
 
   //아이디 유효성 검사
   function handleIdChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -25,6 +27,7 @@ export default function SigninPage() {
 
     if (value === "") {
       setUserIdError("아이디를 입력해주세요.");
+      setLoginErrorMessage("");
     } else {
       setUserIdError(""); // 정상 입력 시 에러 제거
     }
@@ -37,6 +40,7 @@ export default function SigninPage() {
 
     if (value === "") {
       setUserPasswordError("비밀번호를 입력해주세요.");
+      setLoginErrorMessage("");
     } else {
       setUserPasswordError(""); // 정상 입력 시 에러 제거
     }
@@ -62,7 +66,7 @@ export default function SigninPage() {
 
     // 아이디/비밀번호 비교
     if (userData.userId !== userId || userData.userPassword !== userPassword) {
-      alert("아이디 또는 비밀번호가 일치하지 않습니다.");
+      setLoginErrorMessage("아이디 또는 비밀번호가 일치하지 않습니다. ");
       return;
     }
 
@@ -77,6 +81,7 @@ export default function SigninPage() {
 
       <Main id="sub" className="white-bg">
         <div className={styles.signinBox}>
+
           <form onSubmit={handleLogin}>
             <div className={`${styles.inputTextBox} mb-20`}>
               <span className={styles.label}>아이디</span>
@@ -101,6 +106,13 @@ export default function SigninPage() {
                 {userPasswordError}
               </p>
             </div>
+            {
+              loginErrorMessage && (
+                <p className="errorMessage">
+                  {loginErrorMessage}
+                </p>
+              )
+            }
 
             <Button
               className="mt-40"
