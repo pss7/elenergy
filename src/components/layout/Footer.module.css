@@ -4,7 +4,7 @@
   left: 0;
   width: 100%;
   z-index: 100;
-  background: #F1F1F3;
+  background: #fff;
 }
 
 #footer .link {
@@ -22,6 +22,11 @@
   align-items: center;
   height: 50px;
   text-align: center;
+}
+
+#footer .link li a.active span {
+  color: #0F7685;
+  font-weight: 700;
 }
 
 #footer .link li a span {
@@ -72,4 +77,24 @@
   width: 17px;
   height: 19px;
   background: url(/assets/images/common/footer_icon05.svg)no-repeat center;
+}
+
+#footer .link li:nth-child(1) a.active span::before {
+  background: url(/assets/images/common/footer_active_icon01.svg)no-repeat center;
+}
+
+#footer .link li:nth-child(2) a.active span::before {
+  background: url(/assets/images/common/footer_active_icon02.svg)no-repeat center;
+}
+
+#footer .link li:nth-child(3) a.active span::before {
+  background: url(/assets/images/common/footer_active_icon03.svg)no-repeat center;
+}
+
+#footer .link li:nth-child(4) a.active span::before {
+  background: url(/assets/images/common/footer_active_icon04.svg)no-repeat center;
+}
+
+#footer .link li:nth-child(5) a.active span::before {
+  background: url(/assets/images/common/footer_active_icon05.svg)no-repeat center;
 }
