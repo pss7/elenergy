@@ -12,13 +12,17 @@ export default function SigninPage() {
   //경로이동
   const navigate = useNavigate();
 
-  //상태관리
+  //입력 상태관리
   const [userId, setUserId] = useState("");
-  const [userIdError, setUserIdError] = useState("");
   const [userPassword, setUserPassword] = useState("");
-  const [userPasswordError, setUserPasswordError] = useState("");
-  
+
+  //오류메시지 상태관리
   const [loginErrorMessage, setLoginErrorMessage] = useState("");
+
+
+
+  const [userPasswordError, setUserPasswordError] = useState("");
+  const [userIdError, setUserIdError] = useState("");
 
   //아이디 유효성 검사
   function handleIdChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -42,23 +46,23 @@ export default function SigninPage() {
       setUserPasswordError("비밀번호를 입력해주세요.");
       setLoginErrorMessage("");
     } else {
-      setUserPasswordError(""); // 정상 입력 시 에러 제거
+      setUserPasswordError("");
     }
   }
 
-  ///폼 제출
+  //폼 제출
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
     if (!userId || !userPassword) {
-      alert("아이디와 비밀번호를 입력해주세요.");
+      setLoginErrorMessage("아이디와 비밀번호를 입력해주세요.");
       return;
     }
 
     // 회원가입 시 저장된 유저 정보 가져오기
     const storedData = localStorage.getItem("signupData");
     if (!storedData) {
-      alert("등록된 회원 정보가 없습니다.");
+      setLoginErrorMessage("등록된 회원 정보가 없습니다.");
       return;
     }
 

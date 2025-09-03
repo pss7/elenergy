@@ -5,21 +5,17 @@ import Input from "../../components/ui/Input";
 import { useState } from "react";
 import Button from "../../components/ui/Button";
 import PasswordInput from "../../components/ui/PasswordInput";
-import { validateUserId, validateEmail, validatePassword } from "../../utils/validation";
+import { validateUserId, validateEmail, validatePassword, validateName, validatePhone, validateVerificationCode, validateCompanyCode, validatePosition } from "../../utils/validation";
 import { useNavigate } from "react-router-dom";
-import useCodeInput from "../../hooks/useCodeInput";
 
 export default function SignupPage() {
-
-  const phoneInput = useCodeInput(6);
-  const verifyCodeInput = useCodeInput(6);
 
   //경로이동
   const navigate = useNavigate();
 
-  // 아이디, 비밀번호, 이메일 입력값 상태 관리
+  //입력값 상태 관리
   const [userId, setUserId] = useState('');
-  const [userIdError, setUserError] = useState('');
+  const [userIdError, setUserIdError] = useState('');
   const [userPassword, setUserPassword] = useState('');
   const [userPasswordError, setUserPasswordError] = useState('');
   const [userPwConfirm, setUserPwConfirm] = useState('');
@@ -27,16 +23,21 @@ export default function SignupPage() {
   const [userEmail, setUserEmail] = useState('');
   const [userEmailError, setUserEmailError] = useState('');
   const [userName, setUserName] = useState('');
-  const [companyCode, setCompanyCode] = useState('');
+  const [userNameError, setUserNameError] = useState('');
+  const [userCompanyCode, setUserCompanyCode] = useState('');
+  const [userCodeError, setUserCodeError] = useState('');
   const [userRank, setUserRank] = useState('');
-  const [userPhone] = useState('');
-  const [authNumber] = useState('');
+  const [userRankError, setUserRankError] = useState('');
+  const [userPhone, setUserPhone] = useState('');
+  const [userPhoneError, setUserPhoneError] = useState('');
+  const [userNumber, setUserNumber] = useState('');
+  const [userNumberError, setUserNumberError] = useState('');
 
   //아이디 변경 핸들러
   function handleUseridChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setUserId(value);
-    setUserError(validateUserId(value));
+    setUserIdError(validateUserId(value));
   }
 
   //비밀번호 변경 핸들러
@@ -66,26 +67,38 @@ export default function SignupPage() {
 
   // 이름 변경 핸들러
   function handleUserNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setUserName(e.target.value);
+    const value = e.target.value;
+    setUserName(value);
+    setUserNameError(validateName(value))
+  }
+
+  //전화번호 변경 핸들러
+  function handleUserPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setUserPhone(value);
+    setUserPhoneError(validatePhone(value));
+  }
+
+  //인증번호 변경 핸들러
+  function handleUserNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setUserNumber(value);
+    setUserNumberError(validateVerificationCode(value));
   }
 
   // 회사코드 변경 핸들러
   function handleCompanyCodeChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setCompanyCode(e.target.value);
+    const value = e.target.value;
+    setUserCompanyCode(value);
+    setUserCodeError(validateCompanyCode(value));
   }
 
   // 직급 변경 핸들러
   function handleUserRankChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setUserRank(e.target.value);
+    const value = e.target.value;
+    setUserRank(value);
+    setUserRankError(validatePosition(value));
   }
-
-  // function handleUserPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
-  //   setUserPhone(e.target.value);
-  // }
-
-  // function handleAuthNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
-  //   setAuthNumber(e.target.value);
-  // }
 
   // 제출 핸들러
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -94,17 +107,23 @@ export default function SignupPage() {
     // 1. 모든 필드 유효성 검사 다시 실행
     const idError = validateUserId(userId);
     const pwError = validatePassword(userPassword);
-    const emailError = validateEmail(userEmail);
     const pwConfirmError = userPassword !== userPwConfirm ? "비밀번호가 일치하지 않습니다." : "";
+    const nameError = validateName(userName);
+    const emailError = validateEmail(userEmail);
+    const companyCodeError = validateCompanyCode(userCompanyCode);
+    const rankError = validatePosition(userRank);
 
     // 2. 에러 상태 업데이트
-    setUserError(idError);
+    setUserIdError(idError);
     setUserPasswordError(pwError);
-    setUserEmailError(emailError);
     setUserPwConfirmError(pwConfirmError);
+    setUserEmailError(emailError);
+    setUserNameError(nameError);
+    setUserCompanyCode(companyCodeError);
+    setUserRankError(rankError);
 
     // 3. 에러가 하나라도 있으면 제출 중단
-    if (idError || pwError || emailError || pwConfirmError) {
+    if (idError || pwError || pwConfirmError || emailError || nameError || companyCodeError || rankError) {
       return; // 에러가 있으니 제출 취소
     }
 
@@ -114,14 +133,12 @@ export default function SignupPage() {
       userPassword,
       userEmail,
       userName,
-      companyCode,
+      userCompanyCode,
       userRank,
       userPhone,
-      authNumber,
     };
     localStorage.setItem("signupData", JSON.stringify(userData));
 
-    // 5. 회원가입 완료 페이지로 이동
     navigate("/signup-complete"); // 완료 페이지 경로에 맞게 수정
   }
 
@@ -134,7 +151,13 @@ export default function SignupPage() {
     userPwConfirm &&
     !userPwConfirmError &&
     userEmail &&
-    !userEmailError;
+    !userEmailError &&
+    userName &&
+    !userNameError &&
+    userCompanyCode &&
+    !userCodeError &&
+    userRank &&
+    !userRankError
 
   return (
 
@@ -210,6 +233,9 @@ export default function SignupPage() {
               <label htmlFor="name" className="blind">
                 이름입력
               </label>
+              {
+                userName && <p className="errorMessage">{userNameError}</p>
+              }
             </div>
 
             <div className={`${styles.formBox} mb-30`}>
@@ -238,8 +264,7 @@ export default function SignupPage() {
                 <Input
                   type="text"
                   id="phone"
-                  value={phoneInput.value}
-                  onChange={phoneInput.onChange}
+                  onChange={handleUserPhoneChange}
                 />
                 <label htmlFor="phone" className="blind">
                   전화번호입력
@@ -247,11 +272,13 @@ export default function SignupPage() {
                 <Button
                   type="button"
                   className="button"
-                  disabled={!phoneInput.isValid}
                 >
                   인증
                 </Button>
               </div>
+              {
+                userPhone && <p className="errorMessage">{userPhoneError}</p>
+              }
 
             </div>
 
@@ -263,8 +290,7 @@ export default function SignupPage() {
                 <Input
                   type="text"
                   id="number"
-                  value={verifyCodeInput.value}
-                  onChange={verifyCodeInput.onChange}
+                  onChange={handleUserNumberChange}
                 />
                 <label htmlFor="number" className="blind">
                   인증번호입력
@@ -272,11 +298,13 @@ export default function SignupPage() {
                 <Button
                   type="button"
                   className="button"
-                  disabled={!verifyCodeInput.isValid}
                 >
                   확인
                 </Button>
               </div>
+              {
+                userNumber && <p className="errorMessage">{userNumberError}</p>
+              }
             </div>
 
             <div className={`${styles.formBox} mb-30`}>
@@ -291,6 +319,9 @@ export default function SignupPage() {
               <label htmlFor="code" className="blind">
                 회사코드입력
               </label>
+              {
+                userCompanyCode && <p className="errorMessage">{userCodeError}</p>
+              }
             </div>
 
             <div className={`${styles.formBox} mb-30`}>
@@ -305,6 +336,9 @@ export default function SignupPage() {
               <label htmlFor="rank" className="blind">
                 직급입력
               </label>
+              {
+                userRank && <p className="errorMessage">{userRankError}</p>
+              }
             </div>
 
             <Button
