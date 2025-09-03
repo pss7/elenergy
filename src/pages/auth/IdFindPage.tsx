@@ -123,7 +123,7 @@ export default function IdFindPage() {
             }
           </div>
 
-          <div className={`${styles.formBox} mb-30`}>
+          <div className={`${styles.formBox} mb-20`}>
             <span className={styles.label}>
               인증번호
             </span>
