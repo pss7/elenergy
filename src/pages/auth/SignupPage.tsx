@@ -14,24 +14,24 @@ export default function SignupPage() {
   const navigate = useNavigate();
 
   //입력값 상태 관리
-  const [userId, setUserId] = useState('');
-  const [userIdError, setUserIdError] = useState('');
-  const [userPassword, setUserPassword] = useState('');
-  const [userPasswordError, setUserPasswordError] = useState('');
-  const [userPwConfirm, setUserPwConfirm] = useState('');
-  const [userPwConfirmError, setUserPwConfirmError] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [userEmailError, setUserEmailError] = useState('');
-  const [userName, setUserName] = useState('');
-  const [userNameError, setUserNameError] = useState('');
-  const [userCompanyCode, setUserCompanyCode] = useState('');
-  const [userCodeError, setUserCodeError] = useState('');
-  const [userRank, setUserRank] = useState('');
-  const [userRankError, setUserRankError] = useState('');
-  const [userPhone, setUserPhone] = useState('');
-  const [userPhoneError, setUserPhoneError] = useState('');
-  const [userNumber, setUserNumber] = useState('');
-  const [userNumberError, setUserNumberError] = useState('');
+  const [userId, setUserId] = useState("");
+  const [userIdError, setUserIdError] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+  const [userPasswordError, setUserPasswordError] = useState("");
+  const [userPwConfirm, setUserPwConfirm] = useState("");
+  const [userPwConfirmError, setUserPwConfirmError] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userEmailError, setUserEmailError] = useState("");
+  const [userName, setUserName] = useState("");
+  const [userNameError, setUserNameError] = useState("");
+  const [userCompanyCode, setUserCompanyCode] = useState("");
+  const [userCodeError, setUserCodeError] = useState("");
+  const [userRank, setUserRank] = useState("");
+  const [userRankError, setUserRankError] = useState("");
+  const [userPhone, setUserPhone] = useState("");
+  const [userPhoneError, setUserPhoneError] = useState("");
+  const [userNumber, setUserNumber] = useState("");
+  const [userNumberError, setUserNumberError] = useState("");
 
   //아이디 변경 핸들러
   function handleUseridChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -54,7 +54,7 @@ export default function SignupPage() {
     if (userPassword !== value) {
       setUserPwConfirmError('비밀번호가 일치하지 않습니다.');
     } else {
-      setUserPwConfirmError('');
+      setUserPwConfirmError("");
     }
   }
 
@@ -127,7 +127,11 @@ export default function SignupPage() {
       return; // 에러가 있으니 제출 취소
     }
 
-    // 4. 유효성 통과 시 로컬스토리지에 저장 (예시)
+    //기존 유저 데이터 가져오기
+    const storedUsers = localStorage.getItem("signupData");
+    const users = storedUsers ? JSON.parse(storedUsers) : [];
+
+    //유효성 통과 시 로컬스토리지에 저장 (예시)
     const userData = {
       userId,
       userPassword,
@@ -137,7 +141,9 @@ export default function SignupPage() {
       userRank,
       userPhone,
     };
-    localStorage.setItem("signupData", JSON.stringify(userData));
+
+    users.push(userData);
+    localStorage.setItem("signupData", JSON.stringify(users));
 
     navigate("/signup-complete"); // 완료 페이지 경로에 맞게 수정
   }

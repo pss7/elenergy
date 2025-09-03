@@ -1,6 +1,6 @@
 // 사용자 아이디 중복 확인 (로컬 스토리지 기반)
 function isUserIdDuplicate(userId: string): boolean {
-  const storedUsers = localStorage.getItem("users");
+  const storedUsers = localStorage.getItem("signupData");
 
   if (!storedUsers) {
     return false;
@@ -8,7 +8,7 @@ function isUserIdDuplicate(userId: string): boolean {
 
   try {
     const users: { userId: string }[] = JSON.parse(storedUsers);
-    return users.some((user) => user.userId === userId);
+    return users.some(user => user.userId === userId);
   } catch (error) {
     console.error("유저 데이터 파싱 오류:", error);
     return false;
