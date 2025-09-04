@@ -187,7 +187,7 @@
   text-align: center;
   border-radius: 2px;
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 500;
   color: #fff;
   z-index: 99999;
 }
@@ -324,4 +324,18 @@
 
 .modalWrap .modalBox .btnBox .btn:last-child:after {
   display: none;
+}
+
+
+@keyframes bounceUpDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.bounce {
+  animation: bounceUpDown 3s ease-in-out infinite;
 }

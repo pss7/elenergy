@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import type { PowerUsageData } from "../../data/AutoBlock";
 import autoBlockData from "../../data/AutoBlock";
 import Title from "../../components/ui/Title";
+import Footer from "../../components/layout/Footer";
 
 export default function ManualControlPage() {
 
@@ -79,21 +80,24 @@ export default function ManualControlPage() {
             {target.title}
           </h2>
 
-
           <div className={styles.toggleBox}>
             <Toggle checked={allOn} onChange={handleToggle} />
-            <p className={styles.toggleInfoText}>
-              강제 OFF를 원할 경우 <br />
-              ON을 5초간 눌러주세요.
-            </p>
+            {
+              allOn &&
+              powerData?.dailyLastWeek?.stats?.average! > powerData?.dailyLastWeek?.stats?.current! && (
+                <p className={`${styles.toggleInfoText} ${styles.bounce}`}>
+                  강제 OFF를 원할 경우 <br />
+                  ON을 5초간 눌러주세요.
+                </p>
+              )
+            }
           </div>
 
           {
             allOn && (
               <p className={styles.infoText}>
-                <span className={styles.color01}>현재 전력 사용량</span>이 최근 7일간 <span className={styles.color02}>평균 전력 사용량</span> 이하일 때만 OFF 가능합니다.
+                "<span className={styles.color02}>평균 전력 사용량</span> &gt; <span className={styles.color01}>현재 전력 사용량</span>" 인 경우에 OFF 가능
               </p>
-
             )
           }
 
@@ -145,7 +149,7 @@ export default function ManualControlPage() {
                     자동 차단 설정
                   </Title>
                   <span>
-                    원하는 기준 이하로 전력이 감소하면 자동 OFF 가능
+                    기준 이하로 전력이 감소하면 자동 OFF 기능
                   </span>
                 </Link>
               </li>
@@ -186,6 +190,8 @@ export default function ManualControlPage() {
         }
 
       </Main>
+
+      <Footer />
 
     </>
 
