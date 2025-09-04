@@ -55,7 +55,7 @@ export default function IdFindPage() {
 
   }, [])
 
-  function handleIdFind(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const matchedUser = users.find(function (user) {
@@ -88,7 +88,7 @@ export default function IdFindPage() {
       >
 
         <div className={styles.authBox}>
-          <form onSubmit={handleIdFind}>
+          <form onSubmit={handleSubmit}>
 
             <div className={`${styles.formBox} mb-30`}>
               <div className={styles.inputTextBox}>
@@ -124,6 +124,7 @@ export default function IdFindPage() {
                 <Button
                   type="button"
                   className="button"
+                  disabled={userPhoneError !== "" || userPhone === ""}
                 >
                   인증
                 </Button>
@@ -149,6 +150,7 @@ export default function IdFindPage() {
                 <Button
                   type="button"
                   className="button"
+                  disabled={userNumber.length !== 6}
                 >
                   확인
                 </Button>

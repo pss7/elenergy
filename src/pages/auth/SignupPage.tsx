@@ -280,6 +280,7 @@ export default function SignupPage() {
                   <Button
                     type="button"
                     className="button"
+                    disabled={userPhoneError !== "" || userPhone === ""}
                   >
                     인증
                   </Button>
@@ -306,6 +307,7 @@ export default function SignupPage() {
                   <Button
                     type="button"
                     className="button"
+                    disabled={userNumber.length !== 6}
                   >
                     확인
                   </Button>
