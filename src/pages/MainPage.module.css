@@ -64,6 +64,13 @@
   width: calc(50% - 5.5px);
 }
 
+.linkList01 li .box .textBox {
+  display: flex;
+  flex-direction: column;
+  gap: 5px 0;
+  align-items: flex-start;
+}
+
 .linkList01 li .box {
   position: relative;
   padding: 49px 15px 13px 16px;
@@ -96,14 +103,39 @@
   color: #8A8A8C;
 }
 
-.linkList01 li .box .view {
-  width: 16px;
-  height: 16px;
+.linkList01 li .box .linkBox {
   position: absolute;
   top: 17px;
-  right: 15px;
-  background: url(/assets/images/main/view.svg)no-repeat;
-  z-index: 9999999999999;
+  right: 20px;
+  z-index: 999;
+}
+
+.linkList01 li .box .linkBox .btn {
+  width: 4px;
+  height: 14px;
+  background: url(/assets/images/main/setting_icon02.svg)no-repeat;
+}
+
+.linkList01 li .box .linkBox .changeLink {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: -8px;
+  width: 73px;
+  height: 21px;
+  line-height: 21px;
+  border-radius: 5px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+  font-size: 12px;
+  font-weight: 500;
+  color: #000;
+  background-color: #fff;
+  z-index: 9999;
+}
+
+.linkList01 li .box .linkBox .changeLink.active {
+  display: block;
 }
 
 .linkList02 {
