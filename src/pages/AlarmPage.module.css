@@ -80,22 +80,34 @@
 }
 
 .alarmBox .filterLinkBox {
+  margin-bottom: 17px;
   display: flex;
   justify-content: flex-end;
 }
 
 .alarmBox .filterLinkBox .filterLink {
-  display: block;
-  width: 55px;
-  height: 24px;
-  line-height: 22px;
-  border: 1px solid #A5A5A7;
-  border-radius: 5px;
-  text-align: center;
-  background-color: #fff;
-  font-size: 13px;
-  font-weight: 500;
-  color: #747475;
+  display: flex;
+  align-items: center;
+  gap: 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #646368;
+}
+
+.alarmBox .filterLinkBox .filterLink::after {
+  content: '';
+  margin-top: 2px;
+  width: 16px;
+  height: 18px;
+  background: url(/assets/images/common/filter_icon.svg)no-repeat center;
+}
+
+.alarmBox .filterLinkBox .filterLink.filterDel::after {
+  content: '';
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  background: url(/assets/images/common/filter_icon02.svg)no-repeat center;
 }
 
 .alarmBox .filterBox {

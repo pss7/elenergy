@@ -104,7 +104,7 @@ export default function AlarmFilterPage() {
           <div className={styles.filterBox}>
             <h2>관리자ID</h2>
             <div className={styles.layoutBox}>
-              {["관리자ID1", "관리자ID2", "관리자ID3", "관리자ID4"].map((admin, idx) => (
+              {["D1", "ID2", "ID3", "ID4"].map((admin, idx) => (
                 <InputCheckbox
                   key={admin}
                   id={`chk_admin${idx + 1}`}
