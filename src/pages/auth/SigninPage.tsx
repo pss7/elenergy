@@ -18,9 +18,6 @@ export default function SigninPage() {
 
   //오류메시지 상태관리
   const [loginErrorMessage, setLoginErrorMessage] = useState("");
-
-
-
   const [userPasswordError, setUserPasswordError] = useState("");
   const [userIdError, setUserIdError] = useState("");
 
@@ -66,11 +63,16 @@ export default function SigninPage() {
       return;
     }
 
-    const userData = JSON.parse(storedData);
+    const users = JSON.parse(storedData);
 
-    // 아이디/비밀번호 비교
-    if (userData.userId !== userId || userData.userPassword !== userPassword) {
-      setLoginErrorMessage("아이디 또는 비밀번호가 일치하지 않습니다. ");
+    const matchedUser = users.find(
+      (user: any) =>
+        user.userId === userId.trim() &&
+        user.userPassword === userPassword.trim()
+    );
+
+    if (!matchedUser) {
+      setLoginErrorMessage("아이디 또는 비밀번호가 일치하지 않습니다.");
       return;
     }
 
@@ -84,55 +86,59 @@ export default function SigninPage() {
       <Header type="logo" className="white-bg" />
 
       <Main id="sub" className="white-bg">
-        <div className={styles.signinBox}>
 
-          <form onSubmit={handleLogin}>
-            <div className={`${styles.inputTextBox} mb-20`}>
-              <span className={styles.label}>아이디</span>
-              <Input
-                value={userId}
-                type="text"
-                onChange={handleIdChange}
-              />
-              <p className="errorMessage">
-                {userIdError}
-              </p>
-            </div>
+        <div className={styles.authBox}>
+          <div className={styles.signinBox}>
 
-            <div className={`${styles.inputTextBox} mb-20`}>
-              <span className={styles.label}>비밀번호</span>
-              <PasswordInput
-                id="password"
-                value={userPassword}
-                onChange={handlePwChange}
-              />
-              <p className="errorMessage">
-                {userPasswordError}
-              </p>
-            </div>
-            {
-              loginErrorMessage && (
+            <form onSubmit={handleLogin}>
+              <div className={`${styles.inputTextBox} mb-20`}>
+                <span className={styles.label}>아이디</span>
+                <Input
+                  value={userId}
+                  type="text"
+                  onChange={handleIdChange}
+                />
                 <p className="errorMessage">
-                  {loginErrorMessage}
+                  {userIdError}
                 </p>
-              )
-            }
+              </div>
 
-            <Button
-              className="mt-40"
-              type="submit"
-              disabled={!userId || !userPassword}
-            >
-              로그인
-            </Button>
-          </form>
+              <div className={`${styles.inputTextBox} mb-20`}>
+                <span className={styles.label}>비밀번호</span>
+                <PasswordInput
+                  id="password"
+                  value={userPassword}
+                  onChange={handlePwChange}
+                />
+                <p className="errorMessage">
+                  {userPasswordError}
+                </p>
+              </div>
+              {
+                loginErrorMessage && (
+                  <p className="errorMessage">
+                    {loginErrorMessage}
+                  </p>
+                )
+              }
 
-          <ul className={styles.link}>
-            <li><Link to="/id-find">아이디 찾기</Link></li>
-            <li><Link to="/password-reset">비밀번호 재설정</Link></li>
-            <li><Link to="/signup-agree">회원가입</Link></li>
-          </ul>
+              <Button
+                className="mt-40"
+                type="submit"
+                disabled={!userId || !userPassword}
+              >
+                로그인
+              </Button>
+            </form>
+
+            <ul className={styles.link}>
+              <li><Link to="/id-find">아이디 찾기</Link></li>
+              <li><Link to="/password-reset-confirm">비밀번호 재설정</Link></li>
+              <li><Link to="/signup-agree">회원가입</Link></li>
+            </ul>
+          </div>
         </div>
+
       </Main>
     </>
   );

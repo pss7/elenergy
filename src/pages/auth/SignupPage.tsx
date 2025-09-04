@@ -178,185 +178,189 @@ export default function SignupPage() {
 
       <Main id="sub"
         className="white-bg">
-        <div className={styles.signupBox}>
 
-          <form onSubmit={handleSubmit}>
+        <div className={styles.authBox}>
+          <div className={styles.signupBox}>
 
-            <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                아이디
-              </span>
-              <Input
-                type="text"
-                id="id"
-                onChange={handleUseridChange}
-              />
-              <label htmlFor="id" className="blind">
-                아이디입력
-              </label>
-              {
-                userId && <p className="errorMessage">{userIdError}</p>
-              }
-            </div>
+            <form onSubmit={handleSubmit}>
 
-            <div className={`${styles.inputTextBox} mb-20`}>
-              <span className={styles.label}>
-                비밀번호
-              </span>
-              <PasswordInput
-                id="password"
-                onChange={handleUserPasswordChange}
-              />
-              <label htmlFor="password" className="blind">비밀번호</label>
-              {
-                userPassword && <p className="errorMessage">{userPasswordError}</p>
-              }
-            </div>
-
-            <div className={`${styles.inputTextBox} mb-20`}>
-              <span className={styles.label}>
-                비밀번호 재입력
-              </span>
-              <PasswordInput
-                id="password02"
-                onChange={handleUserPwConfirmChange}
-              />
-              <label htmlFor="password02" className="blind">비밀번호 재입력</label>
-              {
-                userPwConfirm && <p className="errorMessage">{userPwConfirmError}</p>
-              }
-            </div>
-
-            <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                이름
-              </span>
-              <Input
-                type="text"
-                id="name"
-                onChange={handleUserNameChange}
-              />
-              <label htmlFor="name" className="blind">
-                이름입력
-              </label>
-              {
-                userName && <p className="errorMessage">{userNameError}</p>
-              }
-            </div>
-
-            <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                이메일
-              </span>
-              <Input
-                type="text"
-                id="email"
-                onChange={handleUserEmailChange}
-              />
-              <label htmlFor="email" className="blind">
-                이메일입력
-              </label>
-              {
-                userEmail && <p className="errorMessage">{userEmailError}</p>
-              }
-            </div>
-
-            <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                전화번호
-              </span>
-
-              <div className="inputButtonBox">
+              <div className={`${styles.formBox} mb-30`}>
+                <span className={styles.label}>
+                  아이디
+                </span>
                 <Input
                   type="text"
-                  id="phone"
-                  onChange={handleUserPhoneChange}
+                  id="id"
+                  onChange={handleUseridChange}
                 />
-                <label htmlFor="phone" className="blind">
-                  전화번호입력
+                <label htmlFor="id" className="blind">
+                  아이디입력
                 </label>
-                <Button
-                  type="button"
-                  className="button"
-                >
-                  인증
-                </Button>
+                {
+                  userId && <p className="errorMessage">{userIdError}</p>
+                }
               </div>
-              {
-                userPhone && <p className="errorMessage">{userPhoneError}</p>
-              }
 
-            </div>
+              <div className={`${styles.inputTextBox} mb-20`}>
+                <span className={styles.label}>
+                  비밀번호
+                </span>
+                <PasswordInput
+                  id="password"
+                  onChange={handleUserPasswordChange}
+                />
+                <label htmlFor="password" className="blind">비밀번호</label>
+                {
+                  userPassword && <p className="errorMessage">{userPasswordError}</p>
+                }
+              </div>
 
-            <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                인증번호
-              </span>
-              <div className="inputButtonBox">
+              <div className={`${styles.inputTextBox} mb-20`}>
+                <span className={styles.label}>
+                  비밀번호 재입력
+                </span>
+                <PasswordInput
+                  id="password02"
+                  onChange={handleUserPwConfirmChange}
+                />
+                <label htmlFor="password02" className="blind">비밀번호 재입력</label>
+                {
+                  userPwConfirm && <p className="errorMessage">{userPwConfirmError}</p>
+                }
+              </div>
+
+              <div className={`${styles.formBox} mb-30`}>
+                <span className={styles.label}>
+                  이름
+                </span>
                 <Input
                   type="text"
-                  id="number"
-                  onChange={handleUserNumberChange}
+                  id="name"
+                  onChange={handleUserNameChange}
                 />
-                <label htmlFor="number" className="blind">
-                  인증번호입력
+                <label htmlFor="name" className="blind">
+                  이름입력
                 </label>
-                <Button
-                  type="button"
-                  className="button"
-                >
-                  확인
-                </Button>
+                {
+                  userName && <p className="errorMessage">{userNameError}</p>
+                }
               </div>
-              {
-                userNumber && <p className="errorMessage">{userNumberError}</p>
-              }
-            </div>
 
-            <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                회사코드
-              </span>
-              <Input
-                type="text"
-                id="code"
-                onChange={handleCompanyCodeChange}
-              />
-              <label htmlFor="code" className="blind">
-                회사코드입력
-              </label>
-              {
-                userCompanyCode && <p className="errorMessage">{userCodeError}</p>
-              }
-            </div>
+              <div className={`${styles.formBox} mb-30`}>
+                <span className={styles.label}>
+                  이메일
+                </span>
+                <Input
+                  type="text"
+                  id="email"
+                  onChange={handleUserEmailChange}
+                />
+                <label htmlFor="email" className="blind">
+                  이메일입력
+                </label>
+                {
+                  userEmail && <p className="errorMessage">{userEmailError}</p>
+                }
+              </div>
 
-            <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                직급
-              </span>
-              <Input
-                type="text"
-                id="rank"
-                onChange={handleUserRankChange}
-              />
-              <label htmlFor="rank" className="blind">
-                직급입력
-              </label>
-              {
-                userRank && <p className="errorMessage">{userRankError}</p>
-              }
-            </div>
+              <div className={`${styles.formBox} mb-30`}>
+                <span className={styles.label}>
+                  전화번호
+                </span>
 
-            <Button
-              disabled={!isFormValid}
-              className="mt-40"
-            >
-              가입하기
-            </Button>
+                <div className="inputButtonBox">
+                  <Input
+                    type="text"
+                    id="phone"
+                    onChange={handleUserPhoneChange}
+                  />
+                  <label htmlFor="phone" className="blind">
+                    전화번호입력
+                  </label>
+                  <Button
+                    type="button"
+                    className="button"
+                  >
+                    인증
+                  </Button>
+                </div>
+                {
+                  userPhone && <p className="errorMessage">{userPhoneError}</p>
+                }
 
-          </form>
+              </div>
 
+              <div className={`${styles.formBox} mb-30`}>
+                <span className={styles.label}>
+                  인증번호
+                </span>
+                <div className="inputButtonBox">
+                  <Input
+                    type="text"
+                    id="number"
+                    onChange={handleUserNumberChange}
+                  />
+                  <label htmlFor="number" className="blind">
+                    인증번호입력
+                  </label>
+                  <Button
+                    type="button"
+                    className="button"
+                  >
+                    확인
+                  </Button>
+                </div>
+                {
+                  userNumber && <p className="errorMessage">{userNumberError}</p>
+                }
+              </div>
+
+              <div className={`${styles.formBox} mb-30`}>
+                <span className={styles.label}>
+                  회사코드
+                </span>
+                <Input
+                  type="text"
+                  id="code"
+                  onChange={handleCompanyCodeChange}
+                />
+                <label htmlFor="code" className="blind">
+                  회사코드입력
+                </label>
+                {
+                  userCompanyCode && <p className="errorMessage">{userCodeError}</p>
+                }
+              </div>
+
+              <div className={`${styles.formBox} mb-30`}>
+                <span className={styles.label}>
+                  직급
+                </span>
+                <Input
+                  type="text"
+                  id="rank"
+                  onChange={handleUserRankChange}
+                />
+                <label htmlFor="rank" className="blind">
+                  직급입력
+                </label>
+                {
+                  userRank && <p className="errorMessage">{userRankError}</p>
+                }
+              </div>
+
+              <Button
+                disabled={!isFormValid}
+                className="mt-40"
+              >
+                가입하기
+              </Button>
+
+            </form>
+
+          </div>
         </div>
+
       </Main>
 
     </>

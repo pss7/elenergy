@@ -12,8 +12,9 @@ import SigninPage from './pages/auth/SigninPage';
 import SignupAgreePage from './pages/auth/SignupAgreePage';
 import SignupPage from './pages/auth/SignupPage';
 import SignupCompletePage from './pages/auth/SignupCompletePage';
-import PasswordResetPage from './pages/auth/PasswordResetPage';
 import IdFindPage from './pages/auth/IdFindPage';
+import IdFindResultPage from './pages/auth/IdFindResultPage';
+import PasswordResetConfirmPage from './pages/auth/PasswordResetConfirmPage';
 
 import MyPage from './pages/my/MyPage';
 import MyAccountPage from './pages/my/MyAccountPage';
@@ -38,6 +39,8 @@ import AutoBlockUpdagePage from './pages/auto-block/AutoBlockPageUpdate';
 import ManualControlPage from './pages/manual-control/ManualControlPage ';
 import AlarmPage from './pages/AlarmPage';
 import AlarmFilterPage from './pages/AlarmFilterPage';
+import PasswordResetPage from './pages/auth/PasswordResetPage';
+
 
 function App() {
 
@@ -83,6 +86,8 @@ function App() {
         <Route path="/signup" element={<SignupPage />}></Route>
         <Route path="/signup-complete" element={<SignupCompletePage />}></Route>
         <Route path="/id-find" element={<IdFindPage />}></Route>
+        <Route path="/id-find-result" element={<IdFindResultPage />}></Route>
+        <Route path="/password-reset-confirm" element={<PasswordResetConfirmPage />}></Route>
         <Route path="/password-reset" element={<PasswordResetPage />}></Route>
 
         {/* 마이페이지 */}

@@ -1,3 +1,5 @@
+import type { User } from "../types/user";
+
 // 사용자 아이디 중복 확인 (로컬 스토리지 기반)
 function isUserIdDuplicate(userId: string): boolean {
   const storedUsers = localStorage.getItem("signupData");
@@ -15,7 +17,7 @@ function isUserIdDuplicate(userId: string): boolean {
   }
 }
 
-// 아이디 유효성 검사
+// 아이디 유효성 검사 (회원가입용)
 export function validateUserId(userId: string): string {
   const idRegex = /^[a-z0-9]{4,12}$/;
 
@@ -33,6 +35,27 @@ export function validateUserId(userId: string): string {
 
   return "";
 }
+
+// 아이디 유효성 검사 (비밀번호 재설정용)
+export function validateUserIdForReset(userId: string, users: User[]): string {
+  const idRegex = /^[a-z0-9]{4,12}$/;
+
+  if (!userId) {
+    return "아이디를 입력해주세요.";
+  }
+
+  if (!idRegex.test(userId)) {
+    return "4~12자의 영문 소문자, 숫자를 사용해 주세요.";
+  }
+
+  const exists = users.some(user => user.userId === userId);
+  if (!exists) {
+    return "존재하지 않는 아이디입니다.";
+  }
+
+  return "";
+}
+
 
 // 비밀번호 유효성 검사
 export function validatePassword(password: string): string {

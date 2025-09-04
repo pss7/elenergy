@@ -1,26 +1,73 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
+import { validateName, validatePhone, validateUserIdForReset, validateVerificationCode } from "../../utils/validation";
 import styles from "./Auth.module.css";
-import { validateName, validatePhone, validateVerificationCode } from "../../utils/validation";
-import { useNavigate } from "react-router-dom";
 import type { User } from "../../types/user";
 
-export default function IdFindPage() {
 
+export default function PasswordResetConfirmPage() {
+
+  //경로이동
   const navigate = useNavigate();
 
+  //로컬스토리지 데이터 불러오기
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    const storedUsers = localStorage.getItem("signupData");
+    if (storedUsers) {
+      try {
+        setUsers(JSON.parse(storedUsers));
+      } catch {
+        setUsers([]);
+      }
+    }
+
+  }, [])
+
+  //입력한 데이터 찾기
+  const [userPwResetError, setUserPwResetError] = useState("");
+
+  function handlePwReset(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const matchedUser = users.find(function (user) {
+      return user.userId === userId && user.userName === userName && user.userPhone === userPhone;
+    });
+
+    if (!matchedUser) {
+      setUserPwResetError("일치하는 회원정보가 없습니다. 회원가입을 해주세요.");
+    } else {
+      setUserPwResetError("");
+      navigate("/password-reset", {
+        state: {
+          userId: matchedUser.userId,
+        },
+      });
+    }
+  }
+
   //입력값 상태 관리
+  const [userId, setUserId] = useState("");
+  const [userIdError, setUserIdError] = useState("");
   const [userName, setUserName] = useState("");
   const [userNameError, setUserNameError] = useState("");
   const [userPhone, setUserPhone] = useState("");
   const [userPhoneError, setUserPhoneError] = useState("");
   const [userNumber, setUserNumber] = useState("");
   const [userNumberError, setUserNumberError] = useState("");
-  const [users, setUsers] = useState<User[]>([]);
-  const [userIdFindError, setUserIdFindError] = useState("");
+
+  //아이디 변경 핸들러
+  function handleUseridChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setUserId(value);
+    setUserIdError(validateUserIdForReset(value, users));
+  }
 
   // 이름 변경 핸들러
   function handleUserNameChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -43,52 +90,37 @@ export default function IdFindPage() {
     setUserNumberError(validateVerificationCode(value));
   }
 
-  useEffect(() => {
-    const storedUsers = localStorage.getItem("signupData");
-    if (storedUsers) {
-      try {
-        setUsers(JSON.parse(storedUsers));
-      } catch {
-        setUsers([]);
-      }
-    }
-
-  }, [])
-
-  function handleIdFind(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    const matchedUser = users.find(function (user) {
-      return user.userName === userName && user.userPhone === userPhone;
-    });
-
-    if (!matchedUser) {
-      setUserIdFindError("일치하는 회원정보가 없습니다. 회원가입을 해주세요.");
-    } else {
-      setUserIdFindError("");
-      navigate("/id-find-result", {
-        state: {
-          userId: matchedUser.userId,
-        },
-      });
-    }
-  }
-
   return (
     <>
       <Header
         type="pageLink"
-        title="아이디 찾기"
+        title="비밀번호 재설정"
         prevLink="/signin"
         className="white-bg"
       />
 
       <Main id="sub"
-        className="white-bg"
-      >
+        className="white-bg">
 
         <div className={styles.authBox}>
-          <form onSubmit={handleIdFind}>
+          <form onSubmit={handlePwReset}>
+
+            <div className={`${styles.formBox} mb-30`}>
+              <span className={styles.label}>
+                아이디
+              </span>
+              <Input
+                type="text"
+                id="id"
+                onChange={handleUseridChange}
+              />
+              <label htmlFor="id" className="blind">
+                아이디입력
+              </label>
+              {
+                userId && <p className="errorMessage">{userIdError}</p>
+              }
+            </div>
 
             <div className={`${styles.formBox} mb-30`}>
               <div className={styles.inputTextBox}>
@@ -158,20 +190,22 @@ export default function IdFindPage() {
               }
             </div>
 
-            {userIdFindError && <p className="errorMessage mb-30">{userIdFindError}</p>}
+            {userPwResetError && <p className="errorMessage mb-30">{userPwResetError}</p>}
 
             <Button
               disabled={
+                userIdError !== "" ||
                 userNameError !== "" ||
                 userPhoneError !== "" ||
                 userNumberError !== "" ||
+                !userId ||
                 !userName ||
                 !userPhone ||
                 !userNumber
               }
               type="submit"
             >
-              아이디 찾기
+              비밀번호 재설정
             </Button>
 
           </form>
