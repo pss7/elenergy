@@ -7,6 +7,7 @@ import styles from "./ScheduledBlockingPage.module.css";
 import controllerData from "../../data/Controllers";
 import scheduledBlockingsData from "../../data/ScheduledBlockings";
 import type { Reservation } from "../../data/ScheduledBlockings";
+import Footer from "../../components/layout/Footer";
 
 export default function ScheduledBlockingPage() {
   const [selectedControllerId, setSelectedControllerId] = useState<number>(1);
@@ -110,7 +111,9 @@ export default function ScheduledBlockingPage() {
           <div className={styles.topBox}>
             <h3>예약</h3>
             <div className={styles.btnBox}>
-              <Link to="/scheduled-add" className={styles.reservationAddBtn}>
+              <Link to="/scheduled-add"
+                state={{ controllerId: selectedControllerId }}
+                className={styles.reservationAddBtn}>
                 <span className="blind">예약추가</span>
               </Link>
 
@@ -169,6 +172,8 @@ export default function ScheduledBlockingPage() {
           </ul>
         </div>
       </Main>
+
+      <Footer />
     </>
   );
 }

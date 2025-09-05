@@ -97,7 +97,7 @@ export default function CalendarModal({
       <div className={styles.modal}>
         <div className={styles.header}>
           <button onClick={function () { handleMonthChange(-1); }}>{"<"}</button>
-          <button onClick={() => setShowPickerModal(true)}>
+          <button onClick={() => setShowPickerModal(true)} className={styles.btn}>
             {selected.year}년 {selected.month}월
           </button>
           <button onClick={function () { handleMonthChange(1); }}>{">"}</button>

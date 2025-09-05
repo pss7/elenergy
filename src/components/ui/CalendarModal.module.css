@@ -43,6 +43,20 @@
   font-weight: 500;
 }
 
+.header .btn {
+  display: flex;
+  align-items: center;
+  gap: 0 7px;
+}
+
+.header .btn::after {
+  content: '';
+  margin-top: 4px;
+  width: 9px;
+  height: 6px;
+  background: url(/assets/images/sub/select_arrow_icon.svg)no-repeat center;
+}
+
 table thead tr th {
   padding-bottom: 7px;
   font-size: 10px;
@@ -51,7 +65,7 @@ table thead tr th {
 }
 
 table tbody tr td {
-  padding: 7px 0;
+  height: 30px;
   text-align: center;
   font-size: 13px;
   font-weight: 500;

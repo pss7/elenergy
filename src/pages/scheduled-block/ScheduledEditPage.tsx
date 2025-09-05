@@ -5,6 +5,8 @@ import Button from "../../components/ui/Button";
 import styles from "./ScheduledBlockingPage.module.css";
 import CalendarModal from "../../components/ui/CalendarModal";
 import useNavigateTo from "../../hooks/useNavigateTo";
+import type { Reservation as ReservationRaw } from "../../data/ScheduledBlockings";
+import Footer from "../../components/layout/Footer";
 
 type Time = {
   ampm: "오전" | "오후";
@@ -12,14 +14,15 @@ type Time = {
   minute: string; // "00" ~ "59"
 };
 
+// 리스트에서 넘겨받은 reservation은 time이 Time으로 변환되어 들어옴
+type ReservationState = Omit<ReservationRaw, "time"> & { time: Time };
+
 type SelectedDate = { year: number; month: number; day: number } | null;
 
 export default function ScheduledEditPage() {
   const { navigateTo } = useNavigateTo();
   const location = useLocation();
-  const reservation = location.state?.reservation as
-    | { time?: Time; dateLabel?: string }
-    | undefined;
+  const reservation = location.state?.reservation as ReservationState | undefined;
 
   function handleCancel() {
     navigateTo("/scheduled-block");
@@ -27,16 +30,17 @@ export default function ScheduledEditPage() {
 
   const itemHeight = 66;
 
-  const baseAmpmList = ["오전", "오후"];                            // 각 1개만
+  const baseAmpmList = ["오전", "오후"];
   const baseHourList = Array.from({ length: 12 }, (_, i) => (i + 1).toString()); // "1"~"12"
-  const baseMinuteList = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")); // "00"~"59"
+  const baseMinuteList = Array.from({ length: 60 }, (_, i) =>
+    String(i).padStart(2, "0")
+  ); // "00"~"59"
 
-  // AM/PM은 단일 목록(패딩만), 시/분은 무한 목록
-  const ampmList = baseAmpmList; // 렌더에서 패딩 추가
+  // AM/PM은 1개씩만 보이게(패딩만 추가), 시/분은 무한 리스트
+  const ampmList = baseAmpmList; // 렌더에서 ["", ...baseList, ""] 패딩
   const hourList = createInfiniteList(baseHourList, 10);
   const minuteList = createInfiniteList(baseMinuteList, 5);
 
-  // 초기 선택값(리스트에서 전달)
   const initialSelected: Time = useMemo(
     () =>
       reservation?.time ?? {
@@ -52,7 +56,6 @@ export default function ScheduledEditPage() {
   const hourRef = useRef<HTMLDivElement>(null!);
   const minuteRef = useRef<HTMLDivElement>(null!);
 
-  // 프로그램적 스크롤 동안 onScroll 무시
   const suppressScrollRef = useRef(true);
 
   const days = ["일", "월", "화", "수", "목", "금", "토"] as const;
@@ -90,25 +93,23 @@ export default function ScheduledEditPage() {
     suppressScrollRef.current = true;
   }, [reservation, initialDate]);
 
-  // 무한 스크롤 중앙 사이클 시작 위치(시/분용)
+  // 중앙 사이클 시작 위치(시/분용)
   function getCenterScroll<T>(list: T[], baseList: T[]): number {
     const cycles = Math.floor(list.length / baseList.length / 2);
     const centerCycleStart = cycles * baseList.length;
-    return (centerCycleStart + 1) * itemHeight; // 상단 2칸 패딩 고려(렌더에서 추가)
+    return (centerCycleStart + 1) * itemHeight; // 상단 2칸 패딩 고려
   }
 
-  // 초기/선택 변경 시 스크롤을 정확히 가운데 라인에 배치
+  // 초기/선택 변경 시 가운데 정렬
   useEffect(() => {
     if (!ampmRef.current || !hourRef.current || !minuteRef.current) return;
 
     suppressScrollRef.current = true;
 
-    // ✅ AM/PM: (빈칸, 오전, 오후, 빈칸) 기준
-    // - 오전 중앙: scrollTop = 0
-    // - 오후 중앙: scrollTop = 1 * itemHeight
+    // AM/PM: ["", 오전, 오후, ""] 기준 (가운데 줄에 오전/오후)
     const ampmIndex = baseAmpmList.findIndex((v) => v === selected.ampm); // 0: 오전, 1: 오후
     if (ampmIndex !== -1) {
-      ampmRef.current.scrollTop = ampmIndex * itemHeight;
+      ampmRef.current.scrollTop = ampmIndex * itemHeight; // 오전=0, 오후=1*itemHeight
     }
 
     // HOUR
@@ -151,7 +152,7 @@ export default function ScheduledEditPage() {
   ) {
     if (!ref.current || suppressScrollRef.current) return;
 
-    // ✅ AM/PM(단일 목록) 처리: 0 또는 itemHeight 두 위치로 스냅
+    // AM/PM(단일 목록) 처리: 0 또는 itemHeight 두 위치로 스냅
     if (key === "ampm") {
       const top = ref.current.scrollTop;
       const snapped = top < itemHeight / 2 ? 0 : itemHeight;
@@ -165,13 +166,13 @@ export default function ScheduledEditPage() {
       return;
     }
 
-    // ✅ 시/분(무한 목록) 처리
+    // 시/분(무한 목록) 처리
     const centerOffset = ref.current.clientHeight / 2 - itemHeight / 2; // == itemHeight
     const index = Math.round((ref.current.scrollTop + centerOffset) / itemHeight) - 2; // 상단 2칸 패딩 보정
     const realIndex =
       ((index % baseList.length) + baseList.length) % baseList.length;
 
-    // 양끝 근처 → 중앙 사이클로 재정렬
+    // 양끝 → 중앙 사이클 재배치
     if (
       ref.current.scrollTop < itemHeight * 4 ||
       ref.current.scrollTop > (list.length - 5) * itemHeight
@@ -198,7 +199,6 @@ export default function ScheduledEditPage() {
     setSelected((prev) => ({ ...prev, [key]: selectedValue as never }));
   }
 
-  // 렌더러
   function renderColumn<T extends string>(
     list: T[],
     baseList: T[],
@@ -206,7 +206,7 @@ export default function ScheduledEditPage() {
     ref: React.RefObject<HTMLDivElement>,
     fontSize: string
   ) {
-    // AM/PM: ["", "오전", "오후", ""]
+    // AM/PM: ["", 오전, 오후, ""]
     // HOUR/MINUTE: ["", "", ...list, "", ""]
     const paddedItems =
       key === "ampm" ? (["", ...baseList, ""] as unknown as T[]) : (["", "", ...list, "", ""] as unknown as T[]);
@@ -225,7 +225,7 @@ export default function ScheduledEditPage() {
               key === "hour" ? String(selected.hour) : (selected[key] as string);
             const isSelected =
               key === "ampm"
-                ? baseList[realIdx] === selStr // realIdx: 0(오전),1(오후)
+                ? baseList[realIdx] === selStr // 0(오전),1(오후)
                 : list[realIdx] === selStr;
 
             return (
@@ -261,75 +261,133 @@ export default function ScheduledEditPage() {
     return "요일을 선택하세요";
   }
 
+  // ===== 저장 로직 추가 =====
+  function to24h(ampm: "오전" | "오후", hour12: number, minute: string): string {
+    let h = hour12 % 12;            // 12 -> 0
+    if (ampm === "오후") h += 12;   // 오후면 +12
+    return `${String(h).padStart(2, "0")}:${minute}`;
+  }
+
+  function buildDateLabel(): string {
+    if (selectedDate) {
+      const { year, month, day } = selectedDate;
+      const dateObj = new Date(year, month - 1, day);
+      const dayName = days[dateObj.getDay()];
+      return `${year}년 ${month}월 ${day}일 (${dayName})`;
+    }
+    if (selectedDays.length > 0) {
+      return `매주 ${selectedDays.join(", ")}`;
+    }
+    // 아무것도 선택 안 했으면 기존 유지
+    return reservation?.dateLabel ?? "";
+  }
+
+  function handleSave() {
+    if (!reservation) {
+      navigateTo("/scheduled-block");
+      return;
+    }
+
+    const newTime = to24h(selected.ampm, selected.hour, selected.minute);
+    const newDateLabel = buildDateLabel();
+
+    // localStorage에서 목록 읽어와 해당 id 교체
+    const saved = localStorage.getItem("reservations");
+    const list: ReservationRaw[] = saved ? JSON.parse(saved) : [];
+
+    const updated = list.map((item) =>
+      item.id === reservation.id
+        ? {
+          ...item,
+          time: newTime,
+          dateLabel: newDateLabel,
+          // 필요한 경우 다른 필드도 유지/변경
+        }
+        : item
+    );
+
+    localStorage.setItem("reservations", JSON.stringify(updated));
+    navigateTo("/scheduled-block");
+  }
+  // =========================
+
   return (
-    <Main id="sub">
-      <div className={styles.scheduledBlockingBox}>
-        <div className={styles.scheduledAddBox}>
-          {/* 시간 선택 */}
-          <div className={styles.timeBox}>
-            <div className={styles.timeSelector}>
-              {renderColumn(ampmList, baseAmpmList, "ampm", ampmRef, "28px")}
-              {renderColumn(hourList, baseHourList, "hour", hourRef, "45px")}
-              <div className={styles.colon}>:</div>
-              {renderColumn(minuteList, baseMinuteList, "minute", minuteRef, "45px")}
-              <div className={styles.centerHighlight}></div>
+    <>
+      <Main id="sub">
+        <div className={styles.scheduledBlockingBox}>
+          <div className={styles.scheduledAddBox}>
+            {/* 시간 선택 */}
+            <div className={styles.timeBox}>
+              <div className={styles.timeSelector}>
+                {renderColumn(ampmList, baseAmpmList, "ampm", ampmRef, "28px")}
+                {renderColumn(hourList, baseHourList, "hour", hourRef, "45px")}
+                <div className={styles.colon}>:</div>
+                {renderColumn(minuteList, baseMinuteList, "minute", minuteRef, "45px")}
+                <div className={styles.centerHighlight}></div>
+              </div>
             </div>
+
+            {/* 날짜 선택 */}
+            <div className={styles.dateBox}>
+              <span className={styles.date}>{getSelectedDateLabel()}</span>
+              <ul className={styles.dateList}>
+                {days.map((day, idx) => {
+                  const isSunday = idx === 0;
+                  const isSaturday = idx === 6;
+                  const isActive = selectedDays.includes(day);
+                  return (
+                    <li
+                      key={day}
+                      className={`${isSunday ? styles.sunday : ""} ${isSaturday ? styles.saturday : ""
+                        } ${isActive ? styles.active : ""}`}
+                    >
+                      <button className={styles.btn} onClick={() => handleDayClick(day)}>
+                        <span>{day}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <button className={styles.calendarBtn} onClick={() => setIsCalendarOpen(true)}>
+                <span className="blind">달력</span>
+              </button>
+            </div>
+
+            {/* 안내문 */}
+            <div className={styles.infoText}>
+              <h2>안내사항</h2>
+              <p>
+                예약 일시 기준 실시간 전력 사용량이 최근 일주일 간 평균 전력 사용량 이하일 경우 차단이
+                정상적으로 진행됩니다.
+              </p>
+            </div>
+
+            {/* 버튼 영역 */}
+            <div className="btnBox">
+              <Button styleType="grayType" onClick={handleCancel}>취소</Button>
+              <Button onClick={handleSave}>저장</Button>
+            </div>
+
+            {/* 달력 모달 */}
+            <CalendarModal
+              isOpen={isCalendarOpen}
+              initial={initialDate!}
+              onCancel={() => setIsCalendarOpen(false)}
+              onConfirm={(value) => {
+                setSelectedDate(value);
+                setSelectedDays([]);
+                setIsCalendarOpen(false);
+              }}
+              showDay={true}
+              showMonth={true}
+              tab="daily"
+            />
           </div>
-
-          {/* 날짜 선택 */}
-          <div className={styles.dateBox}>
-            <span className={styles.date}>{getSelectedDateLabel()}</span>
-            <ul className={styles.dateList}>
-              {days.map((day, idx) => {
-                const isSunday = idx === 0;
-                const isSaturday = idx === 6;
-                const isActive = selectedDays.includes(day);
-                return (
-                  <li
-                    key={day}
-                    className={`${isSunday ? styles.sunday : ""} ${isSaturday ? styles.saturday : ""} ${isActive ? styles.active : ""}`}
-                  >
-                    <button className={styles.btn} onClick={() => handleDayClick(day)}>
-                      <span>{day}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-
-            <button className={styles.calendarBtn} onClick={() => setIsCalendarOpen(true)}>
-              <span className="blind">달력</span>
-            </button>
-          </div>
-
-          {/* 안내문 */}
-          <div className={styles.infoText}>
-            <h2>안내사항</h2>
-            <p>예약 일시 기준 실시간 전력 사용량이 최근 일주일 간 평균 전력 사용량 이하일 경우 차단이 정상적으로 진행됩니다.</p>
-          </div>
-
-          {/* 버튼 영역 */}
-          <div className="btnBox">
-            <Button styleType="grayType" onClick={handleCancel}>취소</Button>
-            <Button>저장</Button>
-          </div>
-
-          {/* 달력 모달 */}
-          <CalendarModal
-            isOpen={isCalendarOpen}
-            initial={initialDate!}
-            onCancel={() => setIsCalendarOpen(false)}
-            onConfirm={(value) => {
-              setSelectedDate(value);
-              setSelectedDays([]);
-              setIsCalendarOpen(false);
-            }}
-            showDay={true}
-            showMonth={true}
-            tab="daily"
-          />
         </div>
-      </div>
-    </Main>
+      </Main>
+
+      <Footer />
+    </>
   );
 }
