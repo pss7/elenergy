@@ -195,16 +195,15 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   height: 109px;
-  padding: 0 17px;
+  padding: 27px 17px 0 17px;
   background-color: #fff;
   border-radius: 23px;
 }
 
 .scheduledAddBox .dateBox .date {
   display: block;
-  margin-bottom: 25px;
+  margin-bottom: 21px;
   font-size: 13px;
   color: #000;
   font-weight: 500;
@@ -212,6 +211,7 @@
 
 .scheduledAddBox .dateList {
   display: flex;
+  margin: 0 -15px;
 }
 
 .scheduledAddBox .dateList li {
@@ -246,7 +246,7 @@
   margin: 0 auto;
   width: 28px;
   height: 28px;
-  line-height: 24px;
+  line-height: 26px;
   border-radius: 50%;
   border: 1px solid #0F7685;
   color: #0F7685;
@@ -311,12 +311,6 @@
   display: none;
 }
 
-.scheduledAddBox .column ul {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
 .scheduledAddBox .column li {
   height: 66px;
   line-height: 66px;
@@ -338,5 +332,4 @@
   font-size: 45px;
   color: #000;
   font-weight: 500;
-  margin: 0 4px;
 }

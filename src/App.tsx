@@ -15,6 +15,7 @@ import SignupCompletePage from './pages/auth/SignupCompletePage';
 import IdFindPage from './pages/auth/IdFindPage';
 import IdFindResultPage from './pages/auth/IdFindResultPage';
 import PasswordResetConfirmPage from './pages/auth/PasswordResetConfirmPage';
+import PasswordResetPage from './pages/auth/PasswordResetPage';
 
 import MyPage from './pages/my/MyPage';
 import MyAccountPage from './pages/my/MyAccountPage';
@@ -34,13 +35,15 @@ import MonitoringPage from './pages/monitoring/MonitoringPage';
 import ScheduledBlockingPage from './pages/scheduled-block/ScheduledBlockingPage';
 import ScheduledDeletePage from './pages/scheduled-block/ScheduledDeletePage';
 import ScheduledAddPage from './pages/scheduled-block/ScheduledAddPage';
+import ScheduledEditPage from './pages/scheduled-block/ScheduledEditPage';
+
 import AutoBlockPage from './pages/auto-block/AutoBlockPage';
 import AutoBlockUpdagePage from './pages/auto-block/AutoBlockPageUpdate';
+
 import ManualControlPage from './pages/manual-control/ManualControlPage ';
+
 import AlarmPage from './pages/AlarmPage';
 import AlarmFilterPage from './pages/AlarmFilterPage';
-import PasswordResetPage from './pages/auth/PasswordResetPage';
-
 
 function App() {
 
@@ -110,6 +113,7 @@ function App() {
         {/* 예약차단페이지 */}
         <Route path="/scheduled-block" element={<ScheduledBlockingPage />} />
         <Route path="/scheduled-delete/:id" element={<ScheduledDeletePage />} />
+        <Route path="/scheduled-edit/:id" element={<ScheduledEditPage />} />
         <Route path="/scheduled-add" element={<ScheduledAddPage />} />
 
         {/* 자동차단페이지 */}

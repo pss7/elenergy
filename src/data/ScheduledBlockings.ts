@@ -1,6 +1,6 @@
 export type Reservation = {
   id: number;
-  controllerId: number; // ✔️ 제어기 ID 필수
+  controllerId: number;
   time: string;
   dateLabel: string;
   isOn: boolean;
