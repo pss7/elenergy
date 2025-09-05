@@ -24,6 +24,7 @@ import monitoringData, { type TabType } from "../../data/Monitoring";
 
 // 모달
 import DatePickerModal from "../../components/ui/DatePickerModal"; // 경로 맞게 조정
+import Footer from "../../components/layout/Footer";
 
 export default function MonitoringPage() {
   const [tab, setTab] = useState<TabType>("daily");
@@ -169,6 +170,8 @@ export default function MonitoringPage() {
           </div>
         </div>
       </Main>
+
+      <Footer />
 
       {/* 날짜 선택 모달 */}
       {showModal && (
