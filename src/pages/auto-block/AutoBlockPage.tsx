@@ -22,6 +22,7 @@ import {
 import { ko } from "date-fns/locale";
 import { Link } from "react-router-dom";
 import DatePickerModal from "../../components/ui/DatePickerModal";
+import Footer from "../../components/layout/Footer";
 
 export default function AutoBlockPage() {
   const [tab, setTab] = useState<TabType>("hourly");
@@ -214,6 +215,8 @@ export default function AutoBlockPage() {
         )}
 
       </Main>
+
+      <Footer />
     </>
   );
 }
