@@ -334,3 +334,9 @@
   color: #000;
   font-weight: 500;
 }
+
+.column {
+  overscroll-behavior: contain;
+  /* iOS에서 관성 스크롤 과하면 아래를 고려 (상황에 따라) */
+  /* -webkit-overflow-scrolling: auto; */
+}
