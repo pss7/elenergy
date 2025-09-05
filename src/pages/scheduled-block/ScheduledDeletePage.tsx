@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import CustomSelect from "../../components/ui/CustomSelect";
@@ -6,91 +6,166 @@ import styles from "./ScheduledBlockingPage.module.css";
 import controllerData from "../../data/Controllers";
 import scheduledBlockingsData from "../../data/ScheduledBlockings";
 import type { Reservation } from "../../data/ScheduledBlockings";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function ScheduledDeletePage() {
-
   const navigate = useNavigate();
 
-  const [selectedControllerId, setSelectedControllerId] = useState<number>(1);
+  // URL 파라미터에서 controller ID 추출 (문자열 → 숫자 변환)
+  const { id } = useParams();
+  const selectedControllerId = Number(id);
 
+  // 예약 목록 상태, 초기값은 localStorage에서 불러오거나 기본 데이터 사용
   const [reservations, setReservations] = useState<Reservation[]>(() => {
     const saved = localStorage.getItem("reservations");
     return saved ? JSON.parse(saved) : scheduledBlockingsData;
   });
 
+  // 삭제할 예약 ID들의 배열 상태 (선택된 항목들)
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
+  // 선택된 제어기에 해당하는 예약만 필터링
+  const filteredReservations = reservations.filter(
+    (r) => r.controllerId === selectedControllerId
+  );
+
+  // 전체 선택 체크박스 상태 계산
+  const allSelected = filteredReservations.length > 0 && selectedIds.length === filteredReservations.length;
+
+  // 체크박스 선택/해제 시 실행되는 함수
   function toggleSelection(id: number) {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(itemId => itemId !== id) : [...prev, id]
+    setSelectedIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((itemId) => itemId !== id) // 이미 선택된 항목이면 해제
+        : [...prev, id] // 선택되지 않은 항목이면 추가
     );
   }
 
+  // 전체 선택/해제 토글 함수
+  function toggleSelectAll() {
+    if (allSelected) {
+      // 전체 선택된 상태면 모두 선택 해제
+      setSelectedIds([]);
+    } else {
+      // 전체 선택 해제 상태면 필터링된 예약 ID 모두 선택
+      setSelectedIds(filteredReservations.map((item) => item.id));
+    }
+  }
+
+  // 삭제 버튼 클릭 시 선택된 예약들 삭제 처리
   function handleDelete() {
-    const updated = reservations.filter(res => !selectedIds.includes(res.id));
+    // 선택된 ID를 제외한 예약만 남김
+    const updated = reservations.filter((res) => !selectedIds.includes(res.id));
     setReservations(updated);
+
+    // 변경된 예약 목록을 localStorage에 저장
     localStorage.setItem("reservations", JSON.stringify(updated));
+
+    // 삭제 완료 후 예약 차단 페이지로 이동
     navigate("/scheduled-block");
   }
 
+  // 취소 버튼 클릭 시 예약 차단 페이지로 이동 (변경 사항 없음)
   function handleCancel() {
     navigate("/scheduled-block");
   }
 
   return (
     <>
+      {/* 페이지 헤더 - 이전 페이지로 돌아가는 링크 */}
       <Header type="pageLink" title="예약 차단" prevLink="/scheduled-block" />
 
       <Main id="sub">
         <div className={styles.scheduledBlockingBox}>
           <div className={styles.scheduledDeleteBox}>
+            {/* 제어기 선택 드롭다운 - 선택 변경 시 해당 제어기의 삭제 페이지로 이동 */}
             <CustomSelect
               controllers={controllerData}
               selectedControllerId={selectedControllerId}
-              onChange={setSelectedControllerId}
+              onChange={(newId) => navigate(`/scheduled-delete/${newId}`)}
             />
 
-            <div className={styles.topBox}>
-              <span className={styles.selectText}>{selectedIds.length}개 선택됨</span>
-              <div className={styles.btnBox}>
+            {/* 상단 선택 및 버튼 영역 */}
+            <div className={styles.topBox} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {/* 전체 선택 체크박스 */}
+
+              <div className={styles.checkedBox}>
+                <input
+                  id="allChk"
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  className="blind"
+                />
+
+                <label htmlFor="allChk" >
+                  <span className="blind">
+                    전체선택
+                  </span>
+                </label>
+
+                {/* 선택된 예약 개수 표시 */}
+                <span className={styles.selectText}>
+                  {selectedIds.length}개 선택됨
+                </span>
+              </div>
+
+              {/* 취소, 삭제 버튼 */}
+              <div className={styles.btnBox} style={{ marginLeft: 'auto' }}>
                 <button onClick={handleCancel} className={styles.reservationAddBtn}>
                   취소
                 </button>
                 <button
                   onClick={handleDelete}
                   className={styles.delBtn}
-                  disabled={selectedIds.length === 0}
+                  disabled={selectedIds.length === 0} // 선택된 항목 없으면 비활성화
                 >
                   삭제
                 </button>
               </div>
             </div>
 
+            {/* 예약 목록 */}
             <ul className={styles.reservationList}>
-              {reservations.map(item => (
-                <li key={item.id} className={selectedIds.includes(item.id) ? styles.selected : ""}>
-                  <div className={styles.inputChkBox}>
-                    <input
-                      type="checkbox"
-                      className="blind"
-                      id={`chk-${item.id}`}
-                      checked={selectedIds.includes(item.id)}
-                      onChange={() => toggleSelection(item.id)}
-                    />
-                    <label htmlFor={`chk-${item.id}`} className={styles.customCheckbox}></label>
-                  </div>
+              {/* 예약 없으면 안내 문구 */}
+              {filteredReservations.length === 0 ? (
+                <li className={styles.noData}>예약이 없습니다.</li>
+              ) : (
+                filteredReservations.map((item) => (
+                  <li
+                    key={item.id}
+                    className={selectedIds.includes(item.id) ? styles.selected : ""}
+                  >
+                    {/* 체크박스 - 선택/해제 가능 */}
+                    <div className={styles.inputChkBox}>
+                      <input
+                        type="checkbox"
+                        className="blind"
+                        id={`chk-${item.id}`}
+                        checked={selectedIds.includes(item.id)}
+                        onChange={() => toggleSelection(item.id)}
+                      />
+                      <label
+                        htmlFor={`chk-${item.id}`}
+                        className={styles.customCheckbox}
+                      ></label>
+                    </div>
 
-                  <div className={`${styles.timeBox} ${!item.isOn ? styles.off : ""}`}>
-                    <span>{+item.time.split(":")[0] >= 12 ? "오후" : "오전"}</span>
-                    <strong>{item.time}</strong>
-                  </div>
+                    {/* 예약 시간 표시 (ON/OFF 상태에 따라 스타일 다름) */}
+                    <div
+                      className={`${styles.timeBox} ${!item.isOn ? styles.off : ""}`}
+                    >
+                      <span>{+item.time.split(":")[0] >= 12 ? "오후" : "오전"}</span>
+                      <strong>{item.time}</strong>
+                    </div>
 
-                  <div className={styles.dateBox}>
-                    <span>{item.dateLabel}</span>
-                  </div>
-                </li>
-              ))}
+                    {/* 예약 날짜 표시 */}
+                    <div className={styles.dateBox}>
+                      <span>{item.dateLabel}</span>
+                    </div>
+                  </li>
+                ))
+              )}
             </ul>
           </div>
         </div>

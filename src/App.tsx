@@ -109,7 +109,7 @@ function App() {
 
         {/* 예약차단페이지 */}
         <Route path="/scheduled-block" element={<ScheduledBlockingPage />} />
-        <Route path="/scheduled-delete" element={<ScheduledDeletePage />} />
+        <Route path="/scheduled-delete/:id" element={<ScheduledDeletePage />} />
         <Route path="/scheduled-add" element={<ScheduledAddPage />} />
 
         {/* 자동차단페이지 */}
