@@ -9,7 +9,6 @@ import scheduledBlockingsData from "../../data/ScheduledBlockings";
 import type { Reservation } from "../../data/ScheduledBlockings";
 
 export default function ScheduledBlockingPage() {
-
   const [selectedControllerId, setSelectedControllerId] = useState<number>(1);
 
   // 로컬스토리지에서 초기값 가져오기
@@ -18,15 +17,20 @@ export default function ScheduledBlockingPage() {
     return saved ? JSON.parse(saved) : scheduledBlockingsData;
   });
 
-  // 변경될 때마다 저장
+  // 변경될 때마다 로컬스토리지에 저장
   useEffect(() => {
     localStorage.setItem("reservations", JSON.stringify(reservations));
   }, [reservations]);
 
+  // 선택된 제어기의 예약만 필터링
+  const filteredReservations = reservations.filter(
+    (r) => r.controllerId === selectedControllerId
+  );
+
   // ON/OFF 토글
   function toggleReservation(id: number) {
-    setReservations(prev =>
-      prev.map(item =>
+    setReservations((prev) =>
+      prev.map((item) =>
         item.id === id ? { ...item, isOn: !item.isOn } : item
       )
     );
@@ -38,6 +42,7 @@ export default function ScheduledBlockingPage() {
 
       <Main id="sub">
         <div className={styles.scheduledBlockingBox}>
+          {/* 제어기 선택 드롭다운 */}
           <CustomSelect
             controllers={controllerData}
             selectedControllerId={selectedControllerId}
@@ -56,26 +61,35 @@ export default function ScheduledBlockingPage() {
             </div>
           </div>
 
+          {/* 선택된 제어기의 예약 목록만 출력 */}
           <ul className={styles.reservationList}>
-            {reservations.map(item => (
-              <li key={item.id}>
-                <div
-                  className={`${styles.timeBox} ${!item.isOn ? styles.off : ""}`}
-                >
-                  <span>{+item.time.split(":")[0] >= 12 ? "오후" : "오전"}</span>
-                  <strong>{item.time}</strong>
-                </div>
-                <div className={styles.dateBox}>
-                  <span>{item.dateLabel}</span>
-                </div>
-                <div
-                  className={`${styles.toggleSwitch} ${item.isOn ? styles.on : ""}`}
-                  onClick={() => toggleReservation(item.id)}
-                >
-                  <div className={styles.toggleKnob}></div>
-                </div>
-              </li>
-            ))}
+            {filteredReservations.length === 0 ? (
+              <li className={styles.noData}>예약이 없습니다.</li>
+            ) : (
+              filteredReservations.map((item) => (
+                <li key={item.id}>
+                  <div
+                    className={`${styles.timeBox} ${!item.isOn ? styles.off : ""
+                      }`}
+                  >
+                    <span>
+                      {+item.time.split(":")[0] >= 12 ? "오후" : "오전"}
+                    </span>
+                    <strong>{item.time}</strong>
+                  </div>
+                  <div className={styles.dateBox}>
+                    <span>{item.dateLabel}</span>
+                  </div>
+                  <div
+                    className={`${styles.toggleSwitch} ${item.isOn ? styles.on : ""
+                      }`}
+                    onClick={() => toggleReservation(item.id)}
+                  >
+                    <div className={styles.toggleKnob}></div>
+                  </div>
+                </li>
+              ))
+            )}
           </ul>
         </div>
       </Main>

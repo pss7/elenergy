@@ -15,6 +15,29 @@ interface PowerBarChartProps {
   unit?: string;
 }
 
+//커스텀 툴팁
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length > 0) {
+    const { value } = payload[0];
+
+    return (
+      <div
+        style={{
+          background: 'white',
+          border: '1px solid #ccc',
+          padding: '8px',
+          fontSize: '12px',
+          lineHeight: '1.4',
+        }}
+      >
+        <div><strong>사용량:</strong> {value} Wh</div>
+        <div><strong>날짜:</strong> {label}</div>
+      </div>
+    );
+  }
+  return null;
+};
+
 const PowerBarChart: React.FC<PowerBarChartProps> = ({
   data,
   width = '100%',
@@ -59,8 +82,11 @@ const PowerBarChart: React.FC<PowerBarChartProps> = ({
             (Wh)
           </text>
 
-          <Tooltip formatter={(value: number) => `${value} Wh`} />
+          {/* 사용자 정의 툴팁 */}
+          <Tooltip content={<CustomTooltip />} />
+
           <Bar dataKey="value" fill={barColor} radius={[4, 4, 0, 0]} />
+
         </BarChart>
       </ResponsiveContainer>
     </div>
