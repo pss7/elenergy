@@ -43,7 +43,7 @@ export default function MyPage() {
 
       <Header
         type="pageLink"
-        title="마이페이지"
+        title="프로필"
         prevLink="/"
       />
 

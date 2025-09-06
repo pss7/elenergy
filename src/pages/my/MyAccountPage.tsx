@@ -32,18 +32,6 @@ export default function MyAccountPage() {
               </em>
             </div>
             <div className={styles.box}>
-              <span>회사명</span>
-              <em>
-                (주)공장전력
-              </em>
-            </div>
-            <div className={styles.box}>
-              <span>직급</span>
-              <em>
-                팀장
-              </em>
-            </div>
-            <div className={styles.box}>
               <span>이메일</span>
               <em>
                 official@elenergy.kr
@@ -53,6 +41,18 @@ export default function MyAccountPage() {
               <span>전화번호</span>
               <em>
                 010-1234-5678
+              </em>
+            </div>
+            <div className={styles.box}>
+              <span>직급</span>
+              <em>
+                팀장
+              </em>
+            </div>
+            <div className={styles.box}>
+              <span>회사명</span>
+              <em>
+                (주)공장전력
               </em>
             </div>
             <div className={styles.box}>
