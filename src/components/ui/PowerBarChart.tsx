@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Label } from 'recharts';
 
 export interface ChartDataPoint {
   label: string;
@@ -39,7 +39,7 @@ const CustomTooltip = ({ active, payload, label, unit = 'Wh' }: any) => {
 const PowerBarChart: React.FC<PowerBarChartProps> = ({
   data,
   width = '100%',
-  height = 200,
+  height = 227,
   barColor = '#0F7685',
   yMax,
   unit = 'Wh',
@@ -47,34 +47,41 @@ const PowerBarChart: React.FC<PowerBarChartProps> = ({
   const values = useMemo(() => data.map(d => d.value), [data]);
   const dynamicMax = useMemo(() => (yMax ?? calcNiceMax(values)), [yMax, values]);
 
+  // Y축(오른쪽) 영역 너비
+  const yAxisWidth = 32;
+
   return (
     <div style={{ width, height }}>
-      <ResponsiveContainer width="100%" height={227}>
-        <BarChart data={data} margin={{ top: 30 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          margin={{ top: 30, right: yAxisWidth, left: yAxisWidth, bottom: 0 }}
+        >
           <XAxis
             dataKey="label"
             tick={{ fontSize: 11, fill: '#909090', fontWeight: 500 }}
+            padding={{ left: 0, right: 0 }}
           />
           <YAxis
+            width={yAxisWidth}
             orientation="right"
             domain={[0, dynamicMax]}
             tickCount={5}
             tick={{ fontSize: 9, fill: '#909090', fontWeight: 500 }}
-          />
-
-          <text
-            x="100%"
-            y={10}
-            textAnchor="end"
-            fontSize="7"
-            fill="#909090"
-            fontWeight="500"
+            axisLine={true}
+            tickLine={false}
           >
-            ({unit})
-          </text>
+            {/* Y축 위에 단위 표시 */}
+            <Label
+              value={`(${unit})`}
+              position="top"
+              offset={10}
+              angle={0}
+              style={{ fill: '#909090', fontSize: 7, fontWeight: 500 }}
+            />
+          </YAxis>
 
           <Tooltip content={<CustomTooltip unit={unit} />} />
-          {/* radius 제거(둥근 모서리 X) */}
           <Bar dataKey="value" fill={barColor} />
         </BarChart>
       </ResponsiveContainer>
