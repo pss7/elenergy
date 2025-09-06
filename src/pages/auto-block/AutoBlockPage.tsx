@@ -285,7 +285,13 @@ export default function AutoBlockPage() {
             </div>
           </div>
 
-          <PowerBarChart data={chartData} yMax={400} unit="Wh" barColor="#0F7685" />
+          <PowerBarChart
+            data={chartData}
+            unit="Wh"
+            showAverageLine
+            averageValue={stats.average}   // ← 평균선 값
+            barColor="#0F7685"
+          />
 
           {chartData.length === 0 && (
             <div className={styles.infoBox}>

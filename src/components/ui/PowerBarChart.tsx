@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Label } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Label, ReferenceLine } from 'recharts';
 
 export interface ChartDataPoint {
   label: string;
@@ -11,8 +11,11 @@ interface PowerBarChartProps {
   width?: number | string;
   height?: number;
   barColor?: string;
-  yMax?: number;      // 없으면 자동 계산
-  unit?: string;      // 기본 Wh
+  yMax?: number;
+  unit?: string;
+  /** 평균선 표시 여부 & 값 (없으면 data로 평균 계산) */
+  showAverageLine?: boolean;
+  averageValue?: number;
 }
 
 function calcNiceMax(vals: number[]) {
@@ -43,20 +46,27 @@ const PowerBarChart: React.FC<PowerBarChartProps> = ({
   barColor = '#0F7685',
   yMax,
   unit = 'Wh',
+  showAverageLine = false,
+  averageValue,
 }) => {
   const values = useMemo(() => data.map(d => d.value), [data]);
-  const dynamicMax = useMemo(() => (yMax ?? calcNiceMax(values)), [yMax, values]);
+  const computedAvg = useMemo(() => {
+    if (!values.length) return 0;
+    const sum = values.reduce((s, v) => s + v, 0);
+    return Math.round((sum / values.length) * 10) / 10;
+  }, [values]);
 
-  // Y축(오른쪽) 영역 너비
+  const avg = averageValue ?? computedAvg;
+  // 평균선도 축 범위 계산에 포함
+  const maxForScale = useMemo(() => Math.max(...values, avg || 0), [values, avg]);
+  const dynamicMax = useMemo(() => (yMax ?? calcNiceMax([maxForScale])), [yMax, maxForScale]);
+
   const yAxisWidth = 32;
 
   return (
     <div style={{ width, height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={data}
-          margin={{ top: 30, right: yAxisWidth, left: yAxisWidth, bottom: 0 }}
-        >
+        <BarChart data={data} margin={{ top: 34, right: yAxisWidth, left: yAxisWidth, bottom: 0 }}>
           <XAxis
             dataKey="label"
             tick={{ fontSize: 11, fill: '#909090', fontWeight: 500 }}
@@ -68,10 +78,9 @@ const PowerBarChart: React.FC<PowerBarChartProps> = ({
             domain={[0, dynamicMax]}
             tickCount={5}
             tick={{ fontSize: 9, fill: '#909090', fontWeight: 500 }}
-            axisLine={true}
+            axisLine
             tickLine={false}
           >
-            {/* Y축 위에 단위 표시 */}
             <Label
               value={`(${unit})`}
               position="top"
@@ -83,6 +92,17 @@ const PowerBarChart: React.FC<PowerBarChartProps> = ({
 
           <Tooltip content={<CustomTooltip unit={unit} />} />
           <Bar dataKey="value" fill={barColor} />
+
+          {showAverageLine && (
+            <ReferenceLine
+              y={avg}
+              stroke="#C9443F"
+              strokeWidth={1}
+              strokeDasharray="4 4"
+              ifOverflow="extendDomain"
+            />
+          )}
+
         </BarChart>
       </ResponsiveContainer>
     </div>

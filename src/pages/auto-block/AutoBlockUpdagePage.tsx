@@ -149,8 +149,9 @@ export default function AutoBlockUpdagePage() {
 
             <PowerBarChart
               data={data?.dailyLastWeek?.chart || []}
-              yMax={400}
               unit="Wh"
+              showAverageLine
+              averageValue={statsWeek.average}   
               barColor="#0F7685"
             />
 
