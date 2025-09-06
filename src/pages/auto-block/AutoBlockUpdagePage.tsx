@@ -31,20 +31,23 @@ export default function AutoBlockUpdagePage() {
   const [map, setMap] = useState<PowerUsageDataByController | null>(null);
   const [thresholdInput, setThresholdInput] = useState("");
 
-  // 컨트롤러별 저장 데이터 로드
+  // 컨트롤러별 저장 데이터 로드 (없으면 임계값 0으로 시드)
   useEffect(() => {
     const saved = localStorage.getItem("powerDataByController");
     if (saved) {
       try {
         setMap(JSON.parse(saved) as PowerUsageDataByController);
         return;
-      } catch {
-        // fallthrough
-      }
+      } catch {}
     }
-    // 저장된 게 없거나 파싱 실패 → 기본 맵 시드
-    localStorage.setItem("powerDataByController", JSON.stringify(defaultMap));
-    setMap(defaultMap);
+    const zeroSeeded: PowerUsageDataByController = Object.fromEntries(
+      Object.entries(defaultMap).map(([id, d]) => [
+        id,
+        { ...d, autoBlockThreshold: 0 },
+      ])
+    ) as PowerUsageDataByController;
+    localStorage.setItem("powerDataByController", JSON.stringify(zeroSeeded));
+    setMap(zeroSeeded);
   }, []);
 
   // 현재 제어기 데이터
@@ -55,7 +58,6 @@ export default function AutoBlockUpdagePage() {
     () => computeStatsFromChart(data?.dailyLastWeek?.chart ?? []),
     [data?.dailyLastWeek?.chart]
   );
-
   const averageLastWeek = statsWeek.average;
 
   // 입력 검증
@@ -74,6 +76,7 @@ export default function AutoBlockUpdagePage() {
     }
     const newVal = parseInt(thresholdInput, 10);
 
+    // 0 허용, 최근 1주 평균 초과만 금지
     if (newVal > averageLastWeek) {
       alert("최근 일주일 간 평균 전력 사용량 이하로 입력해 주세요.");
       return;
@@ -89,7 +92,7 @@ export default function AutoBlockUpdagePage() {
     localStorage.setItem("powerDataByController", JSON.stringify(updated));
     setMap(updated);
     alert("전력 기준이 저장되었습니다.");
-    navigate("/auto-block"); // 메인으로 복귀
+    navigate("/auto-block");
   }
 
   // 취소
@@ -115,7 +118,7 @@ export default function AutoBlockUpdagePage() {
             <div className={styles.inputBox}>
               <input
                 type="text"
-                placeholder={`${data?.autoBlockThreshold ?? "-"}Wh`}
+                placeholder={`${(data?.autoBlockThreshold ?? 0)}Wh`}
                 value={thresholdInput}
                 onChange={(e) => setThresholdInput(e.target.value)}
               />
@@ -151,7 +154,7 @@ export default function AutoBlockUpdagePage() {
               data={data?.dailyLastWeek?.chart || []}
               unit="Wh"
               showAverageLine
-              averageValue={statsWeek.average}   
+              averageValue={statsWeek.average}
               barColor="#0F7685"
             />
 

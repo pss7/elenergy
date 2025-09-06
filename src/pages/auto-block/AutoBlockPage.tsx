@@ -43,13 +43,12 @@ function clamp(v: number, min: number, max: number) {
 /** ===== 제어기별 범위/패턴 프로파일 (확실히 다르게) ===== */
 const controllerProfiles = {
   1: { hourly: [120, 360], daily: [150, 320], weekly: [900, 1500], monthly: [7000, 10000] },
-  2: { hourly: [60, 380], daily: [150, 360], weekly: [1100, 1700], monthly: [8600, 11000] },
-  3: { hourly: [80, 340], daily: [120, 280], weekly: [900, 1200], monthly: [7000, 8500] },
+  2: { hourly: [60, 380],  daily: [150, 360], weekly: [1100, 1700], monthly: [8600, 11000] },
+  3: { hourly: [80, 340],  daily: [120, 280], weekly: [900, 1200],  monthly: [7000,  8500]  },
   4: { hourly: [100, 380], daily: [180, 380], weekly: [1300, 1800], monthly: [9200, 12000] },
 } as const;
 
 /** 2월=28, 4/6/9/11=30, 나머지 31 (요구사항 고정 규칙) */
-// year는 사용하지 않으므로 언더스코어로 경고 억제
 function daysInMonthFixed(_year: number, month1: number) {
   if (month1 === 2) return 28;
   if ([4, 6, 9, 11].includes(month1)) return 30;
@@ -61,8 +60,8 @@ function genValue(ctrlId: number, tab: TabType, index: number, anchor: Date) {
   const p = controllerProfiles[ctrlId as 1 | 2 | 3 | 4] ?? controllerProfiles[1];
   const [minV, maxV] =
     tab === "hourly" ? p.hourly :
-      tab === "daily" ? p.daily :
-        tab === "weekly" ? p.weekly : p.monthly;
+    tab === "daily"  ? p.daily  :
+    tab === "weekly" ? p.weekly : p.monthly;
 
   const base = (Math.sin((index / 3.7) + ctrlId) + 1) / 2; // 0~1
   const noise = seededRand01(`${ctrlId}|${tab}|${index}|${anchor.toDateString()}`) * 0.25;
@@ -110,20 +109,9 @@ function computeStatsFromChart(chart: { value: number }[]) {
   };
 }
 
-/** 저장된 맵이 “모두 동일”이면 새로 시드 */
-function deepEqual(a: any, b: any) { return JSON.stringify(a) === JSON.stringify(b); }
-function looksUniform(map: PowerUsageDataByController) {
-  const ids = Object.keys(map);
-  if (ids.length <= 1) return true;
-  const first = map[Number(ids[0])];
-  return ids.every((id) => deepEqual(map[Number(id)], first));
-}
-
 export default function AutoBlockPage() {
   const [tab, setTab] = useState<TabType>("hourly");
   const [currentDate, setCurrentDate] = useState(new Date());
-
-  // ✅ 모달 상태는 컴포넌트 내부에서 선언해야 함
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [selectedControllerId, setSelectedControllerId] = useState<number>(() => {
@@ -136,50 +124,52 @@ export default function AutoBlockPage() {
 
   const [dataByController, setDataByController] = useState<PowerUsageDataByController | null>(null);
 
+  // 최초 로드: 저장된 맵 없으면 임계값 0으로 시드
   useEffect(() => {
     const saved = localStorage.getItem("powerDataByController");
     if (saved) {
       try {
-        const parsed = JSON.parse(saved) as PowerUsageDataByController;
-        if (!parsed || Object.keys(parsed).length === 0 || looksUniform(parsed)) {
-          localStorage.setItem("powerDataByController", JSON.stringify(defaultMap));
-          setDataByController(defaultMap);
-        } else {
-          setDataByController(parsed);
-        }
+        setDataByController(JSON.parse(saved) as PowerUsageDataByController);
         return;
-      } catch { }
+      } catch {}
     }
-    localStorage.setItem("powerDataByController", JSON.stringify(defaultMap));
-    setDataByController(defaultMap);
+    // 임계값만 0으로 초기화한 기본 맵 저장
+    const zeroSeeded: PowerUsageDataByController = Object.fromEntries(
+      Object.entries(defaultMap).map(([id, d]) => [
+        id,
+        { ...d, autoBlockThreshold: 0 },
+      ])
+    ) as PowerUsageDataByController;
+    localStorage.setItem("powerDataByController", JSON.stringify(zeroSeeded));
+    setDataByController(zeroSeeded);
   }, []);
 
   // 네비게이션
   function handlePrevDate() {
     switch (tab) {
-      case "hourly": setCurrentDate((p) => subDays(p, 1)); break; // 1일
-      case "daily": setCurrentDate((p) => subMonths(p, 1)); break; // 1개월
-      case "weekly": setCurrentDate((p) => subMonths(p, 6)); break; // 6개월
-      case "monthly": setCurrentDate((p) => subYears(p, 1)); break; // 1년
+      case "hourly":  setCurrentDate((p) => subDays(p, 1));   break; // 1일
+      case "daily":   setCurrentDate((p) => subMonths(p, 1)); break; // 1개월
+      case "weekly":  setCurrentDate((p) => subMonths(p, 6)); break; // 6개월
+      case "monthly": setCurrentDate((p) => subYears(p, 1));  break; // 1년
     }
   }
   const today = new Date();
   const atMaxPeriod = useMemo(() => {
     switch (tab) {
-      case "hourly": return isSameDay(currentDate, today);
-      case "daily": return isSameMonth(currentDate, today);
-      case "weekly": return isSameWeek(currentDate, today, { weekStartsOn: 1 });
+      case "hourly":  return isSameDay(currentDate, today);
+      case "daily":   return isSameMonth(currentDate, today);
+      case "weekly":  return isSameWeek(currentDate, today, { weekStartsOn: 1 });
       case "monthly": return isSameYear(currentDate, today);
-      default: return false;
+      default:        return false;
     }
   }, [tab, currentDate]);
   function handleNextDate() {
     if (atMaxPeriod) return;
     switch (tab) {
-      case "hourly": setCurrentDate((p) => addDays(p, 1)); break;
-      case "daily": setCurrentDate((p) => addMonths(p, 1)); break;
-      case "weekly": setCurrentDate((p) => addMonths(p, 6)); break;
-      case "monthly": setCurrentDate((p) => addYears(p, 1)); break;
+      case "hourly":  setCurrentDate((p) => addDays(p, 1));   break;
+      case "daily":   setCurrentDate((p) => addMonths(p, 1)); break;
+      case "weekly":  setCurrentDate((p) => addMonths(p, 6)); break;
+      case "monthly": setCurrentDate((p) => addYears(p, 1));  break;
     }
   }
 
@@ -205,19 +195,23 @@ export default function AutoBlockPage() {
   // 차트 & 통계
   const chartData = useMemo(() => {
     switch (tab) {
-      case "hourly": return buildHourly(selectedControllerId, currentDate);
-      case "daily": return buildDaily(selectedControllerId, currentDate);
-      case "weekly": return buildWeekly(selectedControllerId, currentDate);
+      case "hourly":  return buildHourly(selectedControllerId, currentDate);
+      case "daily":   return buildDaily(selectedControllerId, currentDate);
+      case "weekly":  return buildWeekly(selectedControllerId, currentDate);
       case "monthly": return buildMonthly(selectedControllerId, currentDate);
-      default: return [];
+      default:        return [];
     }
   }, [tab, currentDate, selectedControllerId]);
 
   const stats = useMemo(() => computeStatsFromChart(chartData), [chartData]);
+
+  // 임계값(0도 유효값으로 그대로 보여줌)
+  const id = selectedControllerId as 1 | 2 | 3 | 4;
+  const rawThreshold = dataByController?.[id]?.autoBlockThreshold;
   const threshold =
-    dataByController?.[selectedControllerId]?.autoBlockThreshold ??
-    defaultMap[selectedControllerId as 1 | 2 | 3 | 4]?.autoBlockThreshold ??
-    "-";
+    typeof rawThreshold === "number" && Number.isFinite(rawThreshold)
+      ? rawThreshold
+      : 0;
 
   return (
     <>
@@ -248,9 +242,9 @@ export default function AutoBlockPage() {
           </div>
 
           <div className={styles.dateTabBox}>
-            <button className={`${styles.btn} ${tab === "hourly" ? styles.active : ""}`} onClick={() => setTab("hourly")}>시간별</button>
-            <button className={`${styles.btn} ${tab === "daily" ? styles.active : ""}`} onClick={() => setTab("daily")}>일별</button>
-            <button className={`${styles.btn} ${tab === "weekly" ? styles.active : ""}`} onClick={() => setTab("weekly")}>주별</button>
+            <button className={`${styles.btn} ${tab === "hourly" ? styles.active : ""}`}  onClick={() => setTab("hourly")}>시간별</button>
+            <button className={`${styles.btn} ${tab === "daily" ? styles.active : ""}`}   onClick={() => setTab("daily")}>일별</button>
+            <button className={`${styles.btn} ${tab === "weekly" ? styles.active : ""}`}  onClick={() => setTab("weekly")}>주별</button>
             <button className={`${styles.btn} ${tab === "monthly" ? styles.active : ""}`} onClick={() => setTab("monthly")}>월별</button>
           </div>
 
@@ -289,7 +283,7 @@ export default function AutoBlockPage() {
             data={chartData}
             unit="Wh"
             showAverageLine
-            averageValue={stats.average}   // ← 평균선 값
+            averageValue={stats.average}
             barColor="#0F7685"
           />
 
