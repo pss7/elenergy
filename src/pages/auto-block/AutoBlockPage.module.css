@@ -150,9 +150,10 @@
 }
 
 .autoBlockBox .dateBox {
+  position: relative;
   margin-bottom: 40px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
 }
 
@@ -172,16 +173,23 @@
 }
 
 .autoBlockBox .dateBox .prev {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
   width: 7px;
   height: 11px;
   background: url(/assets/images/sub/arrow_icon04.svg)no-repeat center;
 }
 
 .autoBlockBox .dateBox .next {
+  position: absolute;
+  top: 50%;
+  right: 0;
   width: 7px;
   height: 11px;
   background: url(/assets/images/sub/arrow_icon04.svg)no-repeat center;
-  transform: rotate(180deg);
+  transform: translateY(-50%) rotate(180deg);
 }
 
 /* 전력기준 수정 */
