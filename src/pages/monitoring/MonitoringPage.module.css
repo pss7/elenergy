@@ -22,9 +22,11 @@
 }
 
 .monitoringBox .dateBox {
+  position: relative;
+  width: 100%;
   margin-bottom: 40px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
 }
 
@@ -44,16 +46,23 @@
 }
 
 .monitoringBox .dateBox .prev {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
   width: 7px;
   height: 11px;
   background: url(/assets/images/sub/arrow_icon04.svg)no-repeat center;
 }
 
 .monitoringBox .dateBox .next {
+  position: absolute;
+  top: 50%;
+  right: 0;
   width: 7px;
   height: 11px;
   background: url(/assets/images/sub/arrow_icon04.svg)no-repeat center;
-  transform: rotate(180deg);
+  transform:  translateY(-50%) rotate(180deg);
 }
 
 .monitoringBox .chartBox {
