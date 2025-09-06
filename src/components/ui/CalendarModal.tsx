@@ -180,6 +180,11 @@ export default function CalendarModal({
                   const isWeekend = col === 0 || col === 6;
                   const dimmed = !cell.inMonth || cell.isPast;
 
+                  const isToday =
+                    cell.y === today.getFullYear() &&
+                    cell.m === today.getMonth() + 1 &&
+                    cell.d === today.getDate();
+
                   const textColor = dimmed
                     ? "#B6B5BA"
                     : isWeekend
@@ -193,6 +198,8 @@ export default function CalendarModal({
                       key={`${cell.y}-${cell.m}-${cell.d}-${col}`}
                       className={[
                         isSelected ? styles.selectedDay : "",
+                        // 오늘 날짜 하이라이트 (선택된 경우는 selected 스타일만)
+                        isToday && cell.inMonth && !isSelected ? styles.active : "",
                         !cell.inMonth ? styles.outMonthDay : "",
                       ]
                         .filter(Boolean)
