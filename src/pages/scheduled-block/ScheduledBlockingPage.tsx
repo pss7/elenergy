@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import CustomSelect from "../../components/ui/CustomSelect";
@@ -10,10 +10,19 @@ import type { Reservation } from "../../data/ScheduledBlockings";
 import Footer from "../../components/layout/Footer";
 
 export default function ScheduledBlockingPage() {
-  const [selectedControllerId, setSelectedControllerId] = useState<number>(1);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 초기 선택 제어기: state → localStorage → 1
+  const initialControllerId = useMemo(() => {
+    const fromState = (location.state as any)?.initialControllerId;
+    const fromStorage = Number(localStorage.getItem("lastControllerId")) || undefined;
+    return fromState ?? fromStorage ?? 1;
+  }, [location.state]);
+
+  const [selectedControllerId, setSelectedControllerId] = useState<number>(initialControllerId);
   const [isDelToggle, setIsDelToggle] = useState(false);
   const delBtnRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
 
   const [reservations, setReservations] = useState<Reservation[]>(() => {
     const saved = localStorage.getItem("reservations");
@@ -22,19 +31,15 @@ export default function ScheduledBlockingPage() {
 
   useEffect(() => {
     const today = new Date();
-
     const updated = reservations.map((item) => {
       const match = item.dateLabel.match(/^(\d{4})년 (\d{1,2})월 (\d{1,2})일/);
       if (match) {
         const [_, year, month, day] = match.map(Number);
         const reservationDate = new Date(year, month - 1, day);
-        if (reservationDate < today && item.isOn) {
-          return { ...item, isOn: false };
-        }
+        if (reservationDate < today && item.isOn) return { ...item, isOn: false };
       }
       return item;
     });
-
     setReservations(updated);
     localStorage.setItem("reservations", JSON.stringify(updated));
   }, []);
@@ -45,11 +50,7 @@ export default function ScheduledBlockingPage() {
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (
-        isDelToggle &&
-        delBtnRef.current &&
-        !delBtnRef.current.contains(e.target as Node)
-      ) {
+      if (isDelToggle && delBtnRef.current && !delBtnRef.current.contains(e.target as Node)) {
         setIsDelToggle(false);
       }
     }
@@ -60,18 +61,13 @@ export default function ScheduledBlockingPage() {
   function handleControllerChange(id: number) {
     setSelectedControllerId(id);
     setIsDelToggle(false);
+    localStorage.setItem("lastControllerId", String(id)); // 기억
   }
 
-  const filteredReservations = reservations.filter(
-    (r) => r.controllerId === selectedControllerId
-  );
+  const filteredReservations = reservations.filter((r) => r.controllerId === selectedControllerId);
 
   function toggleReservation(id: number) {
-    setReservations((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isOn: !item.isOn } : item
-      )
-    );
+    setReservations((prev) => prev.map((item) => (item.id === id ? { ...item, isOn: !item.isOn } : item)));
   }
 
   function handleDelToggle() {
@@ -85,15 +81,18 @@ export default function ScheduledBlockingPage() {
     const ampm = hourNum >= 12 ? "오후" : "오전";
     if (hourNum > 12) hourNum -= 12;
     if (hourNum === 0) hourNum = 12;
-
-    const minute = String(Number(minuteRaw)).padStart(2, "0"); // "00" 대응
+    const minute = String(Number(minuteRaw)).padStart(2, "0");
     return { ampm, hour: hourNum, minute };
   }
 
   function handleEditReservation(reservation: Reservation) {
     const timeObj = parseTimeToSelected(reservation.time);
     navigate(`/scheduled-edit/${reservation.id}`, {
-      state: { reservation: { ...reservation, time: timeObj } },
+      state: {
+        reservation: { ...reservation, time: timeObj },
+        controllerId: selectedControllerId,
+        initialControllerId: selectedControllerId,
+      },
     });
   }
 
@@ -111,17 +110,16 @@ export default function ScheduledBlockingPage() {
           <div className={styles.topBox}>
             <h3>예약</h3>
             <div className={styles.btnBox}>
-              <Link to="/scheduled-add"
-                state={{ controllerId: selectedControllerId }}
-                className={styles.reservationAddBtn}>
+              <Link
+                to="/scheduled-add"
+                state={{ controllerId: selectedControllerId, initialControllerId: selectedControllerId }}
+                className={styles.reservationAddBtn}
+              >
                 <span className="blind">예약추가</span>
               </Link>
 
               <div className={styles.delBtnBox} ref={delBtnRef}>
-                <button
-                  className={styles.delToggleBtn}
-                  onClick={handleDelToggle}
-                >
+                <button className={styles.delToggleBtn} onClick={handleDelToggle}>
                   <span className="blind">삭제토글버튼</span>
                 </button>
 
@@ -144,12 +142,8 @@ export default function ScheduledBlockingPage() {
             ) : (
               filteredReservations.map((item) => (
                 <li key={item.id} onClick={() => handleEditReservation(item)}>
-                  <div
-                    className={`${styles.timeBox} ${!item.isOn ? styles.off : ""}`}
-                  >
-                    <span>
-                      {+item.time.split(":")[0] >= 12 ? "오후" : "오전"}
-                    </span>
+                  <div className={`${styles.timeBox} ${!item.isOn ? styles.off : ""}`}>
+                    <span>{+item.time.split(":")[0] >= 12 ? "오후" : "오전"}</span>
                     <strong>{item.time}</strong>
                   </div>
 
@@ -172,7 +166,6 @@ export default function ScheduledBlockingPage() {
           </ul>
         </div>
       </Main>
-
       <Footer />
     </>
   );

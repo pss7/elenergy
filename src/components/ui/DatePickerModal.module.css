@@ -13,6 +13,21 @@
   display: block;
 }
 
+.header .dateBox {
+  display: flex;
+  align-items: center;
+  gap: 0 7px;
+}
+
+.header .dateBox::after {
+  content: '';
+  margin-top: 2px;
+  width: 9px;
+  height: 6px;
+  background: url(/assets/images/sub/select_arrow_icon.svg) no-repeat center;
+  transform: rotate(180deg);
+}
+
 .overlay {
   position: fixed;
   top: 0;
@@ -61,7 +76,7 @@
   line-height: 70px;
   text-align: center;
   font-size: 18px;
-  color: #DDDDDF; 
+  color: #DDDDDF;
   user-select: none;
   scroll-snap-align: center;
 }

@@ -1,43 +1,51 @@
-import { useEffect, useRef, useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useRef, useState, useMemo, useLayoutEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import styles from "./ScheduledBlockingPage.module.css";
 import CalendarModal from "../../components/ui/CalendarModal";
-import useNavigateTo from "../../hooks/useNavigateTo";
 import type { Reservation as ReservationRaw } from "../../data/ScheduledBlockings";
 import Footer from "../../components/layout/Footer";
 
+/** ===== Types ===== */
 type Time = {
   ampm: "오전" | "오후";
-  hour: number;
-  minute: string; // "00" ~ "59"
+  hour: number;   // 1~12
+  minute: string; // "00"~"59"
 };
-
-// 리스트에서 넘겨받은 reservation은 time이 Time으로 변환되어 들어옴
 type ReservationState = Omit<ReservationRaw, "time"> & { time: Time };
-
 type SelectedDate = { year: number; month: number; day: number } | null;
 
 export default function ScheduledEditPage() {
-  const { navigateTo } = useNavigateTo();
+  const navigate = useNavigate();
   const location = useLocation();
   const reservation = location.state?.reservation as ReservationState | undefined;
 
-  function handleCancel() {
-    navigateTo("/scheduled-block");
+  // 현재 페이지가 어떤 제어기에서 열렸는지 결정
+  const controllerId =
+    reservation?.controllerId ??
+    (location.state as any)?.controllerId ??
+    (location.state as any)?.initialControllerId ??
+    1;
+
+  /** ===== Exit ===== */
+  function goList() {
+    // 돌아갈 때 현재 제어기를 기억하고 state로도 넘김
+    localStorage.setItem("lastControllerId", String(controllerId));
+    navigate("/scheduled-block", { state: { initialControllerId: controllerId } });
   }
 
+  /** ===== Picker constants ===== */
   const itemHeight = 66;
 
   const baseAmpmList = ["오전", "오후"];
-  const baseHourList = Array.from({ length: 12 }, (_, i) => (i + 1).toString()); // "1"~"12"
+  const baseHourList = Array.from({ length: 12 }, (_, i) => (i + 1).toString());       // "1"~"12"
   const baseMinuteList = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")); // "00"~"59"
 
-  // AM/PM은 1개씩만 보이게(패딩만 추가), 시/분은 무한 리스트
-  const ampmList = baseAmpmList; // 렌더에서 ["", ...baseList, ""] 패딩
-  const hourList = createInfiniteList(baseHourList, 10);
-  const minuteList = createInfiniteList(baseMinuteList, 15); // ✅ 5 → 15 (재배치 빈도↓)
+  // AM/PM은 1세트, 시/분은 무한 리스트
+  const ampmList = baseAmpmList;
+  const hourList = createInfiniteList(baseHourList, 16);     // 길이 ↑ 재배치 빈도↓
+  const minuteList = createInfiniteList(baseMinuteList, 20); // 분은 더 길게
 
   const initialSelected: Time = useMemo(
     () =>
@@ -57,23 +65,27 @@ export default function ScheduledEditPage() {
   // 프로그램적 스크롤 중 onScroll 무시
   const suppressScrollRef = useRef(true);
 
-  // ✅ RAF 러프틀링: 컬럼별로 별도 관리
+  // RAF 러프틀링
   const hourRafRef = useRef<number | null>(null);
   const minuteRafRef = useRef<number | null>(null);
 
-  // ✅ AM/PM 스냅 디바운스
+  // AM/PM 스냅 디바운스
   const ampmDebounceRef = useRef<number | null>(null);
 
-  // 마지막으로 반영된 인덱스(불필요한 setState 방지)
+  // 마지막 반영 인덱스(불필요한 setState 방지)
   const lastIdxRef = useRef<{ ampm: number; hour: number; minute: number }>({
-    ampm: baseAmpmList.findIndex((v) => v === initialSelected.ampm),
-    hour: baseHourList.findIndex((h) => Number(h) === initialSelected.hour),
-    minute: baseMinuteList.findIndex((m) => m === initialSelected.minute),
+    ampm: initialSelected.ampm === "오전" ? 0 : 1,
+    hour: Math.max(0, baseHourList.findIndex((h) => Number(h) === initialSelected.hour)),
+    minute: Math.max(0, baseMinuteList.findIndex((m) => m === initialSelected.minute)),
   });
 
+  // 시/분 setState 스로틀용 타임스탬프 (최대 ~20fps로 제한)
+  const hourCommitMsRef = useRef(0);
+  const minuteCommitMsRef = useRef(0);
+
+  /** ===== Date state ===== */
   const days = ["일", "월", "화", "수", "목", "금", "토"] as const;
 
-  // 날짜 초기화 (YYYY년 M월 D일 / M월 D일)
   const initialDate: SelectedDate = useMemo(() => {
     const label = reservation?.dateLabel;
     if (!label) {
@@ -99,12 +111,11 @@ export default function ScheduledEditPage() {
   const [selectedDate, setSelectedDate] = useState<SelectedDate>(initialDate);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  // ===== 유틸 =====
+  /** ===== Utils ===== */
   function createInfiniteList<T extends string>(items: T[], repeat: number): T[] {
     return Array.from({ length: repeat }, () => items).flat();
   }
 
-  // 즉시 스크롤(부드럽지 않게) 후 다음 프레임에 원복 → 스냅시 버벅임 방지
   function setScrollTopInstant(ref: React.RefObject<HTMLDivElement>, top: number) {
     if (!ref.current) return;
     const el = ref.current;
@@ -116,35 +127,27 @@ export default function ScheduledEditPage() {
     });
   }
 
-  // 중앙 사이클 시작 위치(시/분용)
+  // 중앙 사이클 시작 위치(시/분용) - 상단 2칸 패딩 고려
   function getCenterScroll<T>(list: T[], baseList: T[]): number {
     const cycles = Math.floor(list.length / baseList.length / 2);
     const centerCycleStart = cycles * baseList.length;
-    return (centerCycleStart + 1) * itemHeight; // 상단 2칸 패딩 고려
+    return (centerCycleStart + 1) * itemHeight;
   }
 
-  // 예약 바뀌면 선택/날짜 재설정 + 스크롤 초기화 준비
-  useEffect(() => {
-    if (reservation?.time) setSelected(reservation.time);
-    setSelectedDate(initialDate);
-    suppressScrollRef.current = true;
-  }, [reservation, initialDate]);
-
-  // 초기/선택 변경 시 가운데 정렬
-  useEffect(() => {
+  /** ===== Reservation change → reset (외부 변경에만 반응) ===== */
+  useLayoutEffect(() => {
+    // 외부에서 들어온 초기값/복제값에 맞춰 '한 번만' 정렬
     if (!ampmRef.current || !hourRef.current || !minuteRef.current) return;
 
     suppressScrollRef.current = true;
 
-    // AM/PM: 오전=0, 오후=1*itemHeight
-    const ampmIndex = baseAmpmList.findIndex((v) => v === selected.ampm);
-    if (ampmIndex !== -1) {
-      setScrollTopInstant(ampmRef, ampmIndex * itemHeight);
-      lastIdxRef.current.ampm = ampmIndex;
-    }
+    // AM/PM
+    const ampmIndex = initialSelected.ampm === "오전" ? 0 : 1;
+    setScrollTopInstant(ampmRef, ampmIndex * itemHeight);
+    lastIdxRef.current.ampm = ampmIndex;
 
     // HOUR
-    const hourIndex = baseHourList.findIndex((h) => Number(h) === selected.hour);
+    const hourIndex = baseHourList.findIndex((h) => Number(h) === initialSelected.hour);
     if (hourIndex !== -1) {
       setScrollTopInstant(
         hourRef,
@@ -154,7 +157,7 @@ export default function ScheduledEditPage() {
     }
 
     // MINUTE
-    const minuteIndex = baseMinuteList.findIndex((m) => m === selected.minute);
+    const minuteIndex = baseMinuteList.findIndex((m) => m === initialSelected.minute);
     if (minuteIndex !== -1) {
       setScrollTopInstant(
         minuteRef,
@@ -163,27 +166,29 @@ export default function ScheduledEditPage() {
       lastIdxRef.current.minute = minuteIndex;
     }
 
-    const t = setTimeout(() => {
+    const t = window.setTimeout(() => {
       suppressScrollRef.current = false;
-    }, 120);
-    return () => clearTimeout(t);
-  }, [selected]);
+    }, 80);
+    return () => window.clearTimeout(t);
+    // 외부 초기값이 바뀔 때만
+  }, [initialSelected.ampm, initialSelected.hour, initialSelected.minute]);
 
+  /** ===== Day select ===== */
   function handleDayClick(day: string) {
     setSelectedDate(null);
     setSelectedDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
   }
 
-  // 공통 스크롤 핸들러 (RAF + 디바운스 적용)
+  /** ===== Scroll handler (AM/PM, HOUR, MINUTE) ===== */
   function handleScroll<T extends string>(
     ref: React.RefObject<HTMLDivElement>,
-    key: keyof Time,
+    key: "ampm" | "hour" | "minute",
     list: T[],
     baseList: T[]
   ) {
     if (!ref.current || suppressScrollRef.current) return;
 
-    // === AM/PM: 디바운스 후 스냅 ===
+    // --- AM/PM: 디바운스 후 스냅 ---
     if (key === "ampm") {
       const top = ref.current.scrollTop;
       const clamped = Math.max(0, Math.min(itemHeight, top)); // 0~itemHeight
@@ -191,73 +196,85 @@ export default function ScheduledEditPage() {
       if (ampmDebounceRef.current) window.clearTimeout(ampmDebounceRef.current);
       ampmDebounceRef.current = window.setTimeout(() => {
         const snapped = clamped < itemHeight / 2 ? 0 : itemHeight;
-
-        // 값이 변하지 않으면 아무것도 안 함
         const newIdx = snapped === 0 ? 0 : 1;
-        if (newIdx === lastIdxRef.current.ampm) return;
 
         suppressScrollRef.current = true;
-        setScrollTopInstant(ref, snapped);
+        setScrollTopInstant(ref, snapped); // 즉시 스냅
         suppressScrollRef.current = false;
 
-        lastIdxRef.current.ampm = newIdx;
-        const value = newIdx === 0 ? "오전" : "오후";
-        setSelected((prev) => (prev.ampm === value ? prev : { ...prev, ampm: value }));
-      }, 80); // ⏱️ 디바운스 80ms (60~120 사이 취향껏)
-
+        if (newIdx !== lastIdxRef.current.ampm) {
+          lastIdxRef.current.ampm = newIdx;
+          const value = newIdx === 0 ? "오전" : "오후";
+          setSelected((prev) => (prev.ampm === value ? prev : { ...prev, ampm: value }));
+        }
+      }, 80);
       return;
     }
 
-    // === 시/분: RAF 러프틀링으로 선택만 갱신 ===
-    const doWork = () => {
-      if (!ref.current) return;
+    // --- HOUR / MINUTE: RAF + 끝 근처 리센터 ---
+    const rafRef = key === "hour" ? hourRafRef : minuteRafRef;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
+    const work = () => {
+      if (!ref.current) return;
       const container = ref.current;
+
       const centerOffset = container.clientHeight / 2 - itemHeight / 2; // == itemHeight
       const index = Math.round((container.scrollTop + centerOffset) / itemHeight) - 2; // 상단 2칸 패딩 보정
       const realIndex = ((index % baseList.length) + baseList.length) % baseList.length;
 
-      // 끝 근처에서 중앙 사이클로 재배치 (즉시 스크롤)
-      if (container.scrollTop < itemHeight * 4 || container.scrollTop > (list.length - 5) * itemHeight) {
+      // 경계 근처면 중앙 사이클로 재배치(즉시) — 임계값 살짝 완화
+      const low = itemHeight * 3;
+      const high = (list.length - 4) * itemHeight;
+      if (container.scrollTop < low || container.scrollTop > high) {
         suppressScrollRef.current = true;
-
         const selIndex =
           key === "hour"
             ? baseHourList.findIndex((h) => Number(h) === selected.hour)
             : baseMinuteList.findIndex((m) => m === selected.minute);
-
         setScrollTopInstant(
           ref,
           getCenterScroll(list, baseList) + (selIndex >= 0 ? selIndex : 0) * itemHeight
         );
-
         suppressScrollRef.current = false;
       }
 
-      // 인덱스가 바뀔 때만 setState
-      if (lastIdxRef.current[key] !== realIndex) {
-        lastIdxRef.current[key] = realIndex;
-        const selectedValue = baseList[realIndex];
-        setSelected((prev) => ({ ...prev, [key]: selectedValue as never }));
+      const now = performance.now();
+
+      if (key === "hour") {
+        // 시도 스로틀 적용 (최대 ~20fps)
+        if (lastIdxRef.current.hour !== realIndex && now - hourCommitMsRef.current >= 50) {
+          lastIdxRef.current.hour = realIndex;
+          hourCommitMsRef.current = now;
+          const val = baseList[realIndex];
+          setSelected((prev) => ({ ...prev, hour: Number(val) }));
+        }
+      } else {
+        // minute: setState 빈도 제한 (최대 ~20fps)
+        if (lastIdxRef.current.minute !== realIndex && now - minuteCommitMsRef.current >= 50) {
+          lastIdxRef.current.minute = realIndex;
+          minuteCommitMsRef.current = now;
+          const val = baseList[realIndex];
+          setSelected((prev) => ({ ...prev, minute: val as string }));
+        }
       }
     };
 
-    // 컬럼별 RAF
-    const rafRef = key === "hour" ? hourRafRef : minuteRafRef;
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(doWork);
+    rafRef.current = requestAnimationFrame(work);
   }
 
+  /** ===== Render helper ===== */
   function renderColumn<T extends string>(
     list: T[],
     baseList: T[],
-    key: keyof Time,
+    key: "ampm" | "hour" | "minute",
     ref: React.RefObject<HTMLDivElement>,
     fontSize: string
   ) {
     // AM/PM: ["", 오전, 오후, ""]
     // HOUR/MINUTE: ["", "", ...list, "", ""]
-    const paddedItems = key === "ampm" ? (["", ...baseList, ""] as unknown as T[]) : (["", "", ...list, "", ""] as unknown as T[]);
+    const paddedItems =
+      key === "ampm" ? (["", ...baseList, ""] as unknown as T[]) : (["", "", ...list, "", ""] as unknown as T[]);
 
     return (
       <div
@@ -270,7 +287,8 @@ export default function ScheduledEditPage() {
           {paddedItems.map((item, idx) => {
             const realIdx = key === "ampm" ? idx - 1 : idx - 2;
             const selStr = key === "hour" ? String(selected.hour) : (selected[key] as string);
-            const isSelected = key === "ampm" ? baseList[realIdx] === selStr : list[realIdx] === selStr;
+            const isSelected =
+              key === "ampm" ? baseList[realIdx] === selStr : list[realIdx] === selStr;
 
             return (
               <li
@@ -305,10 +323,10 @@ export default function ScheduledEditPage() {
     return "요일을 선택하세요";
   }
 
-  // ===== 저장 로직 =====
+  /** ===== Save (Edit) ===== */
   function to24h(ampm: "오전" | "오후", hour12: number, minute: string): string {
-    let h = hour12 % 12; // 12 -> 0
-    if (ampm === "오후") h += 12; // 오후면 +12
+    let h = hour12 % 12;
+    if (ampm === "오후") h += 12;
     return `${String(h).padStart(2, "0")}:${minute}`;
   }
 
@@ -319,18 +337,16 @@ export default function ScheduledEditPage() {
       const dayName = days[dateObj.getDay()];
       return `${year}년 ${month}월 ${day}일 (${dayName})`;
     }
-    if (selectedDays.length > 0) {
-      return `매주 ${selectedDays.join(", ")}`;
-    }
-    // 아무것도 선택 안 했으면 기존 유지
+    if (selectedDays.length > 0) return `매주 ${selectedDays.join(", ")}`;
     return reservation?.dateLabel ?? "";
   }
 
   function handleSave() {
     if (!reservation) {
-      navigateTo("/scheduled-block");
-      return;
+      // 예약 데이터 없으면 그냥 리스트로 복귀
+      return goList();
     }
+
     const newTime = to24h(selected.ampm, selected.hour, selected.minute);
     const newDateLabel = buildDateLabel();
 
@@ -344,9 +360,12 @@ export default function ScheduledEditPage() {
     );
 
     localStorage.setItem("reservations", JSON.stringify(updated));
-    navigateTo("/scheduled-block");
+
+    // 돌아갈 때 현재 제어기 유지
+    goList();
   }
 
+  /** ===== Render ===== */
   return (
     <>
       <Main id="sub">
@@ -400,7 +419,9 @@ export default function ScheduledEditPage() {
 
             {/* 버튼 영역 */}
             <div className="btnBox">
-              <Button styleType="grayType" onClick={handleCancel}>취소</Button>
+              <Button styleType="grayType" onClick={goList}>
+                취소
+              </Button>
               <Button onClick={handleSave}>저장</Button>
             </div>
 

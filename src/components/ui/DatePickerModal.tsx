@@ -109,9 +109,11 @@ export default function DatePickerModal(props: Props) {
 
         {/* 헤더 */}
         <div className={styles.header}>
-          {selectedYear}년
-          {showMonth && ` ${visibleMonth}월`}
-          {showDay && ` ${visibleDay}일`}
+          <div className={styles.dateBox}>
+            {selectedYear}년
+            {showMonth && ` ${visibleMonth}월`}
+            {showDay && ` ${visibleDay}일`}
+          </div>
         </div>
 
         {/* 선택기 */}
