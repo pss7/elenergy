@@ -38,7 +38,7 @@ import ScheduledAddPage from './pages/scheduled-block/ScheduledAddPage';
 import ScheduledEditPage from './pages/scheduled-block/ScheduledEditPage';
 
 import AutoBlockPage from './pages/auto-block/AutoBlockPage';
-import AutoBlockUpdagePage from './pages/auto-block/AutoBlockPageUpdate';
+import AutoBlockUpdagePage from './pages/auto-block/AutoBlockUpdagePage';
 
 import ManualControlPage from './pages/manual-control/ManualControlPage ';
 
