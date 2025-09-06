@@ -319,7 +319,7 @@
 }
 
 .notificationBox .notificationList li .textBox a {
-  display: block;
+  display: inline-block;
   font-size: 14px;
   font-weight: 500;
   color: #666;
@@ -527,4 +527,11 @@
   width: 11px;
   height: 5px;
   background: url(/assets/images/sub/arrow_icon03.svg)no-repeat center;
+}
+
+/* 회원정보 수정 */
+.editBox .label {
+  font-weight: 700;
+  font-size: 13px;
+  color: #000;
 }
