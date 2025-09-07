@@ -4,13 +4,15 @@ import styles from "./MyPage.module.css";
 
 export default function DataCollectionPage() {
 
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
   return (
     <>
 
       <Header
         type="pageLink"
         title="개인정보 보호"
-        prevLink="/privacy"
+        prevLink={isLoggedIn ? "/privacy" : "/signup-agree"}
         className="white-bg"
       />
 

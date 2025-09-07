@@ -8,27 +8,23 @@ import { useState } from "react";
 import type { AlarmFilters } from "../data/Alarms";
 
 export default function AlarmFilterPage() {
-
   const navigate = useNavigate();
 
   // 상태 선언
   const [selectedControllers, setSelectedControllers] = useState<string[]>([]);
   const [selectedAdminIds, setSelectedAdminIds] = useState<string[]>([]);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<("수동제어" | "자동제어" | "예약제어")[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<("ON" | "OFF")[]>([]); // ✅ 추가
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
 
-  // 체크박스 변경 처리
-  function handleCheckboxChange(
-    setState: React.Dispatch<React.SetStateAction<string[]>>,
-    value: string
+  // 체크박스 변경 처리 (제네릭으로 개선)
+  function handleCheckboxChange<T extends string>(
+    setState: React.Dispatch<React.SetStateAction<T[]>>,
+    value: T
   ) {
-    setState((prevList) => {
-      const newList = prevList.includes(value)
-        ? prevList.filter((item) => item !== value) 
-        : [...prevList, value];
-
-      return newList;
-    });
+    setState((prevList) =>
+      prevList.includes(value) ? prevList.filter((v) => v !== value) : [...prevList, value]
+    );
   }
 
   // 필터 적용
@@ -37,6 +33,7 @@ export default function AlarmFilterPage() {
       controllers: selectedControllers,
       admins: selectedAdminIds,
       types: selectedTypes,
+      statuses: selectedStatuses, // ✅ 추가
       sortOrder: sortOrder,
     };
 
@@ -100,11 +97,11 @@ export default function AlarmFilterPage() {
             </div>
           </div>
 
-          {/* 관리자 ID */}
+          {/* 관리자 ID (오타 D1 → ID1 교정) */}
           <div className={styles.filterBox}>
             <h2>관리자ID</h2>
             <div className={styles.layoutBox}>
-              {["D1", "ID2", "ID3", "ID4"].map((admin, idx) => (
+              {["ID1", "ID2", "ID3", "ID4"].map((admin, idx) => (
                 <InputCheckbox
                   key={admin}
                   id={`chk_admin${idx + 1}`}
@@ -121,7 +118,7 @@ export default function AlarmFilterPage() {
           <div className={styles.filterBox}>
             <h2>제어방식</h2>
             <div className={styles.layoutBox}>
-              {["수동제어", "자동제어", "예약제어"].map((type, idx) => (
+              {(["수동제어", "자동제어", "예약제어"] as const).map((type, idx) => (
                 <InputCheckbox
                   key={type}
                   id={`chk_type${idx + 1}`}
@@ -129,6 +126,23 @@ export default function AlarmFilterPage() {
                   label={type}
                   checked={selectedTypes.includes(type)}
                   onChange={() => handleCheckboxChange(setSelectedTypes, type)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* 상태 (ON/OFF) ✅ 추가 */}
+          <div className={styles.filterBox}>
+            <h2>상태</h2>
+            <div className={styles.layoutBox}>
+              {(["ON", "OFF"] as const).map((st, idx) => (
+                <InputCheckbox
+                  key={st}
+                  id={`chk_status${idx + 1}`}
+                  htmlFor={`chk_status${idx + 1}`}
+                  label={st}
+                  checked={selectedStatuses.includes(st)}
+                  onChange={() => handleCheckboxChange(setSelectedStatuses, st)}
                 />
               ))}
             </div>

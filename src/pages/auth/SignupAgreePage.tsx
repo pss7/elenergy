@@ -5,7 +5,7 @@ import InputCheckbox from "../../components/ui/InputCheckbox";
 import Textarea from "../../components/ui/Textarea";
 import Button from "../../components/ui/Button";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function SignupAgreePage() {
 
@@ -77,9 +77,9 @@ export default function SignupAgreePage() {
                     onChange={() => setAgreeTerms(!agreeTerms)}
                   />
 
-                  <a href="#" className={styles.view}>
+                  <Link to="/terms" className={styles.view}>
                     전체
-                  </a>
+                  </Link>
                 </div>
 
                 <div className={styles.box}>
@@ -97,9 +97,9 @@ export default function SignupAgreePage() {
                     onChange={() => setAgreePrivacy(!agreePrivacy)}
                   />
 
-                  <a href="#" className={styles.view}>
+                  <Link to="/data-collection" className={styles.view}>
                     전체
-                  </a>
+                  </Link>
                 </div>
 
                 <div className={styles.box}>
@@ -117,9 +117,9 @@ export default function SignupAgreePage() {
                     onChange={() => setAgreeInfo(!agreeInfo)}
                   />
 
-                  <a href="#" className={styles.view}>
+                  <Link to="/event-notifications" className={styles.view}>
                     전체
-                  </a>
+                  </Link>
                 </div>
 
                 <div className={styles.box}>

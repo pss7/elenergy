@@ -11,7 +11,8 @@ export interface Alarm {
 export interface AlarmFilters {
   controllers: string[];
   admins: string[];
-  types: string[];
+  types: Alarm["type"][];
+  statuses: Alarm["status"][];
   sortOrder: "latest" | "oldest";
 }
 
