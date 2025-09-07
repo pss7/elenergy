@@ -51,7 +51,7 @@ export default function AlarmPage() {
         controllers = [],
         admins = [],
         types = [],
-        statuses = [], // ✅ 상태 필터 추가
+        statuses = [],
         sortOrder = "latest",
       } = filters;
 
@@ -70,12 +70,12 @@ export default function AlarmPage() {
         filtered = filtered.filter((alarm) => types.includes(alarm.type));
       }
 
-      // ✅ 필터 - 상태(ON/OFF)
+      // 필터 - 상태(ON/OFF)
       if (statuses.length > 0) {
         filtered = filtered.filter((alarm) => statuses.includes(alarm.status));
       }
 
-      // ✅ 정렬 - 한국어 날짜 파싱 후 정렬
+      // 정렬 - 한국어 날짜 파싱 후 정렬
       filtered.sort((a, b) => {
         const ta = parseKoreanDate(a.date);
         const tb = parseKoreanDate(b.date);
