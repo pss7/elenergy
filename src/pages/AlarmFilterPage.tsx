@@ -14,7 +14,7 @@ export default function AlarmFilterPage() {
   const [selectedControllers, setSelectedControllers] = useState<string[]>([]);
   const [selectedAdminIds, setSelectedAdminIds] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<("수동제어" | "자동제어" | "예약제어")[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<("ON" | "OFF")[]>([]); // ✅ 추가
+  const [selectedStatuses, setSelectedStatuses] = useState<("ON" | "OFF")[]>([]);
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
 
   // 체크박스 변경 처리 (제네릭으로 개선)
@@ -33,7 +33,7 @@ export default function AlarmFilterPage() {
       controllers: selectedControllers,
       admins: selectedAdminIds,
       types: selectedTypes,
-      statuses: selectedStatuses, // ✅ 추가
+      statuses: selectedStatuses,
       sortOrder: sortOrder,
     };
 
@@ -131,7 +131,7 @@ export default function AlarmFilterPage() {
             </div>
           </div>
 
-          {/* 상태 (ON/OFF) ✅ 추가 */}
+          {/* 상태 (ON/OFF) */}
           <div className={styles.filterBox}>
             <h2>상태</h2>
             <div className={styles.layoutBox}>

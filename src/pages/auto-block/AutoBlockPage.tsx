@@ -308,7 +308,7 @@ export default function AutoBlockPage() {
               setShowDatePicker(false);
             }}
             tab={tab}
-            /** ✅ 이 페이지에서만 오늘 이후 금지 */
+            /** 이 페이지에서만 오늘 이후 금지 */
             limitToToday
           />
         )}
