@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import styles from './DatePickerModal.module.css';
-import type { TabType } from "../../data/AutoBlock";
+
+// 공용 피커 탭 타입: 캘린더/피커에서 모두 사용
+export type PickerTab = "hourly" | "daily" | "weekly" | "monthly" | "yearly";
 
 interface Props {
   initial: { year: number; month: number; day: number };
   onCancel: () => void;
   onConfirm: (value: { year: number; month: number; day: number }) => void;
-  showMonth?: boolean;
-  showDay?: boolean;
-  tab: TabType;
-  /** ✅ 오늘 이후를 막을지 여부 (기본값 false) */
+  showMonth?: boolean; // 기본 규칙을 덮어쓰고 싶을 때만 전달
+  showDay?: boolean;   // 기본 규칙을 덮어쓰고 싶을 때만 전달
+  tab: PickerTab;
+  /** 오늘 이후 선택 금지 여부 (기본값 false) */
   limitToToday?: boolean;
 }
 
@@ -17,12 +19,12 @@ export default function DatePickerModal(props: Props) {
   const { initial, onCancel, onConfirm, tab, limitToToday = false } = props;
   const ITEM_HEIGHT = 70;
 
-  // ✅ 기본 표시 규칙 변경
+  // 기본 표시 규칙
   // - yearly: 연도만 (월/일 숨김)
   // - monthly/daily: 연+월 (일 숨김)
-  // - weekly: 연+월+일 (주 anchor용)
+  // - weekly/hourly: 연+월+일
   const showMonth = props.showMonth ?? tab !== "yearly";
-  const showDay   = props.showDay   ?? (tab === "weekly");
+  const showDay   = props.showDay   ?? (tab === "weekly" || tab === "hourly");
 
   // 오늘 경계
   const TODAY = new Date();
@@ -30,7 +32,7 @@ export default function DatePickerModal(props: Props) {
   const TM = TODAY.getMonth() + 1;
   const TD = TODAY.getDate();
 
-  // ✅ limitToToday가 true일 때만 미래 클램프
+  // limitToToday가 true일 때만 미래 클램프
   function clampToToday(y: number, m: number, d: number) {
     if (!limitToToday) return { y, m, d };
     if (y > TY) y = TY;

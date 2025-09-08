@@ -2,22 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import Main from "../../components/layout/Main";
 import styles from "./AutoBlockPage.module.css";
 import type { PowerUsageDataByController } from "../../data/AutoBlock";
-import { defaultPowerDataByController as defaultMap } from "../../data/AutoBlock";
+import {
+  defaultPowerDataByController as defaultMap,
+  buildDailyLastWeek,
+  computeStatsFromChart,
+} from "../../data/AutoBlock";
 import PowerBarChart from "../../components/ui/PowerBarChart";
 import Button from "../../components/ui/Button";
 import { useLocation, useNavigate } from "react-router-dom";
 import Footer from "../../components/layout/Footer";
-
-/** 통계 계산(차트에서 직접 계산해 일관성 유지) */
-function computeStatsFromChart(chart: { value: number }[]) {
-  if (!chart || chart.length === 0) return { average: 0, minimum: 0, current: 0 };
-  const values = chart.map((d) => d.value);
-  const sum = values.reduce((s, v) => s + v, 0);
-  const avg = Math.round((sum / values.length) * 10) / 10;
-  const min = Math.min(...values);
-  const cur = values[values.length - 1];
-  return { average: avg, minimum: min, current: cur };
-}
 
 export default function AutoBlockUpdagePage() {
   const navigate = useNavigate();
@@ -53,10 +46,14 @@ export default function AutoBlockUpdagePage() {
   // 현재 제어기 데이터
   const data = map?.[controllerIdFromState];
 
-  // 최근 1주 통계(검증 기준 및 표기)
+  // ✅ 최근 7일 차트/통계(데이터 파일의 빌더 사용)
+  const lastWeekChart = useMemo(
+    () => buildDailyLastWeek(controllerIdFromState, new Date()),
+    [controllerIdFromState]
+  );
   const statsWeek = useMemo(
-    () => computeStatsFromChart(data?.dailyLastWeek?.chart ?? []),
-    [data?.dailyLastWeek?.chart]
+    () => computeStatsFromChart(lastWeekChart),
+    [lastWeekChart]
   );
   const averageLastWeek = statsWeek.average;
 
@@ -132,7 +129,7 @@ export default function AutoBlockUpdagePage() {
               )}
             </div>
 
-            {/* 최근 일주일 사용량(해당 제어기 데이터로) */}
+            {/* 최근 일주일 사용량 */}
             <h2 className={`${styles.title} mb-30`}>최근 일주일 간 전력 사용량</h2>
 
             <div className={styles.amountUsedBox}>
@@ -151,7 +148,7 @@ export default function AutoBlockUpdagePage() {
             </div>
 
             <PowerBarChart
-              data={data?.dailyLastWeek?.chart || []}
+              data={lastWeekChart}
               unit="Wh"
               showAverageLine
               averageValue={statsWeek.average}

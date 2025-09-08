@@ -43,7 +43,7 @@ function clamp(v: number, min: number, max: number) {
 const controllerProfiles = {
   1: { daily: [150, 320], weekly: [900, 1500], monthly: [7000, 10000], yearly: [80000, 120000] },
   2: { daily: [150, 360], weekly: [1100, 1700], monthly: [8600, 11000], yearly: [98000, 135000] },
-  3: { daily: [120, 280], weekly: [900, 1200], monthly: [7000, 8500],  yearly: [78000, 110000] },
+  3: { daily: [120, 280], weekly: [900, 1200], monthly: [7000, 8500], yearly: [78000, 110000] },
   4: { daily: [180, 380], weekly: [1300, 1800], monthly: [9200, 12000], yearly: [105000, 150000] },
 } as const;
 
@@ -90,8 +90,6 @@ export function buildWeekly(ctrlId: number, date: Date): ChartDataPoint[] {
   });
 }
 
-// ... 상단 동일
-
 export function buildMonthly(ctrlId: number, date: Date): ChartDataPoint[] {
   const p = controllerProfiles[ctrlId as 1 | 2 | 3 | 4] ?? controllerProfiles[1];
   // 최근 12개월: (date - 11개월) ~ (date)까지
@@ -120,6 +118,24 @@ export function buildYearly(ctrlId: number, date: Date): ChartDataPoint[] {
   });
 }
 
+// 파일 상단 내용은 그대로…
+
+/** 최근 7일(d-7 ~ d-1) 일별 데이터 */
+export function buildDailyLastWeek(ctrlId: number, endDate: Date): ChartDataPoint[] {
+  const p = controllerProfiles[ctrlId as 1 | 2 | 3 | 4] ?? controllerProfiles[1];
+
+  // 오래전 → 최근 순서로 d-7 … d-1 생성 (오늘은 제외)
+  return Array.from({ length: 7 }, (_, idx) => {
+    const k = 7 - idx; // 7..1
+    const d = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() - k);
+    return {
+      label: `d-${k}`,
+      // daily 밴드를 사용해 날짜를 앵커로 시드 → 같은 입력이면 같은 출력
+      value: genValue(ctrlId, p.daily, idx, d, "dailyLastWeek"),
+    };
+  });
+}
+
 /** 통계 계산(화면에서 사용) */
 export function computeStatsFromChart(chart: { value: number }[]) {
   if (!chart || chart.length === 0) return { average: 0, minimum: 0, current: 0 };
@@ -136,34 +152,34 @@ export function computeStatsFromChart(chart: { value: number }[]) {
 /** 화면에선 위 빌더로 매번 생성하므로 stats/chart는 참고용입니다. */
 const controller1: PowerUsageData = {
   autoBlockThreshold: 50,
-  daily:   { stats: { average: 215, minimum: 160, current: 300 }, chart: [] },
-  weekly:  { stats: { average: 1270, minimum: 1150, current: 1400 }, chart: [] },
+  daily: { stats: { average: 215, minimum: 160, current: 300 }, chart: [] },
+  weekly: { stats: { average: 1270, minimum: 1150, current: 1400 }, chart: [] },
   monthly: { stats: { average: 8625, minimum: 7800, current: 9800 }, chart: [] },
-  yearly:  { stats: { average: 98000, minimum: 80000, current: 115000 }, chart: [] },
+  yearly: { stats: { average: 98000, minimum: 80000, current: 115000 }, chart: [] },
 };
 
 const controller2: PowerUsageData = {
   autoBlockThreshold: 65,
-  daily:   { stats: { average: 260, minimum: 150, current: 320 }, chart: [] },
-  weekly:  { stats: { average: 1412, minimum: 1200, current: 1700 }, chart: [] },
+  daily: { stats: { average: 260, minimum: 150, current: 320 }, chart: [] },
+  weekly: { stats: { average: 1412, minimum: 1200, current: 1700 }, chart: [] },
   monthly: { stats: { average: 9550, minimum: 8600, current: 11000 }, chart: [] },
-  yearly:  { stats: { average: 112000, minimum: 98000, current: 135000 }, chart: [] },
+  yearly: { stats: { average: 112000, minimum: 98000, current: 135000 }, chart: [] },
 };
 
 const controller3: PowerUsageData = {
   autoBlockThreshold: 40,
-  daily:   { stats: { average: 205, minimum: 120, current: 260 }, chart: [] },
-  weekly:  { stats: { average: 1037, minimum: 900, current: 1150 }, chart: [] },
+  daily: { stats: { average: 205, minimum: 120, current: 260 }, chart: [] },
+  weekly: { stats: { average: 1037, minimum: 900, current: 1150 }, chart: [] },
   monthly: { stats: { average: 7850, minimum: 7000, current: 8400 }, chart: [] },
-  yearly:  { stats: { average: 93000, minimum: 78000, current: 110000 }, chart: [] },
+  yearly: { stats: { average: 93000, minimum: 78000, current: 110000 }, chart: [] },
 };
 
 const controller4: PowerUsageData = {
   autoBlockThreshold: 80,
-  daily:   { stats: { average: 290, minimum: 180, current: 360 }, chart: [] },
-  weekly:  { stats: { average: 1562, minimum: 1300, current: 1800 }, chart: [] },
+  daily: { stats: { average: 290, minimum: 180, current: 360 }, chart: [] },
+  weekly: { stats: { average: 1562, minimum: 1300, current: 1800 }, chart: [] },
   monthly: { stats: { average: 10425, minimum: 9200, current: 12000 }, chart: [] },
-  yearly:  { stats: { average: 125000, minimum: 105000, current: 150000 }, chart: [] },
+  yearly: { stats: { average: 125000, minimum: 105000, current: 150000 }, chart: [] },
 };
 
 export const defaultPowerDataByController: PowerUsageDataByController = {

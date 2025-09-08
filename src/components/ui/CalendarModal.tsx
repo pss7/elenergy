@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import styles from "./CalendarModal.module.css";
-import DatePickerModal from "./DatePickerModal";
+import DatePickerModal, { type PickerTab } from "./DatePickerModal";
 
 interface Props {
   isOpen: boolean;
@@ -9,7 +9,8 @@ interface Props {
   onConfirm: (value: { year: number; month: number; day: number }) => void;
   showMonth?: boolean;
   showDay?: boolean;
-  tab: "daily" | "hourly" | "weekly" | "monthly";
+  tab: PickerTab;            // ✅ DatePickerModal과 동일 타입 (hourly/yearly 포함)
+  limitToToday?: boolean;    // ✅ 오늘 이후 금지 모드 (기본 false)
 }
 
 function getDaysInMonth(year: number, month: number) {
@@ -19,6 +20,7 @@ function getFirstDayOfWeek(year: number, month: number) {
   return new Date(year, month - 1, 1).getDay(); // 0=일
 }
 const today = new Date();
+const todayNoTime = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
 type Cell = {
   y: number;
@@ -26,6 +28,7 @@ type Cell = {
   d: number; // 1..
   inMonth: boolean; // 현재 달 여부
   isPast: boolean;
+  isFuture: boolean;
 };
 
 export default function CalendarModal({
@@ -36,6 +39,7 @@ export default function CalendarModal({
   showMonth = true,
   showDay = true,
   tab,
+  limitToToday = false,
 }: Props) {
   const [selected, setSelected] = useState<{ year: number; month: number; day: number }>({
     ...initial,
@@ -49,10 +53,8 @@ export default function CalendarModal({
 
   if (!isOpen) return null;
 
-  function isPastDate(year: number, month: number, day: number) {
-    const date = new Date(year, month - 1, day);
-    const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    return date < t;
+  function cmpDateYmd(year: number, month: number, day: number) {
+    return new Date(year, month - 1, day);
   }
 
   // ----- 달력 데이터(6행 x 7열) 만들기: 앞은 이전달, 뒤는 다음달로 채움 -----
@@ -80,32 +82,38 @@ export default function CalendarModal({
       if (index < dimFirstDow) {
         // 앞쪽: 이전 달
         const d = prevDays - (dimFirstDow - 1 - index);
+        const dt = cmpDateYmd(prevYear, prevMonth, d);
         cell = {
           y: prevYear,
           m: prevMonth,
           d,
           inMonth: false,
-          isPast: isPastDate(prevYear, prevMonth, d),
+          isPast: dt < todayNoTime,
+          isFuture: dt > todayNoTime,
         };
       } else if (curDay <= dimDays) {
         // 현재 달
         const d = curDay++;
+        const dt = cmpDateYmd(dimYear, dimMonth, d);
         cell = {
           y: dimYear,
           m: dimMonth,
           d,
           inMonth: true,
-          isPast: isPastDate(dimYear, dimMonth, d),
+          isPast: dt < todayNoTime,
+          isFuture: dt > todayNoTime,
         };
       } else {
         // 뒤쪽: 다음 달
         const d = nextDay++;
+        const dt = cmpDateYmd(nextYear, nextMonth, d);
         cell = {
           y: nextYear,
           m: nextMonth,
           d,
           inMonth: false,
-          isPast: isPastDate(nextYear, nextMonth, d),
+          isPast: dt < todayNoTime,
+          isFuture: dt > todayNoTime,
         };
       }
 
@@ -132,8 +140,13 @@ export default function CalendarModal({
   }
 
   function handleDayClick(cell: Cell) {
-    // 현재 달 + 과거 아님만 선택 가능
-    if (!cell.inMonth || cell.isPast) return;
+    // 선택 가능 조건:
+    // - 현재 달 셀
+    // - limitToToday=true  → 미래 금지 (오늘 포함만 허용)
+    // - limitToToday=false → 과거 금지 (오늘 포함만 허용)
+    const disabledByLimit = limitToToday ? cell.isFuture : cell.isPast;
+    const disabled = !cell.inMonth || disabledByLimit;
+    if (disabled) return;
     setSelected({ year: cell.y, month: cell.m, day: cell.d });
   }
 
@@ -178,7 +191,8 @@ export default function CalendarModal({
                     cell.d === selected.day;
 
                   const isWeekend = col === 0 || col === 6;
-                  const dimmed = !cell.inMonth || cell.isPast;
+                  const disabledByLimit = limitToToday ? cell.isFuture : cell.isPast;
+                  const dimmed = !cell.inMonth || disabledByLimit;
 
                   const isToday =
                     cell.y === today.getFullYear() &&
@@ -237,7 +251,8 @@ export default function CalendarModal({
           }}
           showMonth={showMonth}
           showDay={showDay}
-          tab={tab}
+          tab={tab}                 // ✅ 타입 일치
+          limitToToday={limitToToday}
         />
       )}
     </div>
