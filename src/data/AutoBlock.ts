@@ -1,248 +1,169 @@
 // data/AutoBlock.ts
-export type TabType = "hourly" | "daily" | "weekly" | "monthly" | "dailyLastWeek";
+export type TabType = "daily" | "weekly" | "monthly" | "yearly";
 
 export type ChartDataPoint = { label: string; value: number };
 export type UsageStats = { average: number; minimum: number; current: number };
 
 export type UsagePeriodData = {
-  // 참고용 초기 통계(화면에서는 chart를 기반으로 매번 재계산)
+  // 참고용(화면에서는 chart를 기반으로 매번 재계산)
   stats: UsageStats;
   chart: ChartDataPoint[];
 };
 
 export type PowerUsageData = {
   autoBlockThreshold: number;
-  hourly: UsagePeriodData;
   daily: UsagePeriodData;
   weekly: UsagePeriodData;
   monthly: UsagePeriodData;
-  dailyLastWeek: UsagePeriodData;
+  yearly: UsagePeriodData;
 };
 
 export type PowerUsageDataByController = Record<number, PowerUsageData>;
 
-/** ============ 제어기 1: 완만한 패턴 ============ */
+/** ===== 유틸: 간단한 해시/시드 난수 (재현 가능) ===== */
+function hashStr(s: string) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function seededRand01(seed: string) {
+  let x = hashStr(seed) || 1;
+  x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
+  const u = (x >>> 0) / 4294967295;
+  return u;
+}
+function clamp(v: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, v));
+}
+
+/** 제어기별 범위/패턴 프로파일 */
+const controllerProfiles = {
+  1: { daily: [150, 320], weekly: [900, 1500], monthly: [7000, 10000], yearly: [80000, 120000] },
+  2: { daily: [150, 360], weekly: [1100, 1700], monthly: [8600, 11000], yearly: [98000, 135000] },
+  3: { daily: [120, 280], weekly: [900, 1200], monthly: [7000, 8500],  yearly: [78000, 110000] },
+  4: { daily: [180, 380], weekly: [1300, 1800], monthly: [9200, 12000], yearly: [105000, 150000] },
+} as const;
+
+/** 2월=28, 4/6/9/11=30, 나머지 31 (요구사항 고정 규칙) */
+function daysInMonthFixed(_year: number, month1: number) {
+  if (month1 === 2) return 28;
+  if ([4, 6, 9, 11].includes(month1)) return 30;
+  return 31;
+}
+
+/** 공통 값 생성기 */
+function genValue(
+  ctrlId: number,
+  band: readonly [number, number], // ← 여기만 readonly로
+  index: number,
+  anchor: Date,
+  tag: string
+) {
+  const [minV, maxV] = band;
+  const base = (Math.sin((index / 3.7) + ctrlId) + 1) / 2;
+  const noise = seededRand01(`${ctrlId}|${tag}|${index}|${anchor.toDateString()}`) * 0.25;
+  const mix = clamp(base * 0.8 + noise, 0, 1);
+  return Math.round(minV + mix * (maxV - minV));
+}
+
+/** ===== 차트 빌더(컴포넌트에서 import해서 사용) ===== */
+export function buildDaily(ctrlId: number, date: Date): ChartDataPoint[] {
+  const p = controllerProfiles[ctrlId as 1 | 2 | 3 | 4] ?? controllerProfiles[1];
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  const dim = daysInMonthFixed(y, m);
+  return Array.from({ length: dim }, (_, i) => ({
+    label: `${m}월 ${i + 1}일`,
+    value: genValue(ctrlId, p.daily, i, date, "daily"),
+  }));
+}
+
+export function buildWeekly(ctrlId: number, date: Date): ChartDataPoint[] {
+  const p = controllerProfiles[ctrlId as 1 | 2 | 3 | 4] ?? controllerProfiles[1];
+  // 오래전→최근 24주
+  return Array.from({ length: 24 }, (_, i) => {
+    const idxFromRecent = 23 - i;
+    return { label: `W-${idxFromRecent}`, value: genValue(ctrlId, p.weekly, i, date, "weekly") };
+  });
+}
+
+// ... 상단 동일
+
+export function buildMonthly(ctrlId: number, date: Date): ChartDataPoint[] {
+  const p = controllerProfiles[ctrlId as 1 | 2 | 3 | 4] ?? controllerProfiles[1];
+  // 최근 12개월: (date - 11개월) ~ (date)까지
+  return Array.from({ length: 12 }, (_, i) => {
+    const dt = new Date(date.getFullYear(), date.getMonth() - (11 - i), 1);
+    const y = dt.getFullYear();
+    const m = dt.getMonth() + 1;
+    return {
+      label: `${y}년 ${m}월`,
+      value: genValue(ctrlId, p.monthly, i, dt, "monthly"),
+    };
+  });
+}
+
+export function buildYearly(ctrlId: number, date: Date): ChartDataPoint[] {
+  const p = controllerProfiles[ctrlId as 1 | 2 | 3 | 4] ?? controllerProfiles[1];
+  // 과거 9년 + 기준연도(총 10개)
+  const endY = date.getFullYear();
+  const startY = endY - 9;
+  return Array.from({ length: 10 }, (_, i) => {
+    const y = startY + i;
+    return {
+      label: `${y}년`,
+      value: genValue(ctrlId, p.yearly, i, new Date(y, 0, 1), "yearly"),
+    };
+  });
+}
+
+/** 통계 계산(화면에서 사용) */
+export function computeStatsFromChart(chart: { value: number }[]) {
+  if (!chart || chart.length === 0) return { average: 0, minimum: 0, current: 0 };
+  const values = chart.map((d) => d.value);
+  const sum = values.reduce((s, v) => s + v, 0);
+  return {
+    average: Math.round((sum / values.length) * 10) / 10,
+    minimum: Math.min(...values),
+    current: values[values.length - 1],
+  };
+}
+
+/** ====== 초기값(임계값 기본치 및 예시 차트) ====== */
+/** 화면에선 위 빌더로 매번 생성하므로 stats/chart는 참고용입니다. */
 const controller1: PowerUsageData = {
   autoBlockThreshold: 50,
-  hourly: {
-    stats: { average: 185, minimum: 90, current: 160 },
-    chart: [
-      { label: "0h", value: 90 },
-      { label: "4h", value: 120 },
-      { label: "8h", value: 160 },
-      { label: "12h", value: 240 },
-      { label: "16h", value: 320 },
-      { label: "20h", value: 260 },
-      { label: "24h", value: 160 },
-    ],
-  },
-  daily: {
-    stats: { average: 215, minimum: 160, current: 300 },
-    chart: [
-      { label: "7월 1일", value: 180 },
-      { label: "7월 2일", value: 220 },
-      { label: "7월 3일", value: 160 },
-      { label: "7월 15일", value: 300 },
-    ],
-  },
-  weekly: {
-    stats: { average: 1270, minimum: 1150, current: 1400 },
-    chart: [
-      { label: "3월 1주", value: 1150 },
-      { label: "4월 1주", value: 1200 },
-      { label: "5월 1주", value: 1350 },
-      { label: "8월 2주", value: 1400 },
-    ],
-  },
-  monthly: {
-    stats: { average: 8625, minimum: 7800, current: 9800 },
-    chart: [
-      { label: "1월", value: 7800 },
-      { label: "2월", value: 8200 },
-      { label: "8월", value: 8600 },
-      { label: "12월", value: 9800 },
-    ],
-  },
-  dailyLastWeek: {
-    stats: { average: 205, minimum: 150, current: 230 },
-    chart: [
-      { label: "d-7", value: 150 },
-      { label: "d-6", value: 180 },
-      { label: "d-5", value: 210 },
-      { label: "d-4", value: 190 },
-      { label: "d-3", value: 220 },
-      { label: "d-2", value: 230 },
-      { label: "d-1", value: 200 },
-    ],
-  },
+  daily:   { stats: { average: 215, minimum: 160, current: 300 }, chart: [] },
+  weekly:  { stats: { average: 1270, minimum: 1150, current: 1400 }, chart: [] },
+  monthly: { stats: { average: 8625, minimum: 7800, current: 9800 }, chart: [] },
+  yearly:  { stats: { average: 98000, minimum: 80000, current: 115000 }, chart: [] },
 };
 
-/** ============ 제어기 2: 야간 치솟는 패턴, 임계값 상향 ============ */
 const controller2: PowerUsageData = {
   autoBlockThreshold: 65,
-  hourly: {
-    stats: { average: 205, minimum: 60, current: 300 },
-    chart: [
-      { label: "0h", value: 60 },
-      { label: "4h", value: 80 },
-      { label: "8h", value: 120 },
-      { label: "12h", value: 180 },
-      { label: "16h", value: 260 },
-      { label: "20h", value: 340 },
-      { label: "24h", value: 300 },
-    ],
-  },
-  daily: {
-    stats: { average: 260, minimum: 150, current: 320 },
-    chart: [
-      { label: "7월 1일", value: 150 },
-      { label: "7월 2일", value: 240 },
-      { label: "7월 3일", value: 330 },
-      { label: "7월 15일", value: 320 },
-    ],
-  },
-  weekly: {
-    stats: { average: 1412, minimum: 1200, current: 1700 },
-    chart: [
-      { label: "3월 1주", value: 1200 },
-      { label: "4월 1주", value: 1350 },
-      { label: "5월 1주", value: 1400 },
-      { label: "8월 2주", value: 1700 },
-    ],
-  },
-  monthly: {
-    stats: { average: 9550, minimum: 8600, current: 11000 },
-    chart: [
-      { label: "1월", value: 8600 },
-      { label: "2월", value: 9200 },
-      { label: "8월", value: 10300 },
-      { label: "12월", value: 11000 },
-    ],
-  },
-  dailyLastWeek: {
-    stats: { average: 214, minimum: 140, current: 260 },
-    chart: [
-      { label: "d-7", value: 140 },
-      { label: "d-6", value: 180 },
-      { label: "d-5", value: 200 },
-      { label: "d-4", value: 220 },
-      { label: "d-3", value: 240 },
-      { label: "d-2", value: 260 },
-      { label: "d-1", value: 230 },
-    ],
-  },
+  daily:   { stats: { average: 260, minimum: 150, current: 320 }, chart: [] },
+  weekly:  { stats: { average: 1412, minimum: 1200, current: 1700 }, chart: [] },
+  monthly: { stats: { average: 9550, minimum: 8600, current: 11000 }, chart: [] },
+  yearly:  { stats: { average: 112000, minimum: 98000, current: 135000 }, chart: [] },
 };
 
-/** ============ 제어기 3: 아침 피크가 큼, 임계값 낮춤 ============ */
 const controller3: PowerUsageData = {
   autoBlockThreshold: 40,
-  hourly: {
-    stats: { average: 210, minimum: 80, current: 180 },
-    chart: [
-      { label: "0h", value: 80 },
-      { label: "4h", value: 140 },
-      { label: "8h", value: 280 },
-      { label: "12h", value: 340 },
-      { label: "16h", value: 260 },
-      { label: "20h", value: 180 },
-      { label: "24h", value: 180 },
-    ],
-  },
-  daily: {
-    stats: { average: 205, minimum: 120, current: 260 },
-    chart: [
-      { label: "7월 1일", value: 120 },
-      { label: "7월 2일", value: 180 },
-      { label: "7월 3일", value: 260 },
-      { label: "7월 15일", value: 260 },
-    ],
-  },
-  weekly: {
-    stats: { average: 1037, minimum: 900, current: 1150 },
-    chart: [
-      { label: "3월 1주", value: 900 },
-      { label: "4월 1주", value: 1000 },
-      { label: "5월 1주", value: 1100 },
-      { label: "8월 2주", value: 1150 },
-    ],
-  },
-  monthly: {
-    stats: { average: 7850, minimum: 7000, current: 8400 },
-    chart: [
-      { label: "1월", value: 7000 },
-      { label: "2월", value: 7600 },
-      { label: "8월", value: 8200 },
-      { label: "12월", value: 8400 },
-    ],
-  },
-  dailyLastWeek: {
-    stats: { average: 177, minimum: 100, current: 320 },
-    chart: [
-      { label: "d-7", value: 100 },
-      { label: "d-6", value: 120 },
-      { label: "d-5", value: 140 },
-      { label: "d-4", value: 160 },
-      { label: "d-3", value: 180 },
-      { label: "d-2", value: 240 },
-      { label: "d-1", value: 320 },
-    ],
-  },
+  daily:   { stats: { average: 205, minimum: 120, current: 260 }, chart: [] },
+  weekly:  { stats: { average: 1037, minimum: 900, current: 1150 }, chart: [] },
+  monthly: { stats: { average: 7850, minimum: 7000, current: 8400 }, chart: [] },
+  yearly:  { stats: { average: 93000, minimum: 78000, current: 110000 }, chart: [] },
 };
 
-/** ============ 제어기 4: 전체적으로 높고 변동 큼 ============ */
 const controller4: PowerUsageData = {
   autoBlockThreshold: 80,
-  hourly: {
-    stats: { average: 240, minimum: 100, current: 140 },
-    chart: [
-      { label: "0h", value: 100 },
-      { label: "4h", value: 120 },
-      { label: "8h", value: 200 },
-      { label: "12h", value: 360 },
-      { label: "16h", value: 380 },
-      { label: "20h", value: 260 },
-      { label: "24h", value: 140 },
-    ],
-  },
-  daily: {
-    stats: { average: 290, minimum: 180, current: 360 },
-    chart: [
-      { label: "7월 1일", value: 180 },
-      { label: "7월 2일", value: 260 },
-      { label: "7월 3일", value: 360 },
-      { label: "7월 15일", value: 360 },
-    ],
-  },
-  weekly: {
-    stats: { average: 1562, minimum: 1300, current: 1800 },
-    chart: [
-      { label: "3월 1주", value: 1300 },
-      { label: "4월 1주", value: 1500 },
-      { label: "5월 1주", value: 1650 },
-      { label: "8월 2주", value: 1800 },
-    ],
-  },
-  monthly: {
-    stats: { average: 10425, minimum: 9200, current: 12000 },
-    chart: [
-      { label: "1월", value: 9200 },
-      { label: "2월", value: 9800 },
-      { label: "8월", value: 11000 },
-      { label: "12월", value: 12000 },
-    ],
-  },
-  dailyLastWeek: {
-    stats: { average: 214, minimum: 150, current: 190 },
-    chart: [
-      { label: "d-7", value: 220 },
-      { label: "d-6", value: 210 },
-      { label: "d-5", value: 200 },
-      { label: "d-4", value: 190 },
-      { label: "d-3", value: 180 },
-      { label: "d-2", value: 170 },
-      { label: "d-1", value: 190 },
-    ],
-  },
+  daily:   { stats: { average: 290, minimum: 180, current: 360 }, chart: [] },
+  weekly:  { stats: { average: 1562, minimum: 1300, current: 1800 }, chart: [] },
+  monthly: { stats: { average: 10425, minimum: 9200, current: 12000 }, chart: [] },
+  yearly:  { stats: { average: 125000, minimum: 105000, current: 150000 }, chart: [] },
 };
 
 export const defaultPowerDataByController: PowerUsageDataByController = {

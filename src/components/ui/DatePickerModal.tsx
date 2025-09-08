@@ -17,8 +17,12 @@ export default function DatePickerModal(props: Props) {
   const { initial, onCancel, onConfirm, tab, limitToToday = false } = props;
   const ITEM_HEIGHT = 70;
 
-  const showMonth = props.showMonth ?? tab !== "monthly";
-  const showDay   = props.showDay   ?? (tab === "hourly" || tab === "weekly");
+  // ✅ 기본 표시 규칙 변경
+  // - yearly: 연도만 (월/일 숨김)
+  // - monthly/daily: 연+월 (일 숨김)
+  // - weekly: 연+월+일 (주 anchor용)
+  const showMonth = props.showMonth ?? tab !== "yearly";
+  const showDay   = props.showDay   ?? (tab === "weekly");
 
   // 오늘 경계
   const TODAY = new Date();
