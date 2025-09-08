@@ -4,28 +4,27 @@ import Main from "../../components/layout/Main";
 import { useControllerData } from "../../contexts/ControllerContext";
 import styles from "./ManualControlPage.module.css";
 import PowerBarChart from "../../components/ui/PowerBarChart";
-import { useEffect, useState } from "react";
-import type { PowerUsageData } from "../../data/AutoBlock";
-import autoBlockData from "../../data/AutoBlock";
+import { useMemo, useState } from "react";
+import { buildDailyLastWeek, computeStatsFromChart } from "../../data/AutoBlock";
 import Title from "../../components/ui/Title";
 import Footer from "../../components/layout/Footer";
 
 export default function ManualControlPage() {
   const { id } = useParams();
+  const controllerId = Number(id);
   const { controllers } = useControllerData();
-  const target = controllers.find(c => c.id === Number(id));
+  const target = controllers.find((c) => c.id === controllerId);
 
-  // 전력 데이터 상태
-  const [powerData, setPowerData] = useState<PowerUsageData | null>(null);
+  // 최근 7일 차트/통계 (결정론적 생성)
+  const lastWeekChart = useMemo(
+    () => buildDailyLastWeek(controllerId || 1, new Date()),
+    [controllerId]
+  );
+  const statsWeek = useMemo(() => computeStatsFromChart(lastWeekChart), [lastWeekChart]);
 
   // 토글 및 모달 상태
   const [isToggleOn, setIsToggleOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // 더미 데이터 fetch (실제로는 API 호출 예상)
-  useEffect(() => {
-    setPowerData(autoBlockData);
-  }, []);
 
   // 토글 UI 컴포넌트
   function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
@@ -47,9 +46,8 @@ export default function ManualControlPage() {
     setIsToggleOn(nextState);
 
     if (nextState) {
-      const isOffAllowed =
-        powerData?.dailyLastWeek?.stats?.average! >
-        powerData?.dailyLastWeek?.stats?.current!;
+      // 평균 > 현재면 OFF 가능 → 모달 표시
+      const isOffAllowed = statsWeek.average > statsWeek.current;
       if (isOffAllowed) {
         setIsModalOpen(true);
       }
@@ -65,8 +63,9 @@ export default function ManualControlPage() {
 
   // 전력차단 실행
   function handleOffClick() {
-    setIsModalOpen(false);    // 모달 닫기
-    setIsToggleOn(true);      // 토글은 계속 ON 상태 유지
+    setIsModalOpen(false); // 모달 닫기
+    setIsToggleOn(true);   // 토글은 계속 ON 상태 유지
+    // 실제 OFF API 호출 자리
   }
 
   // 제어기 정보 없음
@@ -89,19 +88,17 @@ export default function ManualControlPage() {
           {/* 토글 및 안내 메시지 */}
           <div className={styles.toggleBox}>
             <Toggle checked={isToggleOn} onChange={handleToggle} />
-            {isToggleOn &&
-              powerData?.dailyLastWeek?.stats?.average! >
-              powerData?.dailyLastWeek?.stats?.current! && (
-                <p className={`${styles.toggleInfoText} ${styles.bounce}`}>
-                  강제 OFF를 원할 경우 <br />
-                  ON을 5초간 눌러주세요.
-                </p>
-              )}
+            {isToggleOn && statsWeek.average > statsWeek.current && (
+              <p className={`${styles.toggleInfoText} ${styles.bounce}`}>
+                강제 OFF를 원할 경우 <br />
+                ON을 5초간 눌러주세요.
+              </p>
+            )}
           </div>
 
           {isToggleOn && (
             <p className={styles.infoText}>
-              "<span className={styles.color02}>평균 전력 사용량</span> &gt;{' '}
+              "<span className={styles.color02}>평균 전력 사용량</span> &gt;{" "}
               <span className={styles.color01}>현재 전력 사용량</span>" 인 경우에 OFF 가능
             </p>
           )}
@@ -111,21 +108,27 @@ export default function ManualControlPage() {
           <div className={styles.amountUsedBox}>
             <div className={`${styles.averageBox} ${styles.box}`}>
               <span>평균 사용량</span>
-              <strong>{powerData?.dailyLastWeek.stats.average ?? "-"} <em>Wh</em></strong>
+              <strong>
+                {statsWeek.average} <em>Wh</em>
+              </strong>
             </div>
             <div className={`${styles.minimumBox} ${styles.box}`}>
               <span>최저 사용량</span>
-              <strong>{powerData?.dailyLastWeek.stats.minimum ?? "-"} <em>Wh</em></strong>
+              <strong>
+                {statsWeek.minimum} <em>Wh</em>
+              </strong>
             </div>
             <div className={`${styles.currentBox} ${styles.box}`}>
               <span>현재 사용량</span>
-              <strong>{powerData?.dailyLastWeek.stats.current ?? "-"} <em>Wh</em></strong>
+              <strong>
+                {statsWeek.current} <em>Wh</em>
+              </strong>
             </div>
           </div>
 
           {/* 막대 차트 */}
           <PowerBarChart
-            data={powerData?.dailyLastWeek.chart || []}
+            data={lastWeekChart}
             yMax={400}
             unit="Wh"
             barColor="#0F7685"
