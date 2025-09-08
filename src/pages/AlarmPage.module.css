@@ -177,3 +177,7 @@
 .alarmBox .filterBox .layoutBox div {
   width: 50%;
 }
+
+.box.new {
+  background: #C4D8DD;
+}

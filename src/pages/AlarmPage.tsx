@@ -1,51 +1,56 @@
+// src/pages/AlarmPage.tsx
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Header from "../components/layout/Header";
 import Main from "../components/layout/Main";
 import styles from "./AlarmPage.module.css";
 import type { Alarm, AlarmFilters } from "../data/Alarms";
-import alarmData from "../data/Alarms";
+import alarmData, {
+  ensureDemoUnreadIfNone,
+  loadReadIds,
+  markAsRead,
+  parseKoreanDate,
+} from "../data/Alarms";
 
-function parseKoreanDate(s: string): number {
-  // 예: "2025.08.14 오후 10:10"
-  // 공백 기준: [ "2025.08.14", "오전|오후", "hh:mm" ]
-  const [datePart, ampm, timePart] = s.split(" ");
-  const [y, m, d] = datePart.split(".").map(Number);
-  const [hh, mm] = timePart.split(":").map(Number);
-
-  let hours = hh % 12;
-  if (ampm === "오후") hours += 12;
-
-  return new Date(y, m - 1, d, hours, mm).getTime();
+function useCompanyCode() {
+  return localStorage.getItem("companyCode") || "DEFAULT_COMPANY";
 }
 
 export default function AlarmPage() {
-  // 필터링된 알람 목록 상태
-  const [filteredAlarms, setFilteredAlarms] = useState<Alarm[]>([]);
+  const company = useCompanyCode();
 
-  // 현재 화면에 보여줄 알람 개수
-  const [visibleCount, setVisibleCount] = useState(10);
+  // 최초 진입 시: 최신 3건만 미확인 상태로 시드(이미 있으면 유지)
+  useEffect(() => {
+    ensureDemoUnreadIfNone(company, 3);
+  }, [company]);
 
-  // 필터 조건을 상태로 저장 (로컬스토리지와 연동됨)
+  // 읽음 집합
+  const [readIds, setReadIds] = useState<Set<number>>(new Set());
+  useEffect(() => {
+    setReadIds(loadReadIds(company));
+  }, [company]);
+
+  // 필터 상태 (로컬스토리지와 연동)
   const [filters, setFilters] = useState<AlarmFilters | null>(null);
-
-  // 컴포넌트 마운트 시 로컬스토리지에서 필터 가져오기
   useEffect(() => {
     const stored = localStorage.getItem("alarmFilters");
     if (stored) {
-      try {
-        setFilters(JSON.parse(stored));
-      } catch {
-        setFilters(null);
-      }
+      try { setFilters(JSON.parse(stored)); }
+      catch { setFilters(null); }
     }
   }, []);
 
-  // 필터가 변경될 때마다 알람 데이터 필터링
-  useEffect(() => {
-    // 원본 훼손 방지용 복사
-    let filtered = alarmData.slice();
+  // 최신순 정렬
+  const sortedAll = useMemo(() => {
+    const arr = alarmData.slice();
+    arr.sort((a, b) => parseKoreanDate(b.date) - parseKoreanDate(a.date));
+    return arr;
+  }, []);
 
+  // 필터 적용
+  const [filtered, setFiltered] = useState<Alarm[]>([]);
+  useEffect(() => {
+    let list = sortedAll.slice();
     if (filters) {
       const {
         controllers = [],
@@ -55,54 +60,47 @@ export default function AlarmPage() {
         sortOrder = "latest",
       } = filters;
 
-      // 필터 - 제어기
-      if (controllers.length > 0) {
-        filtered = filtered.filter((alarm) => controllers.includes(alarm.controller));
-      }
+      if (controllers.length) list = list.filter(a => controllers.includes(a.controller));
+      if (admins.length)     list = list.filter(a => admins.includes(a.adminId));
+      if (types.length)      list = list.filter(a => types.includes(a.type));
+      if (statuses.length)   list = list.filter(a => statuses.includes(a.status));
 
-      // 필터 - 관리자 ID
-      if (admins.length > 0) {
-        filtered = filtered.filter((alarm) => admins.includes(alarm.adminId));
-      }
-
-      // 필터 - 제어 방식
-      if (types.length > 0) {
-        filtered = filtered.filter((alarm) => types.includes(alarm.type));
-      }
-
-      // 필터 - 상태(ON/OFF)
-      if (statuses.length > 0) {
-        filtered = filtered.filter((alarm) => statuses.includes(alarm.status));
-      }
-
-      // 정렬 - 한국어 날짜 파싱 후 정렬
-      filtered.sort((a, b) => {
+      list.sort((a, b) => {
         const ta = parseKoreanDate(a.date);
         const tb = parseKoreanDate(b.date);
         return sortOrder === "latest" ? tb - ta : ta - tb;
       });
     }
-
-    // 필터링된 결과 저장
-    setFilteredAlarms(filtered);
-
-    // 화면에 다시 10개부터 보여주기 (더보기 초기화)
+    setFiltered(list);
     setVisibleCount(10);
-  }, [filters]);
+  }, [filters, sortedAll]);
 
-  // 더보기 버튼 클릭 시 보여줄 알람 개수 증가
-  function handleLoadMore() {
-    setVisibleCount((prev) => prev + 10);
-  }
+  // 미확인 판정
+  const isFresh = (id: number) => !readIds.has(id);
 
-  // 필터 삭제 (localStorage 초기화 + filters 상태 초기화)
-  function handleFilterDel() {
-    localStorage.removeItem("alarmFilters");
-    setFilters(null); // filters 상태 초기화 → useEffect 재실행됨
-  }
+  // 페이징
+  const [visibleCount, setVisibleCount] = useState(10);
+  const visible = filtered.slice(0, visibleCount);
+  const handleMore = () => setVisibleCount((p) => p + 10);
 
-  // 현재 보여줄 알람만 잘라내기
-  const visibleAlarms = filteredAlarms.slice(0, visibleCount);
+  // ✅ 페이지 떠날 때: 현재 필터 결과(=화면에서 확인했다고 간주)를 읽음 처리
+  useEffect(() => {
+    return () => {
+      const freshIds = filtered.filter(a => isFresh(a.id)).map(a => a.id);
+      if (freshIds.length > 0) {
+        markAsRead(company, freshIds);
+      }
+    };
+  }, [company, filtered, readIds]);
+
+  // 보조: 필터 사용 여부
+  const isFilterOn = !!filters && (
+    (filters.controllers?.length ?? 0) > 0 ||
+    (filters.admins?.length ?? 0) > 0 ||
+    (filters.types?.length ?? 0) > 0 ||
+    (filters.statuses?.length ?? 0) > 0 ||
+    (filters.sortOrder ?? "latest") !== "latest"
+  );
 
   return (
     <>
@@ -110,49 +108,62 @@ export default function AlarmPage() {
 
       <Main id="sub">
         <div className={styles.alarmBox}>
-          {/* 필터 또는 필터삭제 버튼 표시 */}
+          {/* 필터 / 필터삭제 */}
           <div className={styles.filterLinkBox}>
             {filters ? (
-              // 필터가 적용된 상태 → "필터삭제" 버튼
               <button
                 className={`${styles.filterLink} ${styles.filterDel}`}
-                onClick={handleFilterDel}
+                onClick={() => {
+                  localStorage.removeItem("alarmFilters");
+                  setFilters(null);
+                }}
               >
                 필터삭제
               </button>
             ) : (
-              // 필터가 없는 상태 → "필터" 버튼
               <Link to="/alarm-filter" className={styles.filterLink}>
                 필터
               </Link>
             )}
           </div>
 
-          {/* 알람 목록 표시 */}
+          {/* 알림 리스트 */}
           <div className={styles.alarmList}>
-            {visibleAlarms.map((alarm) => (
-              <div key={alarm.id} className={styles.box}>
-                <div className={styles.imgBox}>
-                  <img src={alarm.icon} alt={`${alarm.type} 아이콘`} />
-                </div>
-                <div className={styles.textBox}>
-                  <h2>{`${alarm.type} - ${alarm.adminId}`}</h2>
-                  <span>{`${alarm.controller} - # 공장 위치 ${alarm.status}`}</span>
-                  <em className={styles.date}>{alarm.date}</em>
-                </div>
-              </div>
-            ))}
-
-            {/* 필터 결과가 없을 경우 메시지 표시 */}
-            {filteredAlarms.length === 0 && (
+            {alarmData.length === 0 && !isFilterOn && (
+              <p className={styles.noResult}>알림 내역이 비어있습니다.</p>
+            )}
+            {alarmData.length > 0 && filtered.length === 0 && (
               <p className={styles.noResult}>조건에 맞는 알림이 없습니다.</p>
             )}
+
+            {visible.map((alarm) => {
+              const fresh = isFresh(alarm.id);
+              return (
+                <div
+                  key={alarm.id}
+                  className={`${styles.box} ${fresh ? styles.new : ""}`}
+                  data-fresh={fresh ? "1" : "0"}
+                >
+                  {/* (선택) NEW 배지 표시 원하면 사용 */}
+                  {/* {fresh && <span className={styles.newBadge}>NEW</span>} */}
+
+                  <div className={styles.imgBox}>
+                    <img src={alarm.icon} alt={`${alarm.type} 아이콘`} />
+                  </div>
+                  <div className={styles.textBox}>
+                    <h2>{`${alarm.type} - ${alarm.adminId}`}</h2>
+                    <span>{`${alarm.controller} - # 공장 위치 ${alarm.status}`}</span>
+                    <em className={styles.date}>{alarm.date}</em>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          {/* 더보기 버튼 (남은 알람이 있을 때만 표시) */}
-          {visibleCount < filteredAlarms.length && (
+          {/* 더보기 */}
+          {visibleCount < filtered.length && (
             <div className={styles.viewBtnBox}>
-              <button className={styles.viewBtn} onClick={handleLoadMore}>
+              <button className={styles.viewBtn} onClick={handleMore}>
                 <span>더보기</span>
               </button>
             </div>

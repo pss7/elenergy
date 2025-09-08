@@ -1,65 +1,85 @@
+// src/pages/MainPage.tsx
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-
-// 컴포넌트
 import ArrowLink from "../components/ui/ArrowLink";
 import Title from "../components/ui/Title";
 import PowerDoughnutChart from "../components/ui/PowerDoughnutChart";
-
-// 스타일
 import styles from "./MainPage.module.css";
-
-// 데이터
 import savingsData from "../data/Savings";
-
-// 컨텍스트에서 제어기 데이터 가져오기
 import { useControllerData } from "../contexts/ControllerContext";
-
-// 페이지 이동 훅
 import useNavigateTo from "../hooks/useNavigateTo";
 
+import alarmData, {
+  ensureDemoUnreadIfNone,
+  loadReadIds,
+} from "../data/Alarms";
+
+function useCompanyCode() {
+  return localStorage.getItem("companyCode") || "DEFAULT_COMPANY";
+}
+
 export default function MainPage() {
-  // 제어기 리스트 가져오기 (전역 컨텍스트)
   const { controllers } = useControllerData();
-
-  // 외부 클릭 감지를 위한 ref
   const listRef = useRef<HTMLUListElement>(null);
-
-  // 현재 "정보변경" 링크가 열려 있는 제어기 ID
   const [activeToggleId, setActiveToggleId] = useState<number | null>(null);
+  const { navigateTo } = useNavigateTo();
 
-  // 정보변경 버튼 클릭 핸들러: 같은 ID면 닫고, 다르면 열기
   function handleToggle(id: number) {
     setActiveToggleId((prev) => (prev === id ? null : id));
   }
-
-  // 바깥 클릭 시 "정보변경" 링크 닫기
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        listRef.current &&
-        !listRef.current.contains(event.target as Node)
-      ) {
+      if (listRef.current && !listRef.current.contains(event.target as Node)) {
         setActiveToggleId(null);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // 수동 제어 페이지로 이동
-  const { navigateTo } = useNavigateTo();
 
   function handleControl(id: number) {
     navigateTo(`/manual-control/${id}`);
   }
 
+  /* 🔴 빨간 점 상태 */
+  const company = useCompanyCode();
+  const [hasUnread, setHasUnread] = useState(false);
+
+  useEffect(() => {
+    // 1) 최신 3건 미확인으로 시드(이미 있으면 유지)
+    ensureDemoUnreadIfNone(company, 3);
+
+    const recompute = () => {
+      const read = loadReadIds(company);
+      setHasUnread(alarmData.some((a) => !read.has(a.id)));
+    };
+
+    // 2) 즉시 한 번 계산
+    recompute();
+
+    // 3) 이벤트로 재계산: (동일 탭에서 localStorage 변경은 storage 이벤트가 안 뜸)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === `alarm:readIds:${company}`) recompute();
+    };
+    const onFocus = () => recompute();
+    const onVisibility = () => document.visibilityState === "visible" && recompute();
+    const onCustom = () => recompute(); // 커스텀 이벤트 훅
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("alarm:readIds:changed", onCustom as EventListener);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("alarm:readIds:changed", onCustom as EventListener);
+    };
+  }, [company]);
+
   return (
     <>
-      {/* 전체 제어기 리스트 */}
       <section className={styles.titleBox}>
         <Title level={1} className={`mb-20 ${styles.h1} ${styles.mainIcon01}`}>
           전체제어기
@@ -67,10 +87,7 @@ export default function MainPage() {
 
         <ul className={styles.linkList01} ref={listRef}>
           {controllers.map((ctrl) => (
-            <li
-              key={ctrl.id}
-              onClick={() => handleControl(ctrl.id)}
-            >
+            <li key={ctrl.id} onClick={() => handleControl(ctrl.id)}>
               <div className={styles.box}>
                 <div className={styles.textBox}>
                   <h2>{ctrl.title}</h2>
@@ -92,8 +109,7 @@ export default function MainPage() {
                   <Link
                     to={`/controller-update/${ctrl.id}`}
                     onClick={(e) => e.stopPropagation()}
-                    className={`${styles.changeLink} ${activeToggleId === ctrl.id ? styles.active : ""
-                      }`}
+                    className={`${styles.changeLink} ${activeToggleId === ctrl.id ? styles.active : ""}`}
                   >
                     정보변경
                   </Link>
@@ -103,18 +119,22 @@ export default function MainPage() {
           ))}
         </ul>
 
-        {/* 알림 페이지 이동 링크 */}
-        <Link to="/alarm" className={styles.alarmLink}>
+        {/* 🔔 알림 아이콘 – 클래스 토글 + 엘리먼트 배지 둘 다 지원 */}
+        <Link
+          to="/alarm"
+          className={`${styles.alarmLink} ${hasUnread ? styles.hasUnread : ""}`}
+          aria-label="알림"
+        >
           <img src="/assets/images/common/alarm_icon.svg" alt="알림" />
+          {hasUnread && <i className={styles.redDot} aria-hidden="true" />}
         </Link>
       </section>
 
-      {/* 다른 차단 방식 섹션 */}
+      {/* 이하 기존 섹션 동일 */}
       <section>
         <Title level={1} className={`mb-20 ${styles.h1} ${styles.mainIcon02}`}>
           다른 차단 방식이 필요하신가요?
         </Title>
-
         <ul className={styles.linkList02}>
           <li>
             <Link to="/scheduled-block">
@@ -131,7 +151,6 @@ export default function MainPage() {
         </ul>
       </section>
 
-      {/* 전력 절감 차트 섹션 */}
       <section>
         <div className={`${styles.layoutBox} mb-20`}>
           <Title level={1} className={`${styles.h1} ${styles.mainIcon03}`}>
@@ -151,7 +170,6 @@ export default function MainPage() {
             titleFontSize="10px"
             valueFontSize="20px"
           />
-
           <div className={styles.chartInfoBox}>
             <h3>절감한 전력 요금</h3>
             <span>{savingsData.moneySaved.toLocaleString()}원</span>

@@ -258,3 +258,23 @@
   font-weight: 700;
   color: #000;
 }
+
+.alarmLink {
+  display: inline-block;
+}
+
+.bellWrap {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+.redDot {
+  position: absolute;
+  left: -3px;
+  top: -2px;
+  width: 5px;
+  height: 5px;
+  background: #FF1E00;
+  border-radius: 50%;
+}
