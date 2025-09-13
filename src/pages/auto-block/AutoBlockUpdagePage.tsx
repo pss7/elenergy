@@ -31,7 +31,7 @@ export default function AutoBlockUpdagePage() {
       try {
         setMap(JSON.parse(saved) as PowerUsageDataByController);
         return;
-      } catch {}
+      } catch { }
     }
     const zeroSeeded: PowerUsageDataByController = Object.fromEntries(
       Object.entries(defaultMap).map(([id, d]) => [
@@ -46,7 +46,7 @@ export default function AutoBlockUpdagePage() {
   // 현재 제어기 데이터
   const data = map?.[controllerIdFromState];
 
-  // ✅ 최근 7일 차트/통계(데이터 파일의 빌더 사용)
+  // ✅ 최근 7일 차트/통계
   const lastWeekChart = useMemo(
     () => buildDailyLastWeek(controllerIdFromState, new Date()),
     [controllerIdFromState]
@@ -62,6 +62,35 @@ export default function AutoBlockUpdagePage() {
   const parsed = isDigits(thresholdInput) ? parseInt(thresholdInput, 10) : NaN;
   const overAvg = !Number.isNaN(parsed) && parsed > averageLastWeek;
   const isSaveEnabled = isDigits(thresholdInput) && !overAvg;
+
+  // 숫자만 허용하는 입력 핸들러들
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    // 모든 비숫자 제거
+    const digitsOnly = e.target.value.replace(/\D/g, "");
+    setThresholdInput(digitsOnly);
+  }
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    const allowed = [
+      "Backspace",
+      "Delete",
+      "ArrowLeft",
+      "ArrowRight",
+      "Home",
+      "End",
+      "Tab",
+    ];
+    if (allowed.includes(e.key)) return;
+    // 단일 숫자 키만 허용
+    if (!/^\d$/.test(e.key)) {
+      e.preventDefault();
+    }
+  }
+  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    e.preventDefault();
+    const text = e.clipboardData.getData("text");
+    const digitsOnly = text.replace(/\D/g, "");
+    setThresholdInput(digitsOnly);
+  }
 
   // 저장
   function handleSave() {
@@ -114,10 +143,15 @@ export default function AutoBlockUpdagePage() {
 
             <div className={styles.inputBox}>
               <input
-                type="text"
-                placeholder={`${(data?.autoBlockThreshold ?? 0)}Wh`}
+                type="text"                // type="number"는 브라우저마다 e,- 입력 허용 → text로 두고 필터링이 안전
+                inputMode="numeric"        // 모바일 숫자 키패드
+                pattern="[0-9]*"           // 폼 검증 힌트
+                placeholder={`${(data?.autoBlockThreshold ?? 0)}`}
                 value={thresholdInput}
-                onChange={(e) => setThresholdInput(e.target.value)}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                aria-label="전력기준(숫자만)"
               />
               <label htmlFor="" className="blind">전력기준</label>
 

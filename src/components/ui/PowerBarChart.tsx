@@ -96,8 +96,8 @@ const PowerBarChart: React.FC<PowerBarChartProps> = ({
           {showAverageLine && (
             <ReferenceLine
               y={avg}
-              stroke="#C9443F"
-              strokeWidth={1}
+              stroke="#FF1E00"
+              strokeWidth={2}
               strokeDasharray="4 4"
               ifOverflow="extendDomain"
             />

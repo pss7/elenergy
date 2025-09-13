@@ -1,19 +1,27 @@
+// src/pages/auto-block/AutoBlockPage.tsx
 import { useMemo, useState, useEffect } from "react";
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import styles from "./AutoBlockPage.module.css";
-import type { TabType, PowerUsageDataByController } from "../../data/AutoBlock";
+
+// UI 탭(요구사항에 맞춰 yearly 없음)
+type UITab = "hourly" | "daily" | "weekly" | "monthly";
+
+import type { PowerUsageDataByController } from "../../data/AutoBlock";
 import {
   defaultPowerDataByController as defaultMap,
-  buildDaily, buildWeekly, buildMonthly, buildYearly,
+  buildDaily, buildWeekly, buildMonthly, /* buildHourly (있다면 사용) */
   computeStatsFromChart,
 } from "../../data/AutoBlock";
+
 import PowerBarChart from "../../components/ui/PowerBarChart";
 import {
-  addMonths, addYears,
-  subWeeks, subMonths, subYears,
-  format, startOfWeek, endOfWeek,
-  isSameWeek, isSameMonth, isSameYear,
+  addDays, subDays,
+  addMonths, subMonths,
+  addWeeks, subWeeks,
+  addYears, subYears,
+  format, subWeeks as dfSubWeeks,
+  isSameDay, isSameMonth, isSameYear,
 } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Link } from "react-router-dom";
@@ -23,8 +31,8 @@ import CustomSelect from "../../components/ui/CustomSelect";
 import controllerData from "../../data/Controllers";
 
 export default function AutoBlockPage() {
-  // 탭: 일/주/월/연
-  const [tab, setTab] = useState<TabType>("daily");
+  // 탭: 시간/일/주/월
+  const [tab, setTab] = useState<UITab>("hourly");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -57,76 +65,75 @@ export default function AutoBlockPage() {
     setDataByController(zeroSeeded);
   }, []);
 
-  // 네비게이션
+  /** ===== 날짜 네비게이션 ===== */
   function handlePrevDate() {
     switch (tab) {
-      case "daily":   setCurrentDate((p) => subMonths(p, 1)); break;  // 1개월
-      case "weekly":  setCurrentDate((p) => subMonths(p, 6)); break;  // 6개월
-      case "monthly": setCurrentDate((p) => subMonths(p, 1)); break;  // ✅ 월 단위
-      case "yearly":  setCurrentDate((p) => subYears(p, 1));  break;  // ✅ 연 단위
-    }
-  }
-  const today = new Date();
-  const atMaxPeriod = useMemo(() => {
-    switch (tab) {
-      case "daily":   return isSameMonth(currentDate, today);
-      case "weekly":  return isSameWeek(currentDate, today, { weekStartsOn: 1 });
-      case "monthly": return isSameMonth(currentDate, today); // ✅ 월별은 같은 달 도달 시 막기
-      case "yearly":  return isSameYear(currentDate, today);  // ✅ 연도별은 같은 해 도달 시 막기
-      default:        return false;
-    }
-  }, [tab, currentDate]);
-  function handleNextDate() {
-    if (atMaxPeriod) return;
-    switch (tab) {
-      case "daily":   setCurrentDate((p) => addMonths(p, 1)); break;
-      case "weekly":  setCurrentDate((p) => addMonths(p, 6)); break;
-      case "monthly": setCurrentDate((p) => addMonths(p, 1)); break;  // ✅ 월 단위
-      case "yearly":  setCurrentDate((p) => addYears(p, 1));  break;  // ✅ 연 단위
+      case "hourly":  setCurrentDate((p) => subDays(p, 1));   break; // 하루 전
+      case "daily":   setCurrentDate((p) => subMonths(p, 1)); break; // 1개월
+      case "weekly":  setCurrentDate((p) => subWeeks(p, 24)); break; // 24주 전
+      case "monthly": setCurrentDate((p) => subYears(p, 1));  break; // 1년 전
     }
   }
 
-  // 라벨
+  const today = new Date();
+  const atMaxPeriod = useMemo(() => {
+    switch (tab) {
+      case "hourly":  return isSameDay(currentDate, today);   // 같은 날 도달 시 막기
+      case "daily":   return isSameMonth(currentDate, today); // 같은 달 도달 시 막기
+      case "weekly":  return isSameDay(currentDate, today);   // 창 끝=선택일이 오늘일 때 막기
+      case "monthly": return isSameYear(currentDate, today);  // 같은 해 도달 시 막기
+      default:        return false;
+    }
+  }, [tab, currentDate]);
+
+  function handleNextDate() {
+    if (atMaxPeriod) return;
+    switch (tab) {
+      case "hourly":  setCurrentDate((p) => addDays(p, 1));   break; // 하루 후
+      case "daily":   setCurrentDate((p) => addMonths(p, 1)); break; // 1개월 후
+      case "weekly":  setCurrentDate((p) => addWeeks(p, 24)); break; // 24주 후
+      case "monthly": setCurrentDate((p) => addYears(p, 1));  break; // 1년 후
+    }
+  }
+
+  /** ===== 날짜 라벨 ===== */
   function getFormattedDate() {
     switch (tab) {
+      case "hourly":
+        return format(currentDate, "yyyy년 MM월 dd일", { locale: ko });
       case "daily":
         return format(currentDate, "yyyy년 MM월", { locale: ko });
       case "weekly": {
-        const end = endOfWeek(currentDate, { weekStartsOn: 1 });
-        const start = startOfWeek(subWeeks(currentDate, 23), { weekStartsOn: 1 });
+        // 24주 창: 시작 = 23주 전, 끝 = 선택일
+        const start = dfSubWeeks(currentDate, 23);
+        const end = currentDate;
         return `${format(start, "yyyy년 MM월 dd일", { locale: ko })} ~ ${format(end, "yyyy년 MM월 dd일", { locale: ko })}`;
       }
-      case "monthly": {
-        // 최근 12개월 윈도우 라벨
-        const endY = currentDate.getFullYear();
-        const endM = currentDate.getMonth() + 1;
-        const start = new Date(endY, endM - 1 - 11, 1);
-        const sy = start.getFullYear();
-        const sm = start.getMonth() + 1;
-        return `${sy}년 ${sm}월 ~ ${endY}년 ${endM}월`;
-      }
-      case "yearly":
+      case "monthly":
+        // 12개월 창의 기준 해만 표기
         return format(currentDate, "yyyy년", { locale: ko });
       default:
         return "";
     }
   }
 
-  // 차트 & 통계 (→ 데이터는 data/AutoBlock.ts의 빌더에서 import)
+  /** ===== 차트 데이터 & 통계 ===== */
   const chartData = useMemo(() => {
     const id = selectedControllerId;
     switch (tab) {
+      // ⛳ 데이터 모듈에 buildHourly가 있다면 아래 한 줄로 교체하세요:
+      // case "hourly":  return buildHourly(id, currentDate);
+      case "hourly":  return buildDaily(id, currentDate);  // 임시: 일단 일별 빌더로 대체
       case "daily":   return buildDaily(id, currentDate);
-      case "weekly":  return buildWeekly(id, currentDate);
-      case "monthly": return buildMonthly(id, currentDate);
-      case "yearly":  return buildYearly(id, currentDate);
+      case "weekly":  return buildWeekly(id, currentDate);   // 24주 데이터 반환 가정
+      case "monthly": return buildMonthly(id, currentDate);  // 12개월 데이터 반환 가정
       default:        return [];
     }
   }, [tab, currentDate, selectedControllerId]);
 
   const stats = useMemo(() => computeStatsFromChart(chartData), [chartData]);
 
-  // 임계값(0도 유효값으로 그대로 보여줌)
+  // 임계값(0도 유효값 그대로 표시)
   const id = selectedControllerId as 1 | 2 | 3 | 4;
   const rawThreshold = dataByController?.[id]?.autoBlockThreshold;
   const threshold =
@@ -134,9 +141,10 @@ export default function AutoBlockPage() {
       ? rawThreshold
       : 0;
 
-  // 날짜 선택 모달 표시 규칙
-  const showMonthForPicker = tab === "daily" || tab === "weekly" || tab === "monthly"; // 월별 포함
-  const showDayForPicker   = tab === "weekly"; // 주별만 일 선택
+  /** ===== 날짜 선택 모달 표시 규칙 ===== */
+  // 시간별/주별은 일까지 필요, 일별/월별은 일 불필요
+  const showMonthForPicker = true;                           // 네 탭 모두 월 표기
+  const showDayForPicker   = tab === "hourly" || tab === "weekly";
 
   return (
     <>
@@ -167,10 +175,10 @@ export default function AutoBlockPage() {
           </div>
 
           <div className={styles.dateTabBox}>
-            <button className={`${styles.btn} ${tab === "daily" ? styles.active : ""}`} onClick={() => setTab("daily")}>일별</button>
-            <button className={`${styles.btn} ${tab === "weekly" ? styles.active : ""}`} onClick={() => setTab("weekly")}>주별</button>
+            <button className={`${styles.btn} ${tab === "hourly" ? styles.active : ""}`}  onClick={() => setTab("hourly")}>시간별</button>
+            <button className={`${styles.btn} ${tab === "daily" ? styles.active : ""}`}   onClick={() => setTab("daily")}>일별</button>
+            <button className={`${styles.btn} ${tab === "weekly" ? styles.active : ""}`}  onClick={() => setTab("weekly")}>주별</button>
             <button className={`${styles.btn} ${tab === "monthly" ? styles.active : ""}`} onClick={() => setTab("monthly")}>월별</button>
-            <button className={`${styles.btn} ${tab === "yearly" ? styles.active : ""}`} onClick={() => setTab("yearly")}>연도별</button>
           </div>
 
           <div className={styles.dateBox}>
@@ -209,7 +217,7 @@ export default function AutoBlockPage() {
             unit="Wh"
             showAverageLine
             averageValue={stats.average}
-            barColor="#0F7685"
+            barColor="#0F7685" // 필요하면 #FF1E00 로
           />
 
           {chartData.length === 0 && (
@@ -235,11 +243,10 @@ export default function AutoBlockPage() {
             tab={tab}
             showMonth={showMonthForPicker}
             showDay={showDayForPicker}
-            /** 이 페이지에서만 오늘 이후 금지 */
+            /** 오늘 이후 금지 */
             limitToToday
           />
         )}
-
       </Main>
 
       <Footer />
