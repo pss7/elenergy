@@ -317,7 +317,7 @@ export default function ScheduledEditPage() {
       const { year, month, day } = selectedDate;
       const dateObj = new Date(year, month - 1, day);
       const dayName = days[dateObj.getDay()];
-      return `${month}월 ${day}일 (${dayName})`;
+      return `${year}년 ${month}월 ${day}일 (${dayName})`; // ← 연도 추가
     }
     if (selectedDays.length > 0) return `매주 ${selectedDays.join(", ")}`;
     return "요일을 선택하세요";
@@ -435,10 +435,17 @@ export default function ScheduledEditPage() {
                 setSelectedDays([]);
                 setIsCalendarOpen(false);
               }}
-              showDay={true}
-              showMonth={true}
+              showDay
+              showMonth
               tab="daily"
+              minDate={{
+                year: new Date().getFullYear(),
+                month: new Date().getMonth() + 1,
+                day: new Date().getDate(),
+              }}
             />
+
+
           </div>
         </div>
       </Main>

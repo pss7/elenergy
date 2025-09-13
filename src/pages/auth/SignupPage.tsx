@@ -5,8 +5,9 @@ import Input from "../../components/ui/Input";
 import { useState } from "react";
 import Button from "../../components/ui/Button";
 import PasswordInput from "../../components/ui/PasswordInput";
-import { validateUserId, validateEmail, validatePassword, validateName, validatePhone, validateVerificationCode, validateCompanyCode, validatePosition } from "../../utils/validation";
+import { validateUserId, validateEmail, validatePassword, validateName, validatePhone, validateCompanyCode, validatePosition, validateVerificationCode } from "../../utils/validation";
 import { useNavigate } from "react-router-dom";
+import { formatPhoneNumber, formatVerificationCode } from "../../utils/formatters";
 
 export default function SignupPage() {
 
@@ -75,15 +76,20 @@ export default function SignupPage() {
   //전화번호 변경 핸들러
   function handleUserPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
-    setUserPhone(value);
-    setUserPhoneError(validatePhone(value));
+    const formatted = formatPhoneNumber(value);
+    setUserPhone(formatted);
+
+    // validatePhone은 숫자만 검사하니까, "-" 제거 후 검사
+    const onlyDigits = formatted.replace(/\D/g, "");
+    setUserPhoneError(validatePhone(onlyDigits));
   }
 
   //인증번호 변경 핸들러
   function handleUserNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
-    setUserNumber(value);
-    setUserNumberError(validateVerificationCode(value));
+    const formatted = formatVerificationCode(value);
+    setUserNumber(formatted);
+    setUserNumberError(validateVerificationCode(formatted));
   }
 
   // 회사코드 변경 핸들러
@@ -272,6 +278,7 @@ export default function SignupPage() {
                   <Input
                     type="text"
                     id="phone"
+                    value={userPhone}
                     onChange={handleUserPhoneChange}
                   />
                   <label htmlFor="phone" className="blind">
@@ -299,6 +306,7 @@ export default function SignupPage() {
                   <Input
                     type="text"
                     id="number"
+                    value={userNumber}
                     onChange={handleUserNumberChange}
                   />
                   <label htmlFor="number" className="blind">

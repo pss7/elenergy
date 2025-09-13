@@ -26,9 +26,10 @@
 }
 
 .header {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   text-align: center;
   font-size: 15px;
   padding: 29px 0;
@@ -56,14 +57,25 @@
   background: url(/assets/images/sub/select_arrow_icon.svg)no-repeat center;
 }
 
-table thead tr th {
+.header .nextBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+}
+
+table.calendar {
+  width: 100%;
+}
+
+table.calendar thead tr th {
   padding-bottom: 7px;
   font-size: 10px;
   font-weight: 500;
   color: #4E4D52;
 }
 
-table tbody tr td {
+table.calendar tbody tr td {
   height: 30px;
   text-align: center;
   font-size: 13px;

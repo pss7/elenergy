@@ -5,11 +5,13 @@ import InputCheckbox from "../../components/ui/InputCheckbox";
 import Textarea from "../../components/ui/Textarea";
 import Button from "../../components/ui/Button";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import useNavigateTo from "../../hooks/useNavigateTo";
 
 export default function SignupAgreePage() {
 
-  const navigate = useNavigate();
+  //경로이동
+  const { navigateTo } = useNavigateTo();
 
   //전체동의 상태관리
   const [allAgreed, setAllAgreed] = useState(false);
@@ -30,9 +32,7 @@ export default function SignupAgreePage() {
 
   //네비이동
   function handleConfirm() {
-    if (agreeTerms && agreePrivacy && agreeInfo) {
-      navigate("/signup");
-    }
+    navigateTo("/signup");
   }
 
   return (

@@ -56,7 +56,6 @@ export function validateUserIdForReset(userId: string, users: User[]): string {
   return "";
 }
 
-
 // 비밀번호 유효성 검사
 export function validatePassword(password: string): string {
   const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s])[A-Za-z\d\S]{8,16}$/;
@@ -116,7 +115,7 @@ export function validateCompanyCode(code: string): string {
 }
 
 // 직급 유효성 검사 (예: 정해진 값만 허용)
-const allowedPositions = ["사원", "대리", "과장", "차장", "부장"];
+const allowedPositions = ["대표", "사원", "대리", "과장", "차장", "부장"];
 
 export function validatePosition(position: string): string {
   if (!position) {
@@ -145,9 +144,9 @@ export function validateEmail(email: string): string {
   return "";
 }
 
-// 전화번호 유효성 검사 (10~11자리 숫자)
+// 전화번호 유효성 검사 (11자리 숫자)
 export function validatePhone(phone: string): string {
-  const phoneRegex = /^\d{10,11}$/;
+  const phoneRegex = /^\d{11}$/;
 
   if (!phone) {
     return "전화번호를 입력해주세요.";

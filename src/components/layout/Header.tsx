@@ -39,9 +39,7 @@ export default function Header({ type, title, prevLink, nextLink, className }: H
         type === "logo" && (
           <div className={styles.logoBox}>
             <h1>
-              <a href="/">
-                <img src="/assets/images/common/logo.svg" alt="EL 이엘에너지 로고" />
-              </a>
+              <img src="/assets/images/common/logo.svg" alt="EL 이엘에너지 로고" />
             </h1>
           </div>
         )

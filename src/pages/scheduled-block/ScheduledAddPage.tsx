@@ -14,6 +14,14 @@ type SelectedDate = { year: number; month: number; day: number } | null;
 export default function ScheduledAddPage() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [flash, setFlash] = useState<string>("");
+
+  function handleDayClick(day: string) {
+    setSelectedDate(null); // ← 이 줄이 핵심
+    setSelectedDays(prev => (prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]));
+  }
+
   const reservation = location.state?.reservation as ReservationState | undefined;
 
   const controllerIdFromState: number =
@@ -245,7 +253,7 @@ export default function ScheduledAddPage() {
       const { year, month, day } = selectedDate;
       const dateObj = new Date(year, month - 1, day);
       const dayName = days[dateObj.getDay()];
-      return `${month}월 ${day}일 (${dayName})`;
+      return `${year}년 ${month}월 ${day}일 (${dayName})`; // ← 연도 추가
     }
     if (selectedDays.length > 0) return `매주 ${selectedDays.join(", ")}`;
     return "요일을 선택하세요";
@@ -277,8 +285,17 @@ export default function ScheduledAddPage() {
     const saved = localStorage.getItem("reservations");
     const list: ReservationRaw[] = saved ? JSON.parse(saved) : [];
 
-    const nextId = list.length > 0 ? Math.max(...list.map((i) => i.id)) + 1 : 1;
+    // ★ 중복 검사
+    const hasDup = list.some(
+      r => r.controllerId === controllerIdFromState && r.time === newTime && r.dateLabel === newDateLabel
+    );
+    if (hasDup) {
+      setFlash("이미 동일한 예약이 있습니다.");     // 안내
+      setTimeout(() => setFlash(""), 2000);          // 2초 뒤 자동 제거
+      return;
+    }
 
+    const nextId = list.length > 0 ? Math.max(...list.map(i => i.id)) + 1 : 1;
     const newReservation: ReservationRaw = {
       id: nextId,
       controllerId: controllerIdFromState,
@@ -311,6 +328,7 @@ export default function ScheduledAddPage() {
 
             <div className={styles.dateBox}>
               <span className={styles.date}>{getSelectedDateLabel()}</span>
+
               <ul className={styles.dateList}>
                 {days.map((day, idx) => {
                   const isSunday = idx === 0;
@@ -321,7 +339,7 @@ export default function ScheduledAddPage() {
                       key={day}
                       className={`${isSunday ? styles.sunday : ""} ${isSaturday ? styles.saturday : ""} ${isActive ? styles.active : ""}`}
                     >
-                      <button className={styles.btn} onClick={() => setSelectedDays((prev) => prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day])}>
+                      <button className={styles.btn} onClick={() => handleDayClick(day)}>
                         <span>{day}</span>
                       </button>
                     </li>
@@ -353,12 +371,22 @@ export default function ScheduledAddPage() {
                 setSelectedDays([]);
                 setIsCalendarOpen(false);
               }}
-              showDay={true}
-              showMonth={true}
+              showDay
+              showMonth
               tab="daily"
+              minDate={{
+                year: new Date().getFullYear(),
+                month: new Date().getMonth() + 1,
+                day: new Date().getDate(),
+              }}
             />
+
+
           </div>
         </div>
+
+        {flash && <div className={styles.toast}>{flash}</div>}
+
       </Main>
       <Footer />
     </>

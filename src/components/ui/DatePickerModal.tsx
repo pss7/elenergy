@@ -1,180 +1,179 @@
-import { useEffect, useRef, useState } from "react";
-import styles from './DatePickerModal.module.css';
+import { useEffect, useMemo, useRef, useState } from "react";
+import styles from "./DatePickerModal.module.css";
 
-// 공용 피커 탭 타입: 캘린더/피커에서 모두 사용
 export type PickerTab = "hourly" | "daily" | "weekly" | "monthly" | "yearly";
 
 interface Props {
   initial: { year: number; month: number; day: number };
   onCancel: () => void;
   onConfirm: (value: { year: number; month: number; day: number }) => void;
-  showMonth?: boolean; // 기본 규칙을 덮어쓰고 싶을 때만 전달
-  showDay?: boolean;   // 기본 규칙을 덮어쓰고 싶을 때만 전달
+  showMonth?: boolean; // 기본 규칙 덮어쓰기
+  showDay?: boolean;   // 기본 규칙 덮어쓰기
   tab: PickerTab;
-  /** 오늘 이후 선택 금지 여부 (기본값 false) */
-  limitToToday?: boolean;
+  /** 이 날짜 이전은 완전히 제거(리스트에서 제외) */
+  minDate?: { year: number; month: number; day: number };
 }
 
-export default function DatePickerModal(props: Props) {
-  const { initial, onCancel, onConfirm, tab, limitToToday = false } = props;
-  const ITEM_HEIGHT = 70;
+const ITEM_HEIGHT = 70;
 
-  // 기본 표시 규칙
-  // - yearly: 연도만 (월/일 숨김)
-  // - monthly/daily: 연+월 (일 숨김)
-  // - weekly/hourly: 연+월+일
-  const showMonth = props.showMonth ?? tab !== "yearly";
-  const showDay   = props.showDay   ?? (tab === "weekly" || tab === "hourly");
+// 유틸
+function ymd(y: number, m: number, d: number) {
+  return new Date(y, m - 1, d);
+}
+function dim(y: number, m: number) {
+  return new Date(y, m, 0).getDate();
+}
 
-  // 오늘 경계
-  const TODAY = new Date();
-  const TY = TODAY.getFullYear();
-  const TM = TODAY.getMonth() + 1;
-  const TD = TODAY.getDate();
+export default function DatePickerModal({
+  initial,
+  onCancel,
+  onConfirm,
+  tab,
+  showMonth: forceShowMonth,
+  showDay: forceShowDay,
+  minDate,
+}: Props) {
+  // 표시 규칙
+  const showMonth = forceShowMonth ?? tab !== "yearly";
+  const showDay   = forceShowDay   ?? (tab === "weekly" || tab === "hourly");
 
-  // limitToToday가 true일 때만 미래 클램프
-  function clampToToday(y: number, m: number, d: number) {
-    if (!limitToToday) return { y, m, d };
-    if (y > TY) y = TY;
-    if (showMonth && y === TY && m > TM) m = TM;
-    if (showDay && y === TY && m === TM && d > TD) d = TD;
-    return { y, m, d };
+  // 최소 허용 날짜(없으면 오늘)
+  const MIN = useMemo(() => {
+    if (minDate) return ymd(minDate.year, minDate.month, minDate.day);
+    const t = new Date();
+    return new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  }, [minDate]);
+
+  // 초기값이 과거면 MIN으로 끌어올림
+  const init = useMemo(() => {
+    const raw = ymd(initial.year, initial.month, initial.day);
+    const base = raw < MIN ? MIN : raw;
+    return {
+      y: base.getFullYear(),
+      m: base.getMonth() + 1,
+      d: base.getDate(),
+    };
+  }, [initial, MIN]);
+
+  // 선택 상태
+  const [year, setYear] = useState(init.y);
+  const [month, setMonth] = useState(init.m);
+  const [day, setDay] = useState(init.d);
+
+  // ===== 리스트 구성 (과거 제거 + 미래 연도 허용) =====
+  const YEARS_SPAN = 120; // 미래로 120년까지 스크롤 가능 (원하면 늘리세요)
+  const years = useMemo(
+    () => Array.from({ length: YEARS_SPAN }, (_, i) => MIN.getFullYear() + i),
+    [MIN]
+  );
+
+  const months = useMemo(() => {
+    const minMonth = year === MIN.getFullYear() ? MIN.getMonth() + 1 : 1;
+    return Array.from({ length: 12 - (minMonth - 1) }, (_, i) => i + minMonth);
+  }, [year, MIN]);
+
+  const days = useMemo(() => {
+    const max = dim(year, month);
+    const minDay =
+      year === MIN.getFullYear() && month === MIN.getMonth() + 1
+        ? MIN.getDate()
+        : 1;
+    return Array.from({ length: max - (minDay - 1) }, (_, i) => i + minDay);
+  }, [year, month, MIN]);
+
+  // ===== 스크롤 refs & 스냅 유틸 =====
+  const yearRef  = useRef<HTMLDivElement | null>(null);
+  const monthRef = useRef<HTMLDivElement | null>(null);
+  const dayRef   = useRef<HTMLDivElement | null>(null);
+
+  function snapTo(ref: React.RefObject<HTMLDivElement | null>, index: number) {
+    if (!ref.current) return;
+    ref.current.scrollTo({ top: index * ITEM_HEIGHT, behavior: "auto" });
+  }
+  function nearestIndex(scrollTop: number) {
+    return Math.round(scrollTop / ITEM_HEIGHT);
   }
 
-  const years = Array.from({ length: 101 }, (_, i) => 1980 + i);
-  const monthCycles = 50;
-  const months = Array.from({ length: monthCycles * 12 }, (_, i) => (i % 12) + 1);
-
-  const [selectedYear, setSelectedYear] = useState(initial.year);
-  const [selectedMonthIndex, setSelectedMonthIndex] = useState(0);
-  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-
-  const daysInMonth = new Date(selectedYear, (selectedMonthIndex % 12) + 1, 0).getDate();
-  const dayCycles = 50;
-  const days = Array.from({ length: dayCycles * daysInMonth }, (_, i) => (i % daysInMonth) + 1);
-
-  const yearRef  = useRef<HTMLDivElement>(null);
-  const monthRef = useRef<HTMLDivElement>(null);
-  const dayRef   = useRef<HTMLDivElement>(null);
-
-  const desiredDayRef = useRef(initial.day);
-
-  function centerIndex(totalLen: number, cycleLen: number, valueIndex0: number) {
-    const half = Math.floor(totalLen / 2);
-    const base = half - (half % cycleLen);
-    return base + valueIndex0;
-  }
-  function snapIndexInSameCycle(currIdx: number, cycleLen: number, value1: number) {
-    const cycleStart = Math.floor(currIdx / cycleLen) * cycleLen;
-    return cycleStart + (value1 - 1);
-  }
-
-  // 초기 정렬 (limitToToday 고려)
+  // 초기 정렬
   useEffect(() => {
-    const init = clampToToday(initial.year, initial.month, initial.day);
+    // year
+    const yi = Math.max(0, years.indexOf(year));
+    snapTo(yearRef, yi);
 
-    const yearIdx = Math.max(0, Math.min(years.length - 1, years.indexOf(init.y)));
-    setSelectedYear(init.y);
-    yearRef.current?.scrollTo({ top: yearIdx * ITEM_HEIGHT, behavior: "auto" });
-
+    // month
     if (showMonth) {
-      const monthIdx = centerIndex(months.length, 12, init.m - 1);
-      setSelectedMonthIndex(monthIdx);
-      monthRef.current?.scrollTo({ top: monthIdx * ITEM_HEIGHT, behavior: "auto" });
-    } else {
-      setSelectedMonthIndex(0);
+      const mi = Math.max(0, months.indexOf(month));
+      snapTo(monthRef, mi);
     }
 
-    desiredDayRef.current = init.d;
+    // day
     if (showDay) {
-      const dim = new Date(init.y, init.m, 0).getDate();
-      const day0 = Math.min(init.d, dim) - 1;
-      const dayIdx = centerIndex(dayCycles * dim, dim, day0);
-      setSelectedDayIndex(dayIdx);
-      requestAnimationFrame(() => {
-        dayRef.current?.scrollTo({ top: dayIdx * ITEM_HEIGHT, behavior: "auto" });
-      });
-    } else {
-      setSelectedDayIndex(0);
+      const di = Math.max(0, days.indexOf(day));
+      snapTo(dayRef, di);
     }
-  }, [initial.year, initial.month, initial.day, showMonth, showDay, limitToToday]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // 연/월 변경 시 일자 재정렬 (limitToToday 고려)
+  // 연도 변경 시 월/일 보정
   useEffect(() => {
-    if (!showDay || !dayRef.current) return;
-    const newDIM = new Date(selectedYear, (selectedMonthIndex % 12) + 1, 0).getDate();
+    // 월 보정
+    const minM = year === MIN.getFullYear() ? MIN.getMonth() + 1 : 1;
+    if (month < minM) {
+      setMonth(minM);
+      snapTo(monthRef, 0);
+    } else {
+      const idx = Math.max(0, months.indexOf(month));
+      snapTo(monthRef, idx);
+    }
+    // 일 보정
+    const maxD = dim(year, month);
+    const minD =
+      year === MIN.getFullYear() && month === MIN.getMonth() + 1 ? MIN.getDate() : 1;
+    let target = day;
+    if (target < minD) target = minD;
+    if (target > maxD) target = maxD;
+    setDay(target);
+    const di = Math.max(0, days.indexOf(target));
+    snapTo(dayRef, di);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [year]);
 
-    const maxDayToday =
-      limitToToday && selectedYear === TY && ((selectedMonthIndex % 12) + 1) === TM
-        ? Math.min(newDIM, TD)
-        : newDIM;
+  // 월 변경 시 일 보정
+  useEffect(() => {
+    const maxD = dim(year, month);
+    const minD =
+      year === MIN.getFullYear() && month === MIN.getMonth() + 1 ? MIN.getDate() : 1;
+    let target = day;
+    if (target < minD) target = minD;
+    if (target > maxD) target = maxD;
+    if (target !== day) setDay(target);
+    const di = Math.max(0, days.indexOf(target));
+    snapTo(dayRef, di);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [month, days.length]);
 
-    const desired = Math.min(desiredDayRef.current, maxDayToday);
-    const idx = centerIndex(dayCycles * newDIM, newDIM, desired - 1);
-    setSelectedDayIndex(idx);
-    dayRef.current.scrollTo({ top: idx * ITEM_HEIGHT, behavior: "auto" });
-  }, [selectedYear, selectedMonthIndex, showDay, limitToToday]);
-
-  // 스크롤 핸들러들: limitToToday일 때만 미래 스냅
-  function handleYearScroll() {
+  // ===== 스크롤 핸들러 (스냅) =====
+  function onYearScroll() {
     if (!yearRef.current) return;
-    let idx = Math.round(yearRef.current.scrollTop / ITEM_HEIGHT);
-    let y = years[Math.max(0, Math.min(years.length - 1, idx))];
-
-    if (limitToToday && y > TY) {
-      y = TY;
-      idx = years.indexOf(TY);
-      yearRef.current.scrollTo({ top: idx * ITEM_HEIGHT, behavior: "auto" });
-    }
-    if (y !== selectedYear) setSelectedYear(y);
+    const idx = nearestIndex(yearRef.current.scrollTop);
+    const y = years[Math.max(0, Math.min(years.length - 1, idx))];
+    if (y !== year) setYear(y);
   }
-
-  function handleMonthScroll() {
+  function onMonthScroll() {
     if (!monthRef.current) return;
-    let idx = Math.round(monthRef.current.scrollTop / ITEM_HEIGHT);
-    let m1 = (idx % 12) + 1;
-
-    if (limitToToday && selectedYear === TY && m1 > TM) {
-      idx = snapIndexInSameCycle(idx, 12, TM);
-      monthRef.current.scrollTo({ top: idx * ITEM_HEIGHT, behavior: "auto" });
-      m1 = TM;
-    }
-    if (idx !== selectedMonthIndex) setSelectedMonthIndex(idx);
+    const idx = nearestIndex(monthRef.current.scrollTop);
+    const m = months[Math.max(0, Math.min(months.length - 1, idx))];
+    if (m !== month) setMonth(m);
   }
-
-  function handleDayScroll() {
+  function onDayScroll() {
     if (!dayRef.current) return;
-    let idx = Math.round(dayRef.current.scrollTop / ITEM_HEIGHT);
-    const dim = new Date(selectedYear, (selectedMonthIndex % 12) + 1, 0).getDate();
-    let visible = (idx % dim) + 1;
-
-    if (
-      limitToToday &&
-      showDay &&
-      selectedYear === TY &&
-      ((selectedMonthIndex % 12) + 1) === TM &&
-      visible > TD
-    ) {
-      const allowed = Math.min(TD, dim);
-      idx = snapIndexInSameCycle(idx, dim, allowed);
-      dayRef.current.scrollTo({ top: idx * ITEM_HEIGHT, behavior: "auto" });
-      visible = allowed;
-    }
-
-    if (idx !== selectedDayIndex) setSelectedDayIndex(idx);
-    desiredDayRef.current = visible;
+    const idx = nearestIndex(dayRef.current.scrollTop);
+    const d = days[Math.max(0, Math.min(days.length - 1, idx))];
+    if (d !== day) setDay(d);
   }
-
-  const visibleMonth = (selectedMonthIndex % 12) + 1;
-  const visibleDay = (selectedDayIndex % daysInMonth) + 1;
 
   function handleConfirm() {
-    const c = clampToToday(
-      selectedYear,
-      showMonth ? visibleMonth : 1,
-      showDay ? visibleDay : 1
-    );
-    onConfirm({ year: c.y, month: c.m, day: c.d });
+    onConfirm({ year, month: showMonth ? month : 1, day: showDay ? day : 1 });
     onCancel();
   }
 
@@ -183,44 +182,60 @@ export default function DatePickerModal(props: Props) {
       <div className={styles.modal}>
         <div className={styles.header}>
           <div className={styles.dateBox}>
-            {selectedYear}년
-            {showMonth && ` ${visibleMonth}월`}
-            {showDay && ` ${visibleDay}일`}
+            {year}년{showMonth ? ` ${month}월` : ""}{showDay ? ` ${day}일` : ""}
           </div>
         </div>
 
         <div className={styles.pickerContainer}>
-          <div className={styles.pickerColumn} ref={yearRef} onScroll={handleYearScroll}>
-            <div className={styles.spacer}></div>
+          {/* Year */}
+          <div className={styles.pickerColumn} ref={yearRef} onScroll={onYearScroll}>
+            <div className={styles.spacer} />
             {years.map((y) => (
-              <div key={y} className={`${styles.pickerItem} ${y === selectedYear ? styles.selected : ""}`}>
+              <div
+                key={y}
+                className={`${styles.pickerItem} ${y === year ? styles.selected : ""}`}
+                style={{ height: ITEM_HEIGHT }}
+              >
                 {y}년
               </div>
             ))}
-            <div className={styles.spacer}></div>
+            <div className={styles.spacer} />
+            <div className={styles.centerHighlight} />
           </div>
 
+          {/* Month */}
           {showMonth && (
-            <div className={styles.pickerColumn} ref={monthRef} onScroll={handleMonthScroll}>
-              <div className={styles.spacer}></div>
-              {months.map((m, idx) => (
-                <div key={idx} className={`${styles.pickerItem} ${idx === selectedMonthIndex ? styles.selected : ""}`}>
+            <div className={styles.pickerColumn} ref={monthRef} onScroll={onMonthScroll}>
+              <div className={styles.spacer} />
+              {months.map((m) => (
+                <div
+                  key={m}
+                  className={`${styles.pickerItem} ${m === month ? styles.selected : ""}`}
+                  style={{ height: ITEM_HEIGHT }}
+                >
                   {m}월
                 </div>
               ))}
-              <div className={styles.spacer}></div>
+              <div className={styles.spacer} />
+              <div className={styles.centerHighlight} />
             </div>
           )}
 
+          {/* Day */}
           {showDay && (
-            <div className={styles.pickerColumn} ref={dayRef} onScroll={handleDayScroll}>
-              <div className={styles.spacer}></div>
-              {days.map((d, idx) => (
-                <div key={idx} className={`${styles.pickerItem} ${idx === selectedDayIndex ? styles.selected : ""}`}>
+            <div className={styles.pickerColumn} ref={dayRef} onScroll={onDayScroll}>
+              <div className={styles.spacer} />
+              {days.map((d) => (
+                <div
+                  key={d}
+                  className={`${styles.pickerItem} ${d === day ? styles.selected : ""}`}
+                  style={{ height: ITEM_HEIGHT }}
+                >
                   {d}일
                 </div>
               ))}
-              <div className={styles.spacer}></div>
+              <div className={styles.spacer} />
+              <div className={styles.centerHighlight} />
             </div>
           )}
         </div>
