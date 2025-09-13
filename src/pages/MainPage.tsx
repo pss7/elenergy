@@ -9,9 +9,10 @@ import savingsData from "../data/Savings";
 import { useControllerData } from "../contexts/ControllerContext";
 import useNavigateTo from "../hooks/useNavigateTo";
 
-import alarmData, {
+import {
   ensureDemoUnreadIfNone,
   loadReadIds,
+  getAllAlarms,
 } from "../data/Alarms";
 
 function useCompanyCode() {
@@ -23,6 +24,7 @@ export default function MainPage() {
   const listRef = useRef<HTMLUListElement>(null);
   const [activeToggleId, setActiveToggleId] = useState<number | null>(null);
   const { navigateTo } = useNavigateTo();
+  const company = useCompanyCode();
 
   function handleToggle(id: number) {
     setActiveToggleId((prev) => (prev === id ? null : id));
@@ -42,39 +44,38 @@ export default function MainPage() {
   }
 
   /* 🔴 빨간 점 상태 */
-  const company = useCompanyCode();
   const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {
-    // 1) 최신 3건 미확인으로 시드(이미 있으면 유지)
     ensureDemoUnreadIfNone(company, 3);
 
     const recompute = () => {
       const read = loadReadIds(company);
-      setHasUnread(alarmData.some((a) => !read.has(a.id)));
+      const all = getAllAlarms(company);
+      setHasUnread(all.some((a) => !read.has(a.id)));
     };
 
-    // 2) 즉시 한 번 계산
     recompute();
 
-    // 3) 이벤트로 재계산: (동일 탭에서 localStorage 변경은 storage 이벤트가 안 뜸)
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === `alarm:readIds:${company}`) recompute();
-    };
+    const onStorage = () => recompute();
     const onFocus = () => recompute();
-    const onVisibility = () => document.visibilityState === "visible" && recompute();
-    const onCustom = () => recompute(); // 커스텀 이벤트 훅
+    const onVisibility = () =>
+      document.visibilityState === "visible" && recompute();
+    const onChanged = () => recompute();
+    const onReadChanged = () => recompute();
 
     window.addEventListener("storage", onStorage);
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("alarm:readIds:changed", onCustom as EventListener);
+    window.addEventListener("alarm:changed", onChanged);
+    window.addEventListener("alarm:readIds:changed", onReadChanged);
 
     return () => {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("alarm:readIds:changed", onCustom as EventListener);
+      window.removeEventListener("alarm:changed", onChanged);
+      window.removeEventListener("alarm:readIds:changed", onReadChanged);
     };
   }, [company]);
 
@@ -109,7 +110,9 @@ export default function MainPage() {
                   <Link
                     to={`/controller-update/${ctrl.id}`}
                     onClick={(e) => e.stopPropagation()}
-                    className={`${styles.changeLink} ${activeToggleId === ctrl.id ? styles.active : ""}`}
+                    className={`${styles.changeLink} ${
+                      activeToggleId === ctrl.id ? styles.active : ""
+                    }`}
                   >
                     정보변경
                   </Link>
@@ -119,7 +122,7 @@ export default function MainPage() {
           ))}
         </ul>
 
-        {/* 🔔 알림 아이콘 – 클래스 토글 + 엘리먼트 배지 둘 다 지원 */}
+        {/* 🔔 알림 아이콘 */}
         <Link
           to="/alarm"
           className={`${styles.alarmLink} ${hasUnread ? styles.hasUnread : ""}`}
@@ -130,7 +133,6 @@ export default function MainPage() {
         </Link>
       </section>
 
-      {/* 이하 기존 섹션 동일 */}
       <section>
         <Title level={1} className={`mb-20 ${styles.h1} ${styles.mainIcon02}`}>
           다른 차단 방식이 필요하신가요?

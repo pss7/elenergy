@@ -17,6 +17,7 @@ export interface AlarmFilters {
   sortOrder: "latest" | "oldest";
 }
 
+/** 시드 데이터(변하지 않음) */
 const alarmData: Alarm[] = [
   { id: 1,  type: "수동제어", controller: "제어기1", adminId: "ID1", status: "OFF", date: "2025.08.14 오후 10:10", icon: "/assets/images/common/control_icon01.svg" },
   { id: 2,  type: "자동제어", controller: "제어기2", adminId: "ID2", status: "OFF", date: "2025.08.14 오후 10:12", icon: "/assets/images/common/control_icon02.svg" },
@@ -42,7 +43,7 @@ const alarmData: Alarm[] = [
 
 export default alarmData;
 
-/* -------- 읽음/미확인 관리 유틸 -------- */
+/* -------------------- 읽음/미확인 관리 -------------------- */
 
 export const READ_KEY_PREFIX = "alarm:readIds:";
 
@@ -79,25 +80,89 @@ export function markAsRead(company: string, ids: number[]) {
   saveReadIds(company, set);
 }
 
-/** 최초 진입 시에만: 최신 unreadCount개만 미확인(=읽음목록에 안 넣음)으로 남겨둠 */
+/** 최초 진입 시에만: 최신 unreadCount개만 미확인으로 남겨둠 */
 export function ensureDemoUnreadIfNone(company: string, unreadCount = 3) {
   const key = getReadKey(company);
-  if (localStorage.getItem(key) != null) return; // 이미 세팅돼 있으면 유지
+  if (localStorage.getItem(key) != null) return;
 
   const byNewest = alarmData
     .slice()
     .sort((a, b) => parseKoreanDate(b.date) - parseKoreanDate(a.date));
 
-  // 최신 unreadCount개 제외하고 나머지는 읽음으로 저장
   const readIds = new Set<number>(byNewest.slice(unreadCount).map((a) => a.id));
   saveReadIds(company, readIds);
 }
 
-/* 선택용 헬퍼 */
 export function markAllAsRead(company: string) {
   const all = new Set(alarmData.map((a) => a.id));
   saveReadIds(company, all);
 }
 export function clearAllRead(company: string) {
   localStorage.removeItem(getReadKey(company));
+}
+
+/* -------------------- 동적 알림(목데이터 추가) -------------------- */
+
+const EXTRA_KEY_PREFIX = "alarms:extra:"; // 회사 코드별 별도 저장
+function getExtraKey(company: string) {
+  return `${EXTRA_KEY_PREFIX}${company}`;
+}
+
+function loadExtraAlarms(company: string): Alarm[] {
+  try {
+    const raw = localStorage.getItem(getExtraKey(company));
+    return raw ? (JSON.parse(raw) as Alarm[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveExtraAlarms(company: string, list: Alarm[]) {
+  localStorage.setItem(getExtraKey(company), JSON.stringify(list));
+}
+
+/** 시드 + 동적 알림을 합쳐 반환 */
+export function getAllAlarms(company: string): Alarm[] {
+  return [...alarmData, ...loadExtraAlarms(company)];
+}
+
+/** 날짜 문자열 생성: "YYYY.MM.DD 오전/오후 hh:mm" */
+function formatKoreanNow(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const ampm = now.getHours() < 12 ? "오전" : "오후";
+  let hh = now.getHours() % 12;
+  if (hh === 0) hh = 12;
+  const hhStr = String(hh).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  return `${y}.${m}.${d} ${ampm} ${hhStr}:${mm}`;
+}
+
+/** 동적 알림 추가(목데이터). 이벤트 'alarm:changed'를 디스패치해 페이지들이 즉시 반영됩니다. */
+export function appendAlarm(
+  company: string,
+  payload: Omit<Alarm, "id" | "date">
+): Alarm {
+  const extra = loadExtraAlarms(company);
+  const all = [...alarmData, ...extra];
+  const nextId = all.length > 0 ? Math.max(...all.map((a) => a.id)) + 1 : 1;
+
+  const alarm: Alarm = {
+    id: nextId,
+    date: formatKoreanNow(),
+    ...payload,
+  };
+
+  const updated = [...extra, alarm];
+  saveExtraAlarms(company, updated);
+
+  try {
+    window.dispatchEvent(new Event("alarm:changed"));
+  } catch {
+    // SSR 환경 대응
+  }
+
+  return alarm;
 }

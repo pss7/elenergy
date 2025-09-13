@@ -1,3 +1,4 @@
+// src/pages/scheduled-block/ScheduledBlockingPage.tsx
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/layout/Header";
@@ -8,12 +9,14 @@ import controllerData from "../../data/Controllers";
 import scheduledBlockingsData from "../../data/ScheduledBlockings";
 import type { Reservation } from "../../data/ScheduledBlockings";
 import Footer from "../../components/layout/Footer";
+import { useControllerData } from "../../contexts/ControllerContext";
+import { logAlarm } from "../../utils/logAlarm";
 
 export default function ScheduledBlockingPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { controllers } = useControllerData();
 
-  // 초기 선택 제어기: state → localStorage → 1
   const initialControllerId = useMemo(() => {
     const fromState = (location.state as any)?.initialControllerId;
     const fromStorage = Number(localStorage.getItem("lastControllerId")) || undefined;
@@ -42,6 +45,7 @@ export default function ScheduledBlockingPage() {
     });
     setReservations(updated);
     localStorage.setItem("reservations", JSON.stringify(updated));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -61,20 +65,33 @@ export default function ScheduledBlockingPage() {
   function handleControllerChange(id: number) {
     setSelectedControllerId(id);
     setIsDelToggle(false);
-    localStorage.setItem("lastControllerId", String(id)); // 기억
+    localStorage.setItem("lastControllerId", String(id));
   }
 
   const filteredReservations = reservations.filter((r) => r.controllerId === selectedControllerId);
+  const targetCtrl = controllers.find(c => c.id === selectedControllerId);
 
   function toggleReservation(id: number) {
-    setReservations((prev) => prev.map((item) => (item.id === id ? { ...item, isOn: !item.isOn } : item)));
+    setReservations((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, isOn: !item.isOn } : item))
+    );
+
+    // 🔔 알림: 토글 결과 기록
+    const r = reservations.find(r => r.id === id);
+    const nextIsOn = r ? !r.isOn : true;
+    if (targetCtrl) {
+      logAlarm({
+        type: "예약제어",
+        controller: targetCtrl.title,
+        status: nextIsOn ? "ON" : "OFF",
+      });
+    }
   }
 
   function handleDelToggle() {
     setIsDelToggle(true);
   }
 
-  // "14:30" -> { ampm: "오후", hour: 2, minute: "30" }
   function parseTimeToSelected(timeStr: string) {
     const [hourStr, minuteRaw] = timeStr.split(":");
     let hourNum = Number(hourStr);

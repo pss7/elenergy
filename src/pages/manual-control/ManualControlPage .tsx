@@ -1,3 +1,4 @@
+// src/pages/manual-control/ManualControlPage.tsx
 import { Link, useParams } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
@@ -8,6 +9,7 @@ import { useMemo, useState } from "react";
 import { buildDailyLastWeek, computeStatsFromChart } from "../../data/AutoBlock";
 import Title from "../../components/ui/Title";
 import Footer from "../../components/layout/Footer";
+import { logAlarm } from "../../utils/logAlarm";
 
 export default function ManualControlPage() {
   const { id } = useParams();
@@ -15,7 +17,7 @@ export default function ManualControlPage() {
   const { controllers } = useControllerData();
   const target = controllers.find((c) => c.id === controllerId);
 
-  // 최근 7일 차트/통계 (결정론적 생성)
+  // 최근 7일 차트/통계
   const lastWeekChart = useMemo(
     () => buildDailyLastWeek(controllerId || 1, new Date()),
     [controllerId]
@@ -26,7 +28,6 @@ export default function ManualControlPage() {
   const [isToggleOn, setIsToggleOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 토글 UI 컴포넌트
   function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
     return (
       <div
@@ -45,8 +46,16 @@ export default function ManualControlPage() {
     const nextState = !isToggleOn;
     setIsToggleOn(nextState);
 
+    // 🔔 알림: 수동제어 ON/OFF
+    if (target) {
+      logAlarm({
+        type: "수동제어",
+        controller: target.title,
+        status: nextState ? "ON" : "OFF",
+      });
+    }
+
     if (nextState) {
-      // 평균 > 현재면 OFF 가능 → 모달 표시
       const isOffAllowed = statsWeek.average > statsWeek.current;
       if (isOffAllowed) {
         setIsModalOpen(true);
@@ -63,12 +72,20 @@ export default function ManualControlPage() {
 
   // 전력차단 실행
   function handleOffClick() {
-    setIsModalOpen(false); // 모달 닫기
-    setIsToggleOn(true);   // 토글은 계속 ON 상태 유지
+    setIsModalOpen(false);
+    setIsToggleOn(true);
+
+    // 🔔 알림: OFF 실행
+    if (target) {
+      logAlarm({
+        type: "수동제어",
+        controller: target.title,
+        status: "OFF",
+      });
+    }
     // 실제 OFF API 호출 자리
   }
 
-  // 제어기 정보 없음
   if (!target) {
     return (
       <Main id="sub">

@@ -1,3 +1,4 @@
+// src/pages/scheduled-block/ScheduledAddPage.tsx
 import { useRef, useState, useMemo, useLayoutEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Main from "../../components/layout/Main";
@@ -6,6 +7,8 @@ import styles from "./ScheduledBlockingPage.module.css";
 import CalendarModal from "../../components/ui/CalendarModal";
 import type { Reservation as ReservationRaw } from "../../data/ScheduledBlockings";
 import Footer from "../../components/layout/Footer";
+import { useControllerData } from "../../contexts/ControllerContext";
+import { logAlarm } from "../../utils/logAlarm";
 
 type Time = { ampm: "오전" | "오후"; hour: number; minute: string; };
 type ReservationState = Omit<ReservationRaw, "time"> & { time: Time };
@@ -14,11 +17,12 @@ type SelectedDate = { year: number; month: number; day: number } | null;
 export default function ScheduledAddPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { controllers } = useControllerData();
 
   const [flash, setFlash] = useState<string>("");
 
   function handleDayClick(day: string) {
-    setSelectedDate(null); // ← 이 줄이 핵심
+    setSelectedDate(null);
     setSelectedDays(prev => (prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]));
   }
 
@@ -26,6 +30,8 @@ export default function ScheduledAddPage() {
 
   const controllerIdFromState: number =
     (location.state as any)?.controllerId ?? reservation?.controllerId ?? 1;
+
+  const targetCtrl = controllers.find(c => c.id === controllerIdFromState);
 
   function goList() {
     localStorage.setItem("lastControllerId", String(controllerIdFromState));
@@ -253,7 +259,7 @@ export default function ScheduledAddPage() {
       const { year, month, day } = selectedDate;
       const dateObj = new Date(year, month - 1, day);
       const dayName = days[dateObj.getDay()];
-      return `${year}년 ${month}월 ${day}일 (${dayName})`; // ← 연도 추가
+      return `${year}년 ${month}월 ${day}일 (${dayName})`;
     }
     if (selectedDays.length > 0) return `매주 ${selectedDays.join(", ")}`;
     return "요일을 선택하세요";
@@ -285,13 +291,12 @@ export default function ScheduledAddPage() {
     const saved = localStorage.getItem("reservations");
     const list: ReservationRaw[] = saved ? JSON.parse(saved) : [];
 
-    // ★ 중복 검사
     const hasDup = list.some(
       r => r.controllerId === controllerIdFromState && r.time === newTime && r.dateLabel === newDateLabel
     );
     if (hasDup) {
-      setFlash("이미 동일한 예약이 있습니다.");     // 안내
-      setTimeout(() => setFlash(""), 2000);          // 2초 뒤 자동 제거
+      setFlash("이미 동일한 예약이 있습니다.");
+      setTimeout(() => setFlash(""), 2000);
       return;
     }
 
@@ -306,6 +311,15 @@ export default function ScheduledAddPage() {
 
     const updated = [...list, newReservation];
     localStorage.setItem("reservations", JSON.stringify(updated));
+
+    // 🔔 알림: 예약 생성 → ON
+    if (targetCtrl) {
+      logAlarm({
+        type: "예약제어",
+        controller: targetCtrl.title,
+        status: "ON",
+      });
+    }
 
     localStorage.setItem("lastControllerId", String(controllerIdFromState));
     navigate("/scheduled-block", { state: { initialControllerId: controllerIdFromState } });
@@ -380,13 +394,10 @@ export default function ScheduledAddPage() {
                 day: new Date().getDate(),
               }}
             />
-
-
           </div>
         </div>
 
         {flash && <div className={styles.toast}>{flash}</div>}
-
       </Main>
       <Footer />
     </>
