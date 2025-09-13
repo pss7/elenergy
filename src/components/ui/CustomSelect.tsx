@@ -1,5 +1,4 @@
 // src/components/ui/CustomSelect.tsx
-
 import { useState } from "react";
 import styles from "./CustomSelect.module.css";
 import type { Controller } from "../../data/Controllers";
@@ -8,24 +7,39 @@ interface CustomSelectProps {
   controllers: Controller[];
   selectedControllerId: number;
   onChange: (id: number) => void;
+  /** 삭제 페이지 등에서 드롭다운 비활성화 */
+  disabled?: boolean;
 }
 
 export default function CustomSelect({
   controllers,
   selectedControllerId,
   onChange,
+  disabled = false,
 }: CustomSelectProps) {
   const [selectToggle, setSelectToggle] = useState(false);
 
   const selectedController = controllers.find(c => c.id === selectedControllerId);
 
   return (
-    <div className={`${styles.selectBox} ${selectToggle ? styles.active : ""}`}>
-      <button className={styles.btn} onClick={() => setSelectToggle(prev => !prev)}>
+    <div
+      className={`${styles.selectBox} ${selectToggle ? styles.active : ""} ${
+        disabled ? styles.disabled : ""
+      }`}
+    >
+      <button
+        className={`${styles.btn} ${disabled ? styles.btnDisabled : ""}`}
+        onClick={() => {
+          if (disabled) return;
+          setSelectToggle(prev => !prev);
+        }}
+        disabled={disabled}
+        aria-disabled={disabled}
+      >
         {selectedController?.title} - <em>{selectedController?.location}</em>
       </button>
 
-      {selectToggle && (
+      {!disabled && selectToggle && (
         <div className={styles.selectListBox}>
           <ul className={styles.selectList}>
             {controllers.map(controller => (

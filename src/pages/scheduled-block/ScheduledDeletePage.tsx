@@ -70,6 +70,13 @@ export default function ScheduledDeletePage() {
     navigate("/scheduled-block");
   }
 
+  function handleItemKeyDown(e: React.KeyboardEvent<HTMLLIElement>, id: number) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();           // 스크롤 방지 (Space)
+      toggleSelection(id);
+    }
+  }
+
   return (
     <>
       {/* 페이지 헤더 - 이전 페이지로 돌아가는 링크 */}
@@ -83,12 +90,13 @@ export default function ScheduledDeletePage() {
               controllers={controllerData}
               selectedControllerId={selectedControllerId}
               onChange={(newId) => navigate(`/scheduled-delete/${newId}`)}
+              disabled={true}
             />
 
             {/* 상단 선택 및 버튼 영역 */}
             <div className={styles.topBox} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              {/* 전체 선택 체크박스 */}
 
+              {/* 전체 선택 체크박스 */}
               <div className={styles.checkedBox}>
                 <input
                   id="allChk"
@@ -127,44 +135,44 @@ export default function ScheduledDeletePage() {
 
             {/* 예약 목록 */}
             <ul className={styles.reservationList}>
-              {/* 예약 없으면 안내 문구 */}
               {filteredReservations.length === 0 ? (
                 <li className={styles.noData}>예약이 없습니다.</li>
               ) : (
-                filteredReservations.map((item) => (
-                  <li
-                    key={item.id}
-                    className={selectedIds.includes(item.id) ? styles.selected : ""}
-                  >
-                    {/* 체크박스 - 선택/해제 가능 */}
-                    <div className={styles.inputChkBox}>
-                      <input
-                        type="checkbox"
-                        className="blind"
-                        id={`chk-${item.id}`}
-                        checked={selectedIds.includes(item.id)}
-                        onChange={() => toggleSelection(item.id)}
-                      />
-                      <label
-                        htmlFor={`chk-${item.id}`}
-                        className={styles.customCheckbox}
-                      ></label>
-                    </div>
-
-                    {/* 예약 시간 표시 (ON/OFF 상태에 따라 스타일 다름) */}
-                    <div
-                      className={`${styles.timeBox} ${!item.isOn ? styles.off : ""}`}
+                filteredReservations.map((item) => {
+                  const isSelected = selectedIds.includes(item.id);
+                  return (
+                    <li
+                      key={item.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}                // 토글 상태 전달
+                      onClick={() => toggleSelection(item.id)} // li 전체 클릭으로 토글
+                      onKeyDown={(e) => handleItemKeyDown(e, item.id)}
+                      className={`${isSelected ? styles.selected : ""} ${styles.listItem}`}
                     >
-                      <span>{+item.time.split(":")[0] >= 12 ? "오후" : "오전"}</span>
-                      <strong>{item.time}</strong>
-                    </div>
+                      {/* 체크박스는 시각적/보조 용도로 유지 (이벤트 전파 차단) */}
+                      <div className={styles.inputChkBox} onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          className="blind"
+                          id={`chk-${item.id}`}
+                          checked={isSelected}
+                          onChange={() => toggleSelection(item.id)}
+                        />
+                        <label htmlFor={`chk-${item.id}`} className={styles.customCheckbox}></label>
+                      </div>
 
-                    {/* 예약 날짜 표시 */}
-                    <div className={styles.dateBox}>
-                      <span>{item.dateLabel}</span>
-                    </div>
-                  </li>
-                ))
+                      <div className={`${styles.timeBox} ${!item.isOn ? styles.off : ""}`}>
+                        <span>{+item.time.split(":")[0] >= 12 ? "오후" : "오전"}</span>
+                        <strong>{item.time}</strong>
+                      </div>
+
+                      <div className={styles.dateBox}>
+                        <span>{item.dateLabel}</span>
+                      </div>
+                    </li>
+                  );
+                })
               )}
             </ul>
           </div>
