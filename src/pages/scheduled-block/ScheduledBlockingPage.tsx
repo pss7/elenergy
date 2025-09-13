@@ -138,7 +138,7 @@ export default function ScheduledBlockingPage() {
 
           <ul className={styles.reservationList}>
             {filteredReservations.length === 0 ? (
-              <li className={styles.noData}>예약이 없습니다.</li>
+              <li className={styles.noData}>예약된 시간이 없습니다.</li>
             ) : (
               filteredReservations.map((item) => (
                 <li key={item.id} onClick={() => handleEditReservation(item)}>

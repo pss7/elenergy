@@ -12,6 +12,7 @@ interface Props {
   tab: PickerTab;
   /** 이 날짜 이전은 완전히 제거(리스트에서 제외) */
   minDate?: { year: number; month: number; day: number };
+  limitToToday?: boolean;
 }
 
 const ITEM_HEIGHT = 70;
@@ -32,10 +33,11 @@ export default function DatePickerModal({
   showMonth: forceShowMonth,
   showDay: forceShowDay,
   minDate,
+  limitToToday = false,
 }: Props) {
   // 표시 규칙
   const showMonth = forceShowMonth ?? tab !== "yearly";
-  const showDay   = forceShowDay   ?? (tab === "weekly" || tab === "hourly");
+  const showDay = forceShowDay ?? (tab === "weekly" || tab === "hourly");
 
   // 최소 허용 날짜(없으면 오늘)
   const MIN = useMemo(() => {
@@ -82,9 +84,9 @@ export default function DatePickerModal({
   }, [year, month, MIN]);
 
   // ===== 스크롤 refs & 스냅 유틸 =====
-  const yearRef  = useRef<HTMLDivElement | null>(null);
+  const yearRef = useRef<HTMLDivElement | null>(null);
   const monthRef = useRef<HTMLDivElement | null>(null);
-  const dayRef   = useRef<HTMLDivElement | null>(null);
+  const dayRef = useRef<HTMLDivElement | null>(null);
 
   function snapTo(ref: React.RefObject<HTMLDivElement | null>, index: number) {
     if (!ref.current) return;
