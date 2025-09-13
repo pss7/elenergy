@@ -1,128 +1,104 @@
-// 리액트 라우터에서 URL 파라미터(id)를 사용하기 위한 훅
+// src/pages/ControllerUpdatePage.tsx
 import { useParams } from "react-router-dom";
-
-// 레이아웃 및 공통 컴포넌트
 import Main from "../components/layout/Main";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import Title from "../components/ui/Title";
-
-// 스타일
 import styles from "./MainPage.module.css";
-
-// 전역 상태에서 제어기 데이터 사용
 import { useControllerData } from "../contexts/ControllerContext";
-
-// 상태관리 및 페이지 이동 훅
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import useNavigateTo from "../hooks/useNavigateTo";
 
+const MAX_LEN = 15;
+
 export default function ControllerUpdatePage() {
-
-  // URL 파라미터에서 ID 가져오기
   const { id } = useParams();
-
-  // 페이지 이동을 위한 커스텀 훅
   const { navigateTo } = useNavigateTo();
-
-  // 전역 컨텍스트에서 제어기 데이터 및 업데이트 함수 가져오기
   const { controllers, setControllers } = useControllerData();
 
-  // 해당 ID에 해당하는 제어기 정보 찾기
-  const target = controllers.find(c => c.id === Number(id));
+  const numericId = Number(id);
+  const target = controllers.find((c) => c.id === numericId);
 
-  // 입력 상태 및 에러 메시지 관리
-  const [title, setTitle] = useState(target?.title ?? '');
-  const [titleError, setTitleError] = useState("");
-  const [location, setLocation] = useState(target?.location ?? '');
-  const [locationError, setLocationError] = useState("");
+  const [title, setTitle] = useState(target?.title ?? "");
+  const [location, setLocation] = useState(target?.location ?? "");
 
-  // 명칭 입력 핸들러 - 10자 이내인지 검사
-  function handleTitle(e: React.ChangeEvent<HTMLInputElement>) {
-    let value = e.target.value;
-    setTitle(value);
+  const titleTrim = title.trim();
+  const locationTrim = location.trim();
 
-    if (value.length > 10) {
-      setTitleError("10자 이내로 작성해 주세요.");
-    } else {
-      setTitleError("");
-    }
-  }
+  // ❗ 15자를 '넘으면'만 에러 문구 노출 (입력은 막지 않음)
+  const titleError =
+    titleTrim.length > MAX_LEN ? `${MAX_LEN}자 이내로 작성해주세요.` : "";
+  const locationError =
+    locationTrim.length > MAX_LEN ? `${MAX_LEN}자 이내로 작성해주세요.` : "";
 
-  // 위치 입력 핸들러 - 15자 이내인지 검사
-  function handleLocation(e: React.ChangeEvent<HTMLInputElement>) {
-    let value = e.target.value;
-    setLocation(value);
+  // 저장 가능 조건: 둘 다 1~15자
+  const canSave = useMemo(() => {
+    const okTitle = titleTrim.length >= 1 && titleTrim.length <= MAX_LEN;
+    const okLocation = locationTrim.length >= 1 && locationTrim.length <= MAX_LEN;
+    return okTitle && okLocation;
+  }, [titleTrim, locationTrim]);
 
-    if (value.length > 15) {
-      setLocationError("15자 이내로 작성해 주세요.");
-    } else {
-      setLocationError("");
-    }
-  }
-
-  // 수정 버튼 클릭 시 제어기 정보 업데이트 후 메인 페이지로 이동
   function handleSave() {
-    setControllers(prev =>
-      prev.map(c =>
-        c.id === Number(id) ? { ...c, title, location } : c
+    if (!target || !canSave) return;
+    setControllers((prev) =>
+      prev.map((c) =>
+        c.id === numericId ? { ...c, title: titleTrim, location: locationTrim } : c
       )
     );
-    navigateTo('/');
-  };
+    navigateTo("/");
+  }
 
-  // 취소 버튼 클릭 시 메인 페이지로 이동
   function handleCancel() {
-    navigateTo('/');
+    navigateTo("/");
   }
 
-  // 유효하지 않은 ID일 경우
-  if (!target) {
-    return <p>제어기를 찾을 수 없습니다.</p>;
-  }
+  if (!target) return <p>제어기를 찾을 수 없습니다.</p>;
 
   return (
     <Main id="main">
-      {/* 제목 */}
       <Title level={1} className={`mb-20 ${styles.h1} ${styles.mainIcon01}`}>
         정보변경
       </Title>
 
-      {/* 명칭 입력 영역 */}
+      {/* 명칭 */}
       <div className={`${styles.inputTextBox} mb-20`}>
         <span>명칭</span>
         <Input
           type="text"
           value={title}
-          onChange={handleTitle}
+          onChange={(e) => setTitle(e.target.value)} // 입력은 자유롭게
+          aria-invalid={titleTrim.length > MAX_LEN}
+          aria-describedby="title-error"
         />
-        {titleError && <p className="errorMessage">{titleError}</p>}
+        {titleError && (
+          <p id="title-error" className="errorMessage">
+            {titleError}
+          </p>
+        )}
       </div>
 
-      {/* 위치 입력 영역 */}
+      {/* 위치 */}
       <div className={`${styles.inputTextBox} mb-20`}>
         <span>위치</span>
         <Input
           type="text"
           value={location}
-          onChange={handleLocation}
+          onChange={(e) => setLocation(e.target.value)} // 입력은 자유롭게
+          aria-invalid={locationTrim.length > MAX_LEN}
+          aria-describedby="location-error"
         />
-        {locationError && <p className="errorMessage">{locationError}</p>}
+        {locationError && (
+          <p id="location-error" className="errorMessage">
+            {locationError}
+          </p>
+        )}
       </div>
 
-      {/* 버튼 영역 */}
       <div className="btnBox">
-        <Button
-          styleType="grayType"
-          onClick={handleCancel}
-        >
+        <Button styleType="grayType" onClick={handleCancel}>
           취소
         </Button>
-
-        <Button
-          styleType="tealType"
-          onClick={handleSave}
-        >
+        <Button styleType="tealType" onClick={handleSave} disabled={!canSave}>
           수정
         </Button>
       </div>
