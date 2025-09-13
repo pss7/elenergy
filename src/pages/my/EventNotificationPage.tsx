@@ -12,7 +12,7 @@ export default function EventNotificationPage() {
       <Header
         type="pageLink"
         title="개인정보 보호"
-        prevLink={isLoggedIn ? "/privacy" : "/signup-agree"}
+        prevLink={isLoggedIn ? "/notifications-settings" : "/signup-agree"}
         className="white-bg"
       />
 
