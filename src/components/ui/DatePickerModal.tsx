@@ -33,7 +33,6 @@ export default function DatePickerModal({
   showMonth: forceShowMonth,
   showDay: forceShowDay,
   minDate,
-  limitToToday = false,
 }: Props) {
   // 표시 규칙
   const showMonth = forceShowMonth ?? tab !== "yearly";
