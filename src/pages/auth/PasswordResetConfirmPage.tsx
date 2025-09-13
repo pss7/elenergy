@@ -1,3 +1,4 @@
+// src/pages/auth/PasswordResetConfirmPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -5,19 +6,20 @@ import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import { validateName, validatePhone, validateUserIdForReset, validateVerificationCode } from "../../utils/validation";
+import {
+  validateName,
+  validatePhone,
+  validateUserIdForReset,
+  validateVerificationCode,
+} from "../../utils/validation";
 import styles from "./Auth.module.css";
 import type { User } from "../../types/user";
 
-
 export default function PasswordResetConfirmPage() {
-
-  //경로이동
   const navigate = useNavigate();
 
-  //로컬스토리지 데이터 불러오기
+  // 로컬스토리지 데이터 불러오기
   const [users, setUsers] = useState<User[]>([]);
-
   useEffect(() => {
     const storedUsers = localStorage.getItem("signupData");
     if (storedUsers) {
@@ -27,32 +29,9 @@ export default function PasswordResetConfirmPage() {
         setUsers([]);
       }
     }
+  }, []);
 
-  }, [])
-
-  //입력한 데이터 찾기
-  const [userPwResetError, setUserPwResetError] = useState("");
-
-  function handlePwReset(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    const matchedUser = users.find(function (user) {
-      return user.userId === userId && user.userName === userName && user.userPhone === userPhone;
-    });
-
-    if (!matchedUser) {
-      setUserPwResetError("일치하는 회원정보가 없습니다. 회원가입을 해주세요.");
-    } else {
-      setUserPwResetError("");
-      navigate("/password-reset", {
-        state: {
-          userId: matchedUser.userId,
-        },
-      });
-    }
-  }
-
-  //입력값 상태 관리
+  // 입력값 상태
   const [userId, setUserId] = useState("");
   const [userIdError, setUserIdError] = useState("");
   const [userName, setUserName] = useState("");
@@ -61,29 +40,47 @@ export default function PasswordResetConfirmPage() {
   const [userPhoneError, setUserPhoneError] = useState("");
   const [userNumber, setUserNumber] = useState("");
   const [userNumberError, setUserNumberError] = useState("");
+  const [userPwResetError, setUserPwResetError] = useState("");
 
-  //아이디 변경 핸들러
+  function handlePwReset(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const matchedUser = users.find(
+      (user) =>
+        user.userId === userId &&
+        user.userName === userName &&
+        user.userPhone === userPhone
+    );
+
+    if (!matchedUser) {
+      setUserPwResetError("일치하는 회원정보가 없습니다. 회원가입을 해주세요.");
+    } else {
+      setUserPwResetError("");
+      navigate("/password-reset", {
+        state: { userId: matchedUser.userId },
+      });
+    }
+  }
+
   function handleUseridChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setUserId(value);
     setUserIdError(validateUserIdForReset(value, users));
   }
 
-  // 이름 변경 핸들러
   function handleUserNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setUserName(value);
-    setUserNameError(validateName(value))
+    setUserNameError(validateName(value));
   }
 
-  //전화번호 변경 핸들러
   function handleUserPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
+    // 이 페이지는 하이픈 없이 11자리 숫자만 받도록 제한
     const value = e.target.value;
     setUserPhone(value);
     setUserPhoneError(validatePhone(value));
   }
 
-  //인증번호 변경 핸들러
   function handleUserNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setUserNumber(value);
@@ -99,60 +96,52 @@ export default function PasswordResetConfirmPage() {
         className="white-bg"
       />
 
-      <Main id="sub"
-        className="white-bg">
-
+      <Main id="sub" className="white-bg">
         <div className={styles.authBox}>
           <form onSubmit={handlePwReset}>
-
+            {/* 아이디: 소문자/숫자, 최대 12자 */}
             <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                아이디
-              </span>
+              <span className={styles.label}>아이디</span>
               <Input
                 type="text"
                 id="id"
+                maxLength={12}
+                allowedPattern={/^[a-z0-9]*$/}
                 onChange={handleUseridChange}
               />
-              <label htmlFor="id" className="blind">
-                아이디입력
-              </label>
-              {
-                userId && <p className="errorMessage">{userIdError}</p>
-              }
+              <label htmlFor="id" className="blind">아이디입력</label>
+              {userId && <p className="errorMessage">{userIdError}</p>}
             </div>
 
+            {/* 이름: 한글만, 최대 5자 */}
             <div className={`${styles.formBox} mb-30`}>
               <div className={styles.inputTextBox}>
                 <span className={styles.label}>이름</span>
                 <Input
                   type="text"
                   id="name"
+                  maxLength={5}
+                  allowedChars="hangul"
                   onChange={handleUserNameChange}
                 />
-                <label htmlFor="name" className="blind">
-                  이름입력
-                </label>
-                {
-                  userName && <p className="errorMessage">{userNameError}</p>
-                }
+                <label htmlFor="name" className="blind">이름입력</label>
+                {userName && <p className="errorMessage">{userNameError}</p>}
               </div>
             </div>
 
+            {/* 전화번호: 숫자만 11자리 */}
             <div className={`${styles.formBox} mb-30`}>
-              <span className={styles.label}>
-                전화번호
-              </span>
-
+              <span className={styles.label}>전화번호</span>
               <div className="inputButtonBox">
                 <Input
                   type="text"
                   id="phone"
+                  inputMode="numeric"
+                  maxLength={11}
+                  allowedChars="digits"
                   onChange={handleUserPhoneChange}
                 />
-                <label htmlFor="phone" className="blind">
-                  전화번호입력
-                </label>
+                <label htmlFor="phone" className="blind">전화번호입력</label>
                 <Button
                   type="button"
                   className="button"
@@ -161,24 +150,22 @@ export default function PasswordResetConfirmPage() {
                   인증
                 </Button>
               </div>
-              {
-                userPhone && <p className="errorMessage">{userPhoneError}</p>
-              }
+              {userPhone && <p className="errorMessage">{userPhoneError}</p>}
             </div>
 
+            {/* 인증번호: 숫자 6자리 */}
             <div className={`${styles.formBox} mb-20`}>
-              <span className={styles.label}>
-                인증번호
-              </span>
+              <span className={styles.label}>인증번호</span>
               <div className="inputButtonBox">
                 <Input
                   type="text"
                   id="number"
+                  inputMode="numeric"
+                  maxLength={6}
+                  allowedChars="digits"
                   onChange={handleUserNumberChange}
                 />
-                <label htmlFor="number" className="blind">
-                  인증번호입력
-                </label>
+                <label htmlFor="number" className="blind">인증번호입력</label>
                 <Button
                   type="button"
                   className="button"
@@ -187,12 +174,12 @@ export default function PasswordResetConfirmPage() {
                   확인
                 </Button>
               </div>
-              {
-                userNumber && <p className="errorMessage">{userNumberError}</p>
-              }
+              {userNumber && <p className="errorMessage">{userNumberError}</p>}
             </div>
 
-            {userPwResetError && <p className="errorMessage mb-30">{userPwResetError}</p>}
+            {userPwResetError && (
+              <p className="errorMessage mb-30">{userPwResetError}</p>
+            )}
 
             <Button
               disabled={
@@ -209,12 +196,9 @@ export default function PasswordResetConfirmPage() {
             >
               비밀번호 재설정
             </Button>
-
           </form>
         </div>
-
       </Main>
     </>
-  )
-
+  );
 }

@@ -47,6 +47,7 @@ export default function SignupPage() {
 
   // 핸들러들
   function handleUseridChange(e: React.ChangeEvent<HTMLInputElement>) {
+    // 입력은 소문자/숫자만 허용(allowedPattern으로 이미 차단됨) + 검증
     const value = e.target.value;
     setUserId(value);
     setUserIdError(validateUserId(value));
@@ -78,7 +79,7 @@ export default function SignupPage() {
 
   function handleUserPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
-    const formatted = formatPhoneNumber(value);
+    const formatted = formatPhoneNumber(value); // 숫자만 추출 → 하이픈 포맷
     setUserPhone(formatted);
     const onlyDigits = formatted.replace(/\D/g, "");
     setUserPhoneError(validatePhone(onlyDigits));
@@ -117,7 +118,7 @@ export default function SignupPage() {
     const companyCodeError = validateCompanyCode(userCompanyCode);
     const rankError = validatePosition(userRank);
 
-    // 2) 에러 상태 반영 (❗기존 버그 수정: setUserCodeError 사용)
+    // 2) 에러 상태 반영
     setUserIdError(idError);
     setUserPasswordError(pwError);
     setUserPwConfirmError(pwConfirmError);
@@ -138,7 +139,7 @@ export default function SignupPage() {
       return;
     }
 
-    // 3) 저장 데이터 구성 (✅ createdAt 추가)
+    // 3) 저장 데이터 구성 (가입일 저장)
     const nowIso = new Date().toISOString();
     const newUser = {
       userId,
@@ -148,9 +149,8 @@ export default function SignupPage() {
       userCompanyCode,
       userRank,
       userPhone,
-      createdAt: nowIso,        // <- 가입일 저장
-      role: "일반",             // 기본값 (원하면 수정)
-      // approvedAt: null,      // 아직 미승인이라면 생략 또는 null
+      createdAt: nowIso, // 가입일
+      role: "일반",
     };
 
     // 4) signupData 배열에 저장/추가
@@ -163,7 +163,7 @@ export default function SignupPage() {
       localStorage.setItem("signupData", JSON.stringify([newUser]));
     }
 
-    // 5) (선택) accounts에도 함께 적재하면 MyAccountPage가 accounts 우선일 때도 보임
+    // 5) accounts에도 함께 적재(선택)
     try {
       const prevAcc = localStorage.getItem("accounts");
       let accArr: any[] = [];
@@ -173,11 +173,9 @@ export default function SignupPage() {
       }
       accArr.push(newUser);
       localStorage.setItem("accounts", JSON.stringify(accArr));
-    } catch {
-      // 실패해도 치명적이지 않음
-    }
+    } catch {}
 
-    // 6) 현재 로그인 사용자로 지정 → MyAccountPage에서 정확히 이 계정 표시
+    // 6) 현재 로그인 사용자로 지정
     localStorage.setItem("currentUserId", userId);
 
     // 7) 완료 페이지 이동
@@ -213,10 +211,16 @@ export default function SignupPage() {
         <div className={styles.authBox}>
           <div className={styles.signupBox}>
             <form onSubmit={handleSubmit}>
-              {/* 아이디 */}
+              {/* 아이디: 소문자+숫자, 최대 12자 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>아이디</span>
-                <Input type="text" id="id" onChange={handleUseridChange} />
+                <Input
+                  type="text"
+                  id="id"
+                  maxLength={12}
+                  allowedPattern={/^[a-z0-9]*$/}
+                  onChange={handleUseridChange}
+                />
                 <label htmlFor="id" className="blind">아이디입력</label>
                 {userId && <p className="errorMessage">{userIdError}</p>}
               </div>
@@ -237,29 +241,44 @@ export default function SignupPage() {
                 {userPwConfirm && <p className="errorMessage">{userPwConfirmError}</p>}
               </div>
 
-              {/* 이름 */}
+              {/* 이름: 한글만, 최대 5자 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>이름</span>
-                <Input type="text" id="name" onChange={handleUserNameChange} />
+                <Input
+                  type="text"
+                  id="name"
+                  maxLength={5}
+                  allowedChars="hangul"
+                  onChange={handleUserNameChange}
+                />
                 <label htmlFor="name" className="blind">이름입력</label>
                 {userName && <p className="errorMessage">{userNameError}</p>}
               </div>
 
-              {/* 이메일 */}
+              {/* 이메일: 기본 허용문자만 (검증은 validateEmail로) */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>이메일</span>
-                <Input type="text" id="email" onChange={handleUserEmailChange} />
+                <Input
+                  type="text"
+                  id="email"
+                  maxLength={254}
+                  allowedPattern={/^[A-Za-z0-9@._%+\-]*$/}
+                  onChange={handleUserEmailChange}
+                />
                 <label htmlFor="email" className="blind">이메일입력</label>
                 {userEmail && <p className="errorMessage">{userEmailError}</p>}
               </div>
 
-              {/* 전화번호 + 인증 */}
+              {/* 전화번호: 숫자/하이픈만 표시(내부 포맷), 최대 13자 (010-1234-5678) */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>전화번호</span>
                 <div className="inputButtonBox">
                   <Input
                     type="text"
                     id="phone"
+                    inputMode="numeric"
+                    maxLength={13}
+                    allowedPattern={/^[0-9-]*$/}
                     value={userPhone}
                     onChange={handleUserPhoneChange}
                   />
@@ -275,13 +294,16 @@ export default function SignupPage() {
                 {userPhone && <p className="errorMessage">{userPhoneError}</p>}
               </div>
 
-              {/* 인증번호 */}
+              {/* 인증번호: 숫자 6자리 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>인증번호</span>
                 <div className="inputButtonBox">
                   <Input
                     type="text"
                     id="number"
+                    inputMode="numeric"
+                    maxLength={6}
+                    allowedChars="digits"
                     value={userNumber}
                     onChange={handleUserNumberChange}
                   />
@@ -297,18 +319,30 @@ export default function SignupPage() {
                 {userNumber && <p className="errorMessage">{userNumberError}</p>}
               </div>
 
-              {/* 회사코드 */}
+              {/* 회사코드: 숫자 6자리 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>회사코드</span>
-                <Input type="text" id="code" onChange={handleCompanyCodeChange} />
+                <Input
+                  type="text"
+                  id="code"
+                  inputMode="numeric"
+                  maxLength={6}
+                  allowedChars="digits"
+                  onChange={handleCompanyCodeChange}
+                />
                 <label htmlFor="code" className="blind">회사코드입력</label>
                 {userCompanyCode && <p className="errorMessage">{userCodeError}</p>}
               </div>
 
-              {/* 직급 */}
+              {/* 직급: 한글만 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>직급</span>
-                <Input type="text" id="rank" onChange={handleUserRankChange} />
+                <Input
+                  type="text"
+                  id="rank"
+                  allowedChars="hangul"
+                  onChange={handleUserRankChange}
+                />
                 <label htmlFor="rank" className="blind">직급입력</label>
                 {userRank && <p className="errorMessage">{userRankError}</p>}
               </div>
