@@ -87,7 +87,19 @@
   position: absolute;
   top: 13px;
   left: 16px;
-  background: url(/assets/images/main/icon01.svg)no-repeat center;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+/* ON 아이콘 */
+.box.powerOn::after {
+  background-image: url(/assets/images/main/on_icon.png);
+}
+
+/* OFF 아이콘 */
+.box.powerOff::after {
+  background-image: url(/assets/images/main/off_icon.png);
 }
 
 .linkList01 li .box h2 {

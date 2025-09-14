@@ -1,15 +1,19 @@
 // src/pages/manual-control/ManualControlPage.tsx
 import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
-import { useControllerData } from "../../contexts/ControllerContext";
+import Footer from "../../components/layout/Footer";
+
 import styles from "./ManualControlPage.module.css";
 import PowerBarChart from "../../components/ui/PowerBarChart";
-import { useMemo, useState } from "react";
-import { buildDailyLastWeek, computeStatsFromChart } from "../../data/AutoBlock";
 import Title from "../../components/ui/Title";
-import Footer from "../../components/layout/Footer";
+
+import { useControllerData } from "../../contexts/ControllerContext";
+import { buildDailyLastWeek, computeStatsFromChart } from "../../data/AutoBlock";
 import { logAlarm } from "../../utils/logAlarm";
+import { getControllerPower, setControllerPower } from "../../utils/powerState";
 
 export default function ManualControlPage() {
   const { id } = useParams();
@@ -28,11 +32,28 @@ export default function ManualControlPage() {
   const [isToggleOn, setIsToggleOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
+  // ✅ 팝업 표시 조건: 평균 < 현재
+  const shouldWarn = statsWeek.average < statsWeek.current;
+
+  // 저장된 전원 상태로 토글 초기화
+  useEffect(() => {
+    if (target) setIsToggleOn(getControllerPower(target.id) === "ON");
+  }, [target]);
+
+  function Toggle({
+    checked,
+    onChange,
+    bgColor,
+  }: {
+    checked: boolean;
+    onChange: () => void;
+    bgColor?: string;
+  }) {
     return (
       <div
         className={`${styles.toggleSwitch} ${checked ? styles.on : ""}`}
         onClick={onChange}
+        style={bgColor ? { backgroundColor: bgColor } : undefined}
       >
         <span className={`${styles.toggleText} ${styles.offText}`}>OFF</span>
         <span className={`${styles.toggleText} ${styles.onText}`}>ON</span>
@@ -46,8 +67,8 @@ export default function ManualControlPage() {
     const nextState = !isToggleOn;
     setIsToggleOn(nextState);
 
-    // 🔔 알림: 수동제어 ON/OFF
     if (target) {
+      setControllerPower(target.id, nextState ? "ON" : "OFF");
       logAlarm({
         type: "수동제어",
         controller: target.title,
@@ -56,34 +77,28 @@ export default function ManualControlPage() {
     }
 
     if (nextState) {
-      const isOffAllowed = statsWeek.average > statsWeek.current;
-      if (isOffAllowed) {
-        setIsModalOpen(true);
-      }
+      if (shouldWarn) setIsModalOpen(true);
     } else {
       setIsModalOpen(false);
     }
   }
 
-  // 전력차단 모달 취소
   function handleCancle() {
     setIsModalOpen(false);
   }
 
-  // 전력차단 실행
   function handleOffClick() {
     setIsModalOpen(false);
     setIsToggleOn(true);
 
-    // 🔔 알림: OFF 실행
     if (target) {
+      setControllerPower(target.id, "OFF");
       logAlarm({
         type: "수동제어",
         controller: target.title,
         status: "OFF",
       });
     }
-    // 실제 OFF API 호출 자리
   }
 
   if (!target) {
@@ -104,8 +119,12 @@ export default function ManualControlPage() {
 
           {/* 토글 및 안내 메시지 */}
           <div className={styles.toggleBox}>
-            <Toggle checked={isToggleOn} onChange={handleToggle} />
-            {isToggleOn && statsWeek.average > statsWeek.current && (
+            <Toggle
+              checked={isToggleOn}
+              onChange={handleToggle}
+              bgColor={isToggleOn && shouldWarn ? "#4F4E52" : undefined}
+            />
+            {isToggleOn && shouldWarn && (
               <p className={`${styles.toggleInfoText} ${styles.bounce}`}>
                 강제 OFF를 원할 경우 <br />
                 ON을 5초간 눌러주세요.
@@ -115,8 +134,10 @@ export default function ManualControlPage() {
 
           {isToggleOn && (
             <p className={styles.infoText}>
-              "<span className={styles.color02}>평균 전력 사용량</span> &gt;{" "}
-              <span className={styles.color01}>현재 전력 사용량</span>" 인 경우에 OFF 가능
+              "
+              <span className={styles.color02}>평균 전력 사용량</span> &lt;{" "}
+              <span className={styles.color01}>현재 전력 사용량</span>
+              " 인 경우에 OFF 가능
             </p>
           )}
 
@@ -143,12 +164,14 @@ export default function ManualControlPage() {
             </div>
           </div>
 
-          {/* 막대 차트 */}
+          {/* 막대 차트 + ✅ 평균선 표시 */}
           <PowerBarChart
             data={lastWeekChart}
             yMax={400}
             unit="Wh"
             barColor="#0F7685"
+            showAverageLine
+            averageValue={statsWeek.average}
           />
 
           {/* 추가 차단 설정 안내 */}

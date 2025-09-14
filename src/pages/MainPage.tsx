@@ -1,4 +1,3 @@
-// src/pages/MainPage.tsx
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import ArrowLink from "../components/ui/ArrowLink";
@@ -15,6 +14,11 @@ import {
   getAllAlarms,
 } from "../data/Alarms";
 
+// ⛔ 타입 전용 import (ts 1484 경고 방지)
+import type { PowerState } from "../utils/powerState";
+// ✅ 실제 함수 import
+import { getControllerPower } from "../utils/powerState";
+
 function useCompanyCode() {
   return localStorage.getItem("companyCode") || "DEFAULT_COMPANY";
 }
@@ -25,6 +29,34 @@ export default function MainPage() {
   const [activeToggleId, setActiveToggleId] = useState<number | null>(null);
   const { navigateTo } = useNavigateTo();
   const company = useCompanyCode();
+
+  // ===== 전원 상태 맵 (컨트롤러 id -> ON/OFF) =====
+  const [powerMap, setPowerMap] = useState<Record<number, PowerState>>({});
+
+  // 초기 로드 & 이벤트 구독
+  useEffect(() => {
+    const refresh = () => {
+      const m: Record<number, PowerState> = {};
+      controllers.forEach((c) => {
+        m[c.id] = getControllerPower(c.id);
+      });
+      setPowerMap(m);
+    };
+
+    refresh();
+
+    const onChanged = () => refresh();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "controllerPowerState" || e.key === null) refresh();
+    };
+
+    window.addEventListener("controller:power:changed", onChanged as EventListener);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("controller:power:changed", onChanged as EventListener);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [controllers]);
 
   function handleToggle(id: number) {
     setActiveToggleId((prev) => (prev === id ? null : id));
@@ -87,39 +119,47 @@ export default function MainPage() {
         </Title>
 
         <ul className={styles.linkList01} ref={listRef}>
-          {controllers.map((ctrl) => (
-            <li key={ctrl.id} onClick={() => handleControl(ctrl.id)}>
-              <div className={styles.box}>
-                <div className={styles.textBox}>
-                  <h2>{ctrl.title}</h2>
-                  <span className={styles.location}>{ctrl.location}</span>
-                </div>
+          {controllers.map((ctrl) => {
+            const isOn = (powerMap[ctrl.id] ?? "OFF") === "ON";
+            return (
+              <li key={ctrl.id} onClick={() => handleControl(ctrl.id)}>
+                <div
+                  className={[
+                    styles.box,
+                    isOn ? styles.powerOn : styles.powerOff, // ✅ CSS Module 클래스 사용
+                  ].join(" ")}
+                >
+                  <div className={styles.textBox}>
+                    <h2>{ctrl.title}</h2>
+                    <span className={styles.location}>{ctrl.location}</span>
+                  </div>
 
-                <div className={styles.linkBox}>
-                  <button
-                    type="button"
-                    className={styles.btn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggle(ctrl.id);
-                    }}
-                  >
-                    <em className="blind">정보변경 이동 버튼</em>
-                  </button>
+                  <div className={styles.linkBox}>
+                    <button
+                      type="button"
+                      className={styles.btn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggle(ctrl.id);
+                      }}
+                    >
+                      <em className="blind">정보변경 이동 버튼</em>
+                    </button>
 
-                  <Link
-                    to={`/controller-update/${ctrl.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className={`${styles.changeLink} ${
-                      activeToggleId === ctrl.id ? styles.active : ""
-                    }`}
-                  >
-                    정보변경
-                  </Link>
+                    <Link
+                      to={`/controller-update/${ctrl.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className={`${styles.changeLink} ${
+                        activeToggleId === ctrl.id ? styles.active : ""
+                      }`}
+                    >
+                      정보변경
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
 
         {/* 🔔 알림 아이콘 */}
