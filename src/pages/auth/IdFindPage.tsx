@@ -45,20 +45,19 @@ export default function IdFindPage() {
 
   // 전화번호 변경 (표시는 하이픈, 검증은 숫자만)
   function handleUserPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value;
-    const formatted = formatPhoneNumber(value); // 010-1234-5678 형식으로 표시
+    const formatted = formatPhoneNumber(e.target.value);
     setUserPhone(formatted);
-    setUserPhoneError(validatePhone(onlyDigits(formatted))); // 숫자 11자리 검증
+    setUserPhoneError(validatePhone(onlyDigits(formatted)));
   }
 
   // 인증번호 변경 (숫자 6자리)
   function handleUserNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value;
-    const formatted = formatVerificationCode(value); // 숫자만, 6자리로 정리
+    const formatted = formatVerificationCode(e.target.value);
     setUserNumber(formatted);
     setUserNumberError(validateVerificationCode(formatted));
   }
 
+  // 저장된 회원 불러오기
   useEffect(() => {
     const storedUsers = localStorage.getItem("signupData");
     if (storedUsers) {
@@ -70,10 +69,10 @@ export default function IdFindPage() {
     }
   }, []);
 
+  // 제출
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // 비교 시에는 전화번호를 숫자만으로 비교 (저장값이 하이픈 포함/미포함 어느 쪽이든 매칭)
     const myName = userName;
     const myPhoneDigits = onlyDigits(userPhone);
 
@@ -104,7 +103,7 @@ export default function IdFindPage() {
       <Main id="sub" className="white-bg">
         <div className={styles.authBox}>
           <form onSubmit={handleSubmit}>
-            {/* 이름: 한글만, 최대 5자 */}
+            {/* 이름 */}
             <div className={`${styles.formBox} mb-30`}>
               <div className={styles.inputTextBox}>
                 <span className={styles.label}>이름</span>
@@ -112,7 +111,6 @@ export default function IdFindPage() {
                   type="text"
                   id="name"
                   maxLength={5}
-                  allowedChars="hangul"
                   value={userName}
                   onChange={handleUserNameChange}
                 />
@@ -121,7 +119,7 @@ export default function IdFindPage() {
               </div>
             </div>
 
-            {/* 전화번호: 숫자/하이픈 표시, 내부 검증은 숫자만 */}
+            {/* 전화번호 */}
             <div className={`${styles.formBox} mb-30`}>
               <span className={styles.label}>전화번호</span>
               <div className="inputButtonBox">
@@ -129,8 +127,7 @@ export default function IdFindPage() {
                   type="text"
                   id="phone"
                   inputMode="numeric"
-                  maxLength={13}                 // 010-1234-5678 최대 길이
-                  allowedPattern={/^[0-9-]*$/}  // 숫자/하이픈만 입력 허용
+                  maxLength={13}
                   value={userPhone}
                   onChange={handleUserPhoneChange}
                 />
@@ -146,7 +143,7 @@ export default function IdFindPage() {
               {userPhone && <p className="errorMessage">{userPhoneError}</p>}
             </div>
 
-            {/* 인증번호: 숫자 6자리 */}
+            {/* 인증번호 */}
             <div className={`${styles.formBox} mb-20`}>
               <span className={styles.label}>인증번호</span>
               <div className="inputButtonBox">
@@ -155,7 +152,6 @@ export default function IdFindPage() {
                   id="number"
                   inputMode="numeric"
                   maxLength={6}
-                  allowedChars="digits"
                   value={userNumber}
                   onChange={handleUserNumberChange}
                 />

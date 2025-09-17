@@ -18,7 +18,7 @@ import type { User } from "../../types/user";
 export default function PasswordResetConfirmPage() {
   const navigate = useNavigate();
 
-  // 로컬스토리지 데이터 불러오기
+  // 저장된 유저 목록 불러오기
   const [users, setUsers] = useState<User[]>([]);
   useEffect(() => {
     const storedUsers = localStorage.getItem("signupData");
@@ -31,7 +31,7 @@ export default function PasswordResetConfirmPage() {
     }
   }, []);
 
-  // 입력값 상태
+  // 입력값 & 에러 상태
   const [userId, setUserId] = useState("");
   const [userIdError, setUserIdError] = useState("");
   const [userName, setUserName] = useState("");
@@ -42,6 +42,7 @@ export default function PasswordResetConfirmPage() {
   const [userNumberError, setUserNumberError] = useState("");
   const [userPwResetError, setUserPwResetError] = useState("");
 
+  // 제출
   function handlePwReset(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -56,12 +57,11 @@ export default function PasswordResetConfirmPage() {
       setUserPwResetError("일치하는 회원정보가 없습니다. 회원가입을 해주세요.");
     } else {
       setUserPwResetError("");
-      navigate("/password-reset", {
-        state: { userId: matchedUser.userId },
-      });
+      navigate("/password-reset", { state: { userId: matchedUser.userId } });
     }
   }
 
+  // 입력 핸들러들
   function handleUseridChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setUserId(value);
@@ -75,8 +75,7 @@ export default function PasswordResetConfirmPage() {
   }
 
   function handleUserPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
-    // 이 페이지는 하이픈 없이 11자리 숫자만 받도록 제한
-    const value = e.target.value;
+    const value = e.target.value; // 숫자 11자리
     setUserPhone(value);
     setUserPhoneError(validatePhone(value));
   }
@@ -99,21 +98,20 @@ export default function PasswordResetConfirmPage() {
       <Main id="sub" className="white-bg">
         <div className={styles.authBox}>
           <form onSubmit={handlePwReset}>
-            {/* 아이디: 소문자/숫자, 최대 12자 */}
+            {/* 아이디 */}
             <div className={`${styles.formBox} mb-30`}>
               <span className={styles.label}>아이디</span>
               <Input
                 type="text"
                 id="id"
                 maxLength={12}
-                allowedPattern={/^[a-z0-9]*$/}
                 onChange={handleUseridChange}
               />
               <label htmlFor="id" className="blind">아이디입력</label>
               {userId && <p className="errorMessage">{userIdError}</p>}
             </div>
 
-            {/* 이름: 한글만, 최대 5자 */}
+            {/* 이름 */}
             <div className={`${styles.formBox} mb-30`}>
               <div className={styles.inputTextBox}>
                 <span className={styles.label}>이름</span>
@@ -121,7 +119,6 @@ export default function PasswordResetConfirmPage() {
                   type="text"
                   id="name"
                   maxLength={5}
-                  allowedChars="hangul"
                   onChange={handleUserNameChange}
                 />
                 <label htmlFor="name" className="blind">이름입력</label>
@@ -129,7 +126,7 @@ export default function PasswordResetConfirmPage() {
               </div>
             </div>
 
-            {/* 전화번호: 숫자만 11자리 */}
+            {/* 전화번호 */}
             <div className={`${styles.formBox} mb-30`}>
               <span className={styles.label}>전화번호</span>
               <div className="inputButtonBox">
@@ -138,7 +135,6 @@ export default function PasswordResetConfirmPage() {
                   id="phone"
                   inputMode="numeric"
                   maxLength={11}
-                  allowedChars="digits"
                   onChange={handleUserPhoneChange}
                 />
                 <label htmlFor="phone" className="blind">전화번호입력</label>
@@ -153,7 +149,7 @@ export default function PasswordResetConfirmPage() {
               {userPhone && <p className="errorMessage">{userPhoneError}</p>}
             </div>
 
-            {/* 인증번호: 숫자 6자리 */}
+            {/* 인증번호 */}
             <div className={`${styles.formBox} mb-20`}>
               <span className={styles.label}>인증번호</span>
               <div className="inputButtonBox">
@@ -162,7 +158,6 @@ export default function PasswordResetConfirmPage() {
                   id="number"
                   inputMode="numeric"
                   maxLength={6}
-                  allowedChars="digits"
                   onChange={handleUserNumberChange}
                 />
                 <label htmlFor="number" className="blind">인증번호입력</label>
