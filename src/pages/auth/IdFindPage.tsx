@@ -1,4 +1,3 @@
-// src/pages/auth/IdFindPage.tsx
 import { useEffect, useState } from "react";
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
@@ -22,6 +21,7 @@ function onlyDigits(s: string) {
 }
 
 export default function IdFindPage() {
+
   const navigate = useNavigate();
 
   // 입력값 상태
