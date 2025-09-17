@@ -1,4 +1,3 @@
-// src/pages/auth/SignupPage.tsx
 import Main from "../../components/layout/Main";
 import Header from "../../components/layout/Header";
 import styles from "./Auth.module.css";
@@ -16,16 +15,16 @@ import {
   validatePosition,
   validateVerificationCode,
 } from "../../utils/validation";
-import { useNavigate } from "react-router-dom";
 import {
   formatPhoneNumber,
   formatVerificationCode,
 } from "../../utils/formatters";
+import useNavigateTo from "../../hooks/useNavigateTo";
 
 export default function SignupPage() {
-  const navigate = useNavigate();
+  const { navigateTo } = useNavigateTo();
 
-  // 입력값 상태
+  // 입력값 & 에러 상태
   const [userId, setUserId] = useState("");
   const [userIdError, setUserIdError] = useState("");
   const [userPassword, setUserPassword] = useState("");
@@ -45,9 +44,8 @@ export default function SignupPage() {
   const [userNumber, setUserNumber] = useState("");
   const [userNumberError, setUserNumberError] = useState("");
 
-  // 핸들러들
+  // 입력 핸들러
   function handleUseridChange(e: React.ChangeEvent<HTMLInputElement>) {
-    // 입력은 소문자/숫자만 허용(allowedPattern으로 이미 차단됨) + 검증
     const value = e.target.value;
     setUserId(value);
     setUserIdError(validateUserId(value));
@@ -62,7 +60,9 @@ export default function SignupPage() {
   function handleUserPwConfirmChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setUserPwConfirm(value);
-    setUserPwConfirmError(userPassword !== value ? "비밀번호가 일치하지 않습니다." : "");
+    setUserPwConfirmError(
+      userPassword !== value ? "비밀번호가 일치하지 않습니다." : ""
+    );
   }
 
   function handleUserEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -78,16 +78,13 @@ export default function SignupPage() {
   }
 
   function handleUserPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value;
-    const formatted = formatPhoneNumber(value); // 숫자만 추출 → 하이픈 포맷
+    const formatted = formatPhoneNumber(e.target.value);
     setUserPhone(formatted);
-    const onlyDigits = formatted.replace(/\D/g, "");
-    setUserPhoneError(validatePhone(onlyDigits));
+    setUserPhoneError(validatePhone(formatted.replace(/\D/g, "")));
   }
 
   function handleUserNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value;
-    const formatted = formatVerificationCode(value);
+    const formatted = formatVerificationCode(e.target.value);
     setUserNumber(formatted);
     setUserNumberError(validateVerificationCode(formatted));
   }
@@ -104,11 +101,10 @@ export default function SignupPage() {
     setUserRankError(validatePosition(value));
   }
 
-  // 제출
+  // 제출 핸들러
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // 1) 최종 유효성 체크
     const idError = validateUserId(userId);
     const pwError = validatePassword(userPassword);
     const pwConfirmError =
@@ -118,7 +114,6 @@ export default function SignupPage() {
     const companyCodeError = validateCompanyCode(userCompanyCode);
     const rankError = validatePosition(userRank);
 
-    // 2) 에러 상태 반영
     setUserIdError(idError);
     setUserPasswordError(pwError);
     setUserPwConfirmError(pwConfirmError);
@@ -139,7 +134,6 @@ export default function SignupPage() {
       return;
     }
 
-    // 3) 저장 데이터 구성 (가입일 저장)
     const nowIso = new Date().toISOString();
     const newUser = {
       userId,
@@ -149,11 +143,10 @@ export default function SignupPage() {
       userCompanyCode,
       userRank,
       userPhone,
-      createdAt: nowIso, // 가입일
+      createdAt: nowIso,
       role: "일반",
     };
 
-    // 4) signupData 배열에 저장/추가
     try {
       const prev = localStorage.getItem("signupData");
       const list = prev ? JSON.parse(prev) : [];
@@ -163,7 +156,6 @@ export default function SignupPage() {
       localStorage.setItem("signupData", JSON.stringify([newUser]));
     }
 
-    // 5) accounts에도 함께 적재(선택)
     try {
       const prevAcc = localStorage.getItem("accounts");
       let accArr: any[] = [];
@@ -175,13 +167,11 @@ export default function SignupPage() {
       localStorage.setItem("accounts", JSON.stringify(accArr));
     } catch {}
 
-    // 6) 현재 로그인 사용자로 지정
     localStorage.setItem("currentUserId", userId);
-
-    // 7) 완료 페이지 이동
-    navigate("/signup-complete");
+    navigateTo("/signup-complete");
   }
 
+  // 제출 버튼 활성화 조건
   const isFormValid =
     userId &&
     !userIdError &&
@@ -211,17 +201,18 @@ export default function SignupPage() {
         <div className={styles.authBox}>
           <div className={styles.signupBox}>
             <form onSubmit={handleSubmit}>
-              {/* 아이디: 소문자+숫자, 최대 12자 */}
+              {/* 아이디 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>아이디</span>
                 <Input
                   type="text"
                   id="id"
                   maxLength={12}
-                  allowedPattern={/^[a-z0-9]*$/}
                   onChange={handleUseridChange}
                 />
-                <label htmlFor="id" className="blind">아이디입력</label>
+                <label htmlFor="id" className="blind">
+                  아이디입력
+                </label>
                 {userId && <p className="errorMessage">{userIdError}</p>}
               </div>
 
@@ -229,47 +220,50 @@ export default function SignupPage() {
               <div className={`${styles.inputTextBox} mb-20`}>
                 <span className={styles.label}>비밀번호</span>
                 <PasswordInput id="password" onChange={handleUserPasswordChange} />
-                <label htmlFor="password" className="blind">비밀번호</label>
-                {userPassword && <p className="errorMessage">{userPasswordError}</p>}
+                <label htmlFor="password" className="blind">
+                  비밀번호
+                </label>
+                {userPassword && (
+                  <p className="errorMessage">{userPasswordError}</p>
+                )}
               </div>
 
               {/* 비밀번호 재입력 */}
               <div className={`${styles.inputTextBox} mb-20`}>
                 <span className={styles.label}>비밀번호 재입력</span>
-                <PasswordInput id="password02" onChange={handleUserPwConfirmChange} />
-                <label htmlFor="password02" className="blind">비밀번호 재입력</label>
-                {userPwConfirm && <p className="errorMessage">{userPwConfirmError}</p>}
+                <PasswordInput
+                  id="password02"
+                  onChange={handleUserPwConfirmChange}
+                />
+                <label htmlFor="password02" className="blind">
+                  비밀번호 재입력
+                </label>
+                {userPwConfirm && (
+                  <p className="errorMessage">{userPwConfirmError}</p>
+                )}
               </div>
 
-              {/* 이름: 한글만, 최대 5자 */}
+              {/* 이름 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>이름</span>
-                <Input
-                  type="text"
-                  id="name"
-                  maxLength={5}
-                  allowedChars="hangul"
-                  onChange={handleUserNameChange}
-                />
-                <label htmlFor="name" className="blind">이름입력</label>
+                <Input type="text" id="name" maxLength={5} onChange={handleUserNameChange} />
+                <label htmlFor="name" className="blind">
+                  이름입력
+                </label>
                 {userName && <p className="errorMessage">{userNameError}</p>}
               </div>
 
-              {/* 이메일: 기본 허용문자만 (검증은 validateEmail로) */}
+              {/* 이메일 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>이메일</span>
-                <Input
-                  type="text"
-                  id="email"
-                  maxLength={254}
-                  allowedPattern={/^[A-Za-z0-9@._%+\-]*$/}
-                  onChange={handleUserEmailChange}
-                />
-                <label htmlFor="email" className="blind">이메일입력</label>
+                <Input type="text" id="email" maxLength={254} onChange={handleUserEmailChange} />
+                <label htmlFor="email" className="blind">
+                  이메일입력
+                </label>
                 {userEmail && <p className="errorMessage">{userEmailError}</p>}
               </div>
 
-              {/* 전화번호: 숫자/하이픈만 표시(내부 포맷), 최대 13자 (010-1234-5678) */}
+              {/* 전화번호 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>전화번호</span>
                 <div className="inputButtonBox">
@@ -278,11 +272,12 @@ export default function SignupPage() {
                     id="phone"
                     inputMode="numeric"
                     maxLength={13}
-                    allowedPattern={/^[0-9-]*$/}
                     value={userPhone}
                     onChange={handleUserPhoneChange}
                   />
-                  <label htmlFor="phone" className="blind">전화번호입력</label>
+                  <label htmlFor="phone" className="blind">
+                    전화번호입력
+                  </label>
                   <Button
                     type="button"
                     className="button"
@@ -294,7 +289,7 @@ export default function SignupPage() {
                 {userPhone && <p className="errorMessage">{userPhoneError}</p>}
               </div>
 
-              {/* 인증번호: 숫자 6자리 */}
+              {/* 인증번호 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>인증번호</span>
                 <div className="inputButtonBox">
@@ -303,11 +298,12 @@ export default function SignupPage() {
                     id="number"
                     inputMode="numeric"
                     maxLength={6}
-                    allowedChars="digits"
                     value={userNumber}
                     onChange={handleUserNumberChange}
                   />
-                  <label htmlFor="number" className="blind">인증번호입력</label>
+                  <label htmlFor="number" className="blind">
+                    인증번호입력
+                  </label>
                   <Button
                     type="button"
                     className="button"
@@ -316,10 +312,12 @@ export default function SignupPage() {
                     확인
                   </Button>
                 </div>
-                {userNumber && <p className="errorMessage">{userNumberError}</p>}
+                {userNumber && (
+                  <p className="errorMessage">{userNumberError}</p>
+                )}
               </div>
 
-              {/* 회사코드: 숫자 6자리 */}
+              {/* 회사코드 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>회사코드</span>
                 <Input
@@ -327,26 +325,27 @@ export default function SignupPage() {
                   id="code"
                   inputMode="numeric"
                   maxLength={6}
-                  allowedChars="digits"
                   onChange={handleCompanyCodeChange}
                 />
-                <label htmlFor="code" className="blind">회사코드입력</label>
-                {userCompanyCode && <p className="errorMessage">{userCodeError}</p>}
+                <label htmlFor="code" className="blind">
+                  회사코드입력
+                </label>
+                {userCompanyCode && (
+                  <p className="errorMessage">{userCodeError}</p>
+                )}
               </div>
 
-              {/* 직급: 한글만 */}
+              {/* 직급 */}
               <div className={`${styles.formBox} mb-30`}>
                 <span className={styles.label}>직급</span>
-                <Input
-                  type="text"
-                  id="rank"
-                  allowedChars="hangul"
-                  onChange={handleUserRankChange}
-                />
-                <label htmlFor="rank" className="blind">직급입력</label>
+                <Input type="text" id="rank" onChange={handleUserRankChange} />
+                <label htmlFor="rank" className="blind">
+                  직급입력
+                </label>
                 {userRank && <p className="errorMessage">{userRankError}</p>}
               </div>
 
+              {/* 제출 버튼 */}
               <Button disabled={!isFormValid} className="mt-40">
                 가입하기
               </Button>
