@@ -44,6 +44,13 @@ function buildDateTimeFromReservation(res: Reservation): Date | null {
   return new Date(ymd.year, ymd.month - 1, ymd.day, hh, mm, 0, 0);
 }
 
+// 과거 단발 예약 여부 (같은 시:분도 과거로 간주)
+function isOneTimePast(res: Reservation): boolean {
+  if (res.dateLabel.startsWith("매일")) return false; // 반복 예약은 허용
+  const dt = buildDateTimeFromReservation(res);
+  return !!dt && dt <= new Date();
+}
+
 // "HH:MM" → {오전/오후, hour:1~12, minute:"00"~"59"}
 function parseTimeToSelected(timeStr: string) {
   const [hourStr, minuteRaw] = timeStr.split(":");
@@ -75,12 +82,12 @@ export default function ScheduledBlockingPage() {
     return saved ? JSON.parse(saved) : scheduledBlockingsData;
   });
 
-  // 마운트 시 과거 예약 자동 OFF(날짜+시간 기준, 반복 예약 제외)
+  // 마운트 시 과거 예약 자동 OFF(날짜+시간 기준, 반복 예약 제외) — 같은 시:분도 과거 처리
   useEffect(() => {
     const now = new Date();
     const updated = reservations.map((item) => {
       const dt = buildDateTimeFromReservation(item);
-      if (dt && dt < now && item.isOn) return { ...item, isOn: false };
+      if (dt && dt <= now && item.isOn) return { ...item, isOn: false };
       return item;
     });
     setReservations(updated);
@@ -111,20 +118,27 @@ export default function ScheduledBlockingPage() {
     localStorage.setItem("lastControllerId", String(id));
   }
 
-  // 항목 토글 (상태+알림 로그)
+  // 항목 토글 (상태+알림 로그) — 과거 단발 예약은 ON 금지
   function toggleReservation(id: number) {
+    const r = reservations.find((r) => r.id === id);
+    if (!r) return;
+
+    const tryingToTurnOn = !r.isOn;
+    if (tryingToTurnOn && isOneTimePast(r)) {
+      alert("지난 일시 예약은 다시 켤 수 없습니다.\n시간을 변경하거나 삭제해 주세요.");
+      return;
+    }
+
     setReservations((prev) =>
       prev.map((item) => (item.id === id ? { ...item, isOn: !item.isOn } : item))
     );
 
-    const r = reservations.find((r) => r.id === id);
-    const nextIsOn = r ? !r.isOn : true;
     const targetCtrl = controllers.find((c) => c.id === selectedControllerId);
     if (targetCtrl) {
       logAlarm({
         type: "예약제어",
         controller: targetCtrl.title,
-        status: nextIsOn ? "ON" : "OFF",
+        status: tryingToTurnOn ? "ON" : "OFF",
       });
     }
   }
@@ -187,28 +201,38 @@ export default function ScheduledBlockingPage() {
             {filteredReservations.length === 0 ? (
               <li className={styles.noData}>예약된 시간이 없습니다.</li>
             ) : (
-              filteredReservations.map((item) => (
-                <li key={item.id} onClick={() => handleEditReservation(item)}>
-                  <div className={`${styles.timeBox} ${!item.isOn ? styles.off : ""}`}>
-                    <span>{+item.time.split(":")[0] >= 12 ? "오후" : "오전"}</span>
-                    <strong>{item.time}</strong>
-                  </div>
+              filteredReservations.map((item) => {
+                const pastOneTime = isOneTimePast(item);
+                return (
+                  <li key={item.id} onClick={() => handleEditReservation(item)}>
+                    <div className={`${styles.timeBox} ${!item.isOn ? styles.off : ""}`}>
+                      <span>{+item.time.split(":")[0] >= 12 ? "오후" : "오전"}</span>
+                      <strong>{item.time}</strong>
+                    </div>
 
-                  <div className={styles.dateBox}>
-                    <span>{item.dateLabel}</span>
-                  </div>
+                    <div className={styles.dateBox}>
+                      <span>{item.dateLabel}</span>
+                    </div>
 
-                  <div
-                    className={`${styles.toggleSwitch} ${item.isOn ? styles.on : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleReservation(item.id);
-                    }}
-                  >
-                    <div className={styles.toggleKnob}></div>
-                  </div>
-                </li>
-              ))
+                    <div
+                      className={`${styles.toggleSwitch} ${item.isOn ? styles.on : ""}`}
+                      aria-disabled={pastOneTime}
+                      title={pastOneTime ? "지난 일시는 다시 켤 수 없습니다. 시간을 변경하거나 삭제하세요." : undefined}
+                      style={pastOneTime ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (pastOneTime && !item.isOn) {
+                          alert("지난 일시 예약은 다시 켤 수 없습니다.\n시간을 변경하거나 삭제해 주세요.");
+                          return;
+                        }
+                        toggleReservation(item.id);
+                      }}
+                    >
+                      <div className={styles.toggleKnob}></div>
+                    </div>
+                  </li>
+                );
+              })
             )}
           </ul>
         </div>
