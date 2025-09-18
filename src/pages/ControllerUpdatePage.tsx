@@ -120,6 +120,7 @@ export default function ControllerUpdatePage() {
           aria-describedby="location-error"
           placeholder="위치를 입력하세요 (최대 15자)"
         />
+
         {/* 15자 도달 시에만 안내 문구 표시 */}
         {locationError && (
           <p id="location-error" className="errorMessage" style={{ marginTop: 4 }}>
