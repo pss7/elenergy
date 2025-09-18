@@ -43,13 +43,13 @@
   font-weight: 500;
 }
 
-.header .btn {
+.header .dateBtn {
   display: flex;
   align-items: center;
   gap: 0 7px;
 }
 
-.header .btn::after {
+.header .dateBtn::after {
   content: '';
   margin-top: 4px;
   width: 9px;
@@ -57,11 +57,23 @@
   background: url(/assets/images/sub/select_arrow_icon.svg)no-repeat center;
 }
 
-.header .nextBtn {
+.header .btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
+  width: 7px;
+  height: 12px;
+}
+
+.header .nextBtn {
   right: 0;
+  background: url(/assets/images/sub/arrow_icon20.svg)no-repeat center;
+}
+
+.header .prevBtn {
+  left: 0;
+  background: url(/assets/images/sub/arrow_icon20.svg)no-repeat center;
+  transform: translateY(-50%) rotate(-180deg);
 }
 
 table.calendar {

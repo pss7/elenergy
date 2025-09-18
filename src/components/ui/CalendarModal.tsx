@@ -1,43 +1,59 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./CalendarModal.module.css";
 import DatePickerModal, { type PickerTab } from "./DatePickerModal";
 
-/** ===== Types ===== */
+// 간단한 날짜 타입
+interface YMD { year: number; month: number; day: number; }
+
+// 컴포넌트가 받는 props
 interface Props {
-  isOpen: boolean;
-  initial: { year: number; month: number; day: number };
-  onCancel: () => void;
-  onConfirm: (value: { year: number; month: number; day: number }) => void;
-  showMonth?: boolean;
-  showDay?: boolean;
-  tab: PickerTab;
-  /** 이 날짜 이전은 선택 불가(표시는 하되, 클릭 안됨) */
-  minDate?: { year: number; month: number; day: number };
+  isOpen: boolean;              // 모달 열림 여부
+  initial?: YMD | null;         // 처음에 표시/선택할 날짜 (없으면 오늘)
+  onCancel: () => void;         // 취소 버튼 클릭
+  onConfirm: (value: YMD) => void; // 완료 버튼 클릭(선택한 날짜 전달)
+  showMonth?: boolean;          // 년/월 선택기에서 월 표시 여부
+  showDay?: boolean;            // 년/월 선택기에서 일 표시 여부
+  tab: PickerTab;               // 년/월 선택기의 탭 종류
+  minDate?: YMD;                // 이 날짜 이전은 클릭 불가(표시는 됨)
 }
 
+// 캘린더 셀의 정보를 담는 타입
 type Cell = {
-  y: number;     // 4자리 연
-  m: number;     // 1..12
-  d: number;     // 1..
-  inMonth: boolean; // 현재 "보이는 달" 여부
-  isPast: boolean;  // minDate 이전 여부
+  y: number;        // 연도
+  m: number;        // 월(1~12)
+  d: number;        // 일(1~31)
+  inMonth: boolean; // 현재 화면에 보이는 "해당 월"인지 여부
+  isPast: boolean;  // minDate 이전인지 여부(클릭 불가)
 };
 
-/** ===== Utils ===== */
+// === 날짜 관련 유틸 함수 ===
+
+// Y-M-D를 Date로 변환
 function ymd(y: number, m: number, d: number) {
   return new Date(y, m - 1, d);
 }
+
+// 두 날짜를 "연-월-일" 기준으로 비교(시간 제거)
 function cmp(a: Date, b: Date) {
-  // 시분초 제거하고 비교 (YYYY-MM-DD 기준)
   const A = new Date(a.getFullYear(), a.getMonth(), a.getDate()).getTime();
   const B = new Date(b.getFullYear(), b.getMonth(), b.getDate()).getTime();
   return A - B;
 }
+
+// 해당 월의 마지막 일 수(1~31) 반환
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month, 0).getDate();
 }
+
+// 해당 월 1일의 요일(0=일, 6=토)
 function getFirstDow(year: number, month: number) {
-  return new Date(year, month - 1, 1).getDay(); // 0=Sun
+  return new Date(year, month - 1, 1).getDay();
+}
+
+// 오늘 날짜를 YMD로 반환
+function todayYMD(): YMD {
+  const t = new Date();
+  return { year: t.getFullYear(), month: t.getMonth() + 1, day: t.getDate() };
 }
 
 export default function CalendarModal({
@@ -50,42 +66,40 @@ export default function CalendarModal({
   tab,
   minDate,
 }: Props) {
-  // 최소 허용 날짜(없으면 오늘)
-  const MIN = useMemo(() => {
-    if (minDate) return ymd(minDate.year, minDate.month, minDate.day);
-    const t = new Date();
-    return new Date(t.getFullYear(), t.getMonth(), t.getDate());
-  }, [minDate]);
+  // 최소 기준일: 주어지면 그 날짜, 아니면 오늘
+  const MIN_DATE_OBJ =
+    minDate
+      ? ymd(minDate.year, minDate.month, minDate.day)
+      : ymd(...Object.values(todayYMD()) as [number, number, number]);
 
-  // 초기 선택값: 과거면 MIN으로 끌어올림
-  const initialFixed = useMemo(() => {
-    const raw = ymd(initial.year, initial.month, initial.day ?? 1);
-    const base = cmp(raw, MIN) < 0 ? MIN : raw;
+  // 초기 선택값 계산
+  function getInitialFixed(): YMD {
+    const base = initial ?? todayYMD();
+    const raw = ymd(base.year, base.month, base.day || 1);
+    const fixed = cmp(raw, MIN_DATE_OBJ) < 0 ? MIN_DATE_OBJ : raw;
     return {
-      year: base.getFullYear(),
-      month: base.getMonth() + 1,
-      day: base.getDate(),
+      year: fixed.getFullYear(),
+      month: fixed.getMonth() + 1,
+      day: fixed.getDate(),
     };
-  }, [initial, MIN]);
+  }
 
-  // ✅ 선택된 날짜(고정)
-  const [selected, setSelected] = useState(initialFixed);
-  // ✅ 화면에 "보이는 달"
-  const [viewYear, setViewYear] = useState(initialFixed.year);
-  const [viewMonth, setViewMonth] = useState(initialFixed.month);
-
+  const [selected, setSelected] = useState<YMD>(getInitialFixed());
+  const [viewYear, setViewYear] = useState<number>(getInitialFixed().year);
+  const [viewMonth, setViewMonth] = useState<number>(getInitialFixed().month);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
-  // 외부 initial 변경 시 반영
+  // 외부 prop 변경 시 갱신
   useEffect(() => {
-    setSelected(initialFixed);
-    setViewYear(initialFixed.year);
-    setViewMonth(initialFixed.month);
-  }, [initialFixed]);
+    const fixed = getInitialFixed();
+    setSelected(fixed);
+    setViewYear(fixed.year);
+    setViewMonth(fixed.month);
+  }, [isOpen, initial?.year, initial?.month, initial?.day, minDate?.year, minDate?.month, minDate?.day]);
 
   if (!isOpen) return null;
 
-  /** ===== 캘린더(보이는 달 기준) ===== */
+  // === 현재 보이는 달의 캘린더 데이터 ===
   const dimYear = viewYear;
   const dimMonth = viewMonth;
   const dimFirstDow = getFirstDow(dimYear, dimMonth);
@@ -95,6 +109,7 @@ export default function CalendarModal({
   const prevYear = dimMonth === 1 ? dimYear - 1 : dimYear;
   const nextMonth = dimMonth === 12 ? 1 : dimMonth + 1;
   const nextYear = dimMonth === 12 ? dimYear + 1 : dimYear;
+
   const prevDays = getDaysInMonth(prevYear, prevMonth);
 
   const weeks: Cell[][] = [];
@@ -114,8 +129,8 @@ export default function CalendarModal({
           y: prevYear,
           m: prevMonth,
           d,
-          inMonth: false, // 보이는 달 아님
-          isPast: cmp(dt, MIN) < 0,
+          inMonth: false,
+          isPast: cmp(dt, MIN_DATE_OBJ) < 0,
         };
       } else if (curDay <= dimDays) {
         const d = curDay++;
@@ -124,8 +139,8 @@ export default function CalendarModal({
           y: dimYear,
           m: dimMonth,
           d,
-          inMonth: true,  // 보이는 달
-          isPast: cmp(dt, MIN) < 0,
+          inMonth: true,
+          isPast: cmp(dt, MIN_DATE_OBJ) < 0,
         };
       } else {
         const d = nextDay++;
@@ -134,8 +149,8 @@ export default function CalendarModal({
           y: nextYear,
           m: nextMonth,
           d,
-          inMonth: false, // 보이는 달 아님
-          isPast: cmp(dt, MIN) < 0,
+          inMonth: false,
+          isPast: cmp(dt, MIN_DATE_OBJ) < 0,
         };
       }
 
@@ -144,54 +159,78 @@ export default function CalendarModal({
     weeks.push(week);
   }
 
-  /** ===== 월 이동(보기만 바꿈) ===== */
+  // 이전 달로 이동
+  function handleMonthBackward() {
+    let y = viewYear;
+    let m = viewMonth - 1;
+    if (m < 1) {
+      m = 12;
+      y -= 1;
+    }
+
+    const target = ymd(y, m, 1);
+    const minMonth = ymd(MIN_DATE_OBJ.getFullYear(), MIN_DATE_OBJ.getMonth() + 1, 1);
+
+    if (cmp(target, minMonth) < 0) {
+      return; // minDate 달 이전은 이동 금지
+    }
+
+    setViewYear(y);
+    setViewMonth(m);
+  }
+
+  // 다음 달로 이동
   function handleMonthForward() {
     let y = viewYear;
     let m = viewMonth + 1;
     if (m > 12) {
       m = 1;
-      y += 1; // ✅ 다음 해로
+      y += 1;
     }
-    // 선택일자(selected)는 건드리지 않음!
     setViewYear(y);
     setViewMonth(m);
   }
 
-  /** ===== 날짜 클릭(선택 변경) ===== */
+  // 날짜 클릭
   function handleDayClick(cell: Cell) {
-    if (cell.isPast) return; // 과거 클릭 불가
+    if (cell.isPast) return;
     setSelected({ year: cell.y, month: cell.m, day: cell.d });
-    // 다른 달 셀을 클릭했으면, 그 달로 화면 이동
     if (!cell.inMonth) {
       setViewYear(cell.y);
       setViewMonth(cell.m);
     }
   }
 
-  /** ===== 확인 ===== */
+  // 완료
   function handleConfirm() {
     onConfirm(selected);
   }
 
-  /** ===== Helpers ===== */
-  const today = new Date();
-  const isToday = (y: number, m: number, d: number) =>
-    y === today.getFullYear() && m === today.getMonth() + 1 && d === today.getDate();
+  const t = todayYMD();
+  function isToday(y: number, m: number, d: number) {
+    return y === t.year && m === t.month && d === t.day;
+  }
 
-  /** ===== Render ===== */
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
-        {/* 헤더: 타이틀(보이는 달), 오른쪽 '>' */}
+        {/* 상단: 년/월 + 이전/다음 버튼 */}
         <div className={styles.header}>
-          <button onClick={() => setIsPickerOpen(true)} className={styles.btn}>
+          {/* 현재 달(minDate 달)보다 이후 달일 때만 이전 버튼 표시 */}
+          {!(viewYear === MIN_DATE_OBJ.getFullYear() && viewMonth === MIN_DATE_OBJ.getMonth() + 1) && (
+            <button onClick={handleMonthBackward} className={`${styles.prevBtn} ${styles.btn}`}>
+              <span className="blind">이전버튼</span>
+            </button>
+          )}
+          <button onClick={() => setIsPickerOpen(true)} className={styles.dateBtn}>
             {viewYear}년 {viewMonth}월
           </button>
-          <button onClick={handleMonthForward} className={styles.nextBtn}>
-            {">"}
+          <button onClick={handleMonthForward} className={`${styles.nextBtn} ${styles.btn}`}>
+            <span className="blind">다음버튼</span>
           </button>
         </div>
 
+        {/* 달력 본문 */}
         <div className={styles.calendarWrap}>
           <table className={styles.calendar}>
             <thead>
@@ -210,7 +249,6 @@ export default function CalendarModal({
               {weeks.map((week, row) => (
                 <tr key={row}>
                   {week.map((cell, col) => {
-                    // ✅ 선택 하이라이트: cell이 선택된 날짜와 정확히 같을 때만
                     const isSelected =
                       cell.y === selected.year &&
                       cell.m === selected.month &&
@@ -230,14 +268,10 @@ export default function CalendarModal({
                         key={`${row}-${col}`}
                         className={[
                           isSelected ? styles.selectedDay : "",
-                          isToday(cell.y, cell.m, cell.d) && cell.inMonth && !isSelected
-                            ? styles.active
-                            : "",
+                          isToday(cell.y, cell.m, cell.d) && cell.inMonth && !isSelected ? styles.active : "",
                           !cell.inMonth ? styles.outMonthDay : "",
                           cell.isPast ? styles.disabledDay : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
+                        ].filter(Boolean).join(" ")}
                         style={{
                           color: textColor,
                           cursor: cell.isPast ? "default" : "pointer",
@@ -254,12 +288,14 @@ export default function CalendarModal({
           </table>
         </div>
 
+        {/* 하단 버튼 */}
         <div className={styles.footer}>
           <button onClick={onCancel}>취소</button>
           <button onClick={handleConfirm}>완료</button>
         </div>
       </div>
 
+      {/* 년/월/일 선택 모달 */}
       {isPickerOpen && (
         <DatePickerModal
           initial={selected}
@@ -276,9 +312,9 @@ export default function CalendarModal({
           showDay={showDay}
           tab={tab}
           minDate={{
-            year: MIN.getFullYear(),
-            month: MIN.getMonth() + 1,
-            day: MIN.getDate(),
+            year: MIN_DATE_OBJ.getFullYear(),
+            month: MIN_DATE_OBJ.getMonth() + 1,
+            day: MIN_DATE_OBJ.getDate(),
           }}
         />
       )}

@@ -1,5 +1,5 @@
 // src/pages/scheduled-block/ScheduledAddPage.tsx
-import { useRef, useState, useMemo, useLayoutEffect } from "react";
+import React, { useRef, useState, useLayoutEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Main from "../../components/layout/Main";
 import Button from "../../components/ui/Button";
@@ -10,48 +10,76 @@ import Footer from "../../components/layout/Footer";
 import { useControllerData } from "../../contexts/ControllerContext";
 import { logAlarm } from "../../utils/logAlarm";
 
-type Time = { ampm: "오전" | "오후"; hour: number; minute: string; };
+type Time = { ampm: "오전" | "오후"; hour: number; minute: string };
 type ReservationState = Omit<ReservationRaw, "time"> & { time: Time };
 type SelectedDate = { year: number; month: number; day: number } | null;
 
-export default function ScheduledAddPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { controllers } = useControllerData();
+// 리스트 반복 유틸
+function createInfiniteList<T extends string>(items: T[], repeat: number): T[] {
+  return Array.from({ length: repeat }, () => items).flat();
+}
 
-  const [flash, setFlash] = useState<string>("");
+// 상수(재렌더마다 새로 안 만들도록 모듈 레벨에 둠)
+const ITEM_HEIGHT = 66;
+const BASE_HOURS = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+const BASE_MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
+const HOUR_LIST = createInfiniteList(BASE_HOURS, 16);
+const MINUTE_LIST = createInfiniteList(BASE_MINUTES, 20);
+const DAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
 
-  function handleDayClick(day: string) {
-    setSelectedDate(null);
-    setSelectedDays(prev => (prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]));
+// 라벨 → 초기 날짜
+function parseInitialDate(label?: string): SelectedDate {
+  if (!label) {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
   }
-
-  const reservation = location.state?.reservation as ReservationState | undefined;
-
-  const controllerIdFromState: number =
-    (location.state as any)?.controllerId ?? reservation?.controllerId ?? 1;
-
-  const targetCtrl = controllers.find(c => c.id === controllerIdFromState);
-
-  function goList() {
-    localStorage.setItem("lastControllerId", String(controllerIdFromState));
-    navigate("/scheduled-block", { state: { initialControllerId: controllerIdFromState } });
+  let m = label.match(/^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+  if (m) {
+    const [, y, mo, d] = m.map(Number);
+    return { year: y, month: mo, day: d };
   }
+  m = label.match(/^(\d{1,2})월\s*(\d{1,2})일/);
+  if (m) {
+    const [, mo, d] = m.map(Number);
+    const now = new Date();
+    return { year: now.getFullYear(), month: mo, day: d };
+  }
+  const now = new Date();
+  return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
+}
 
-  const itemHeight = 66;
-  const baseAmpmList = ["오전", "오후"];
-  const baseHourList = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
-  const baseMinuteList = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
-  const ampmList = baseAmpmList;
-  const hourList = createInfiniteList(baseHourList, 16);
-  const minuteList = createInfiniteList(baseMinuteList, 20);
+// 즉시 스크롤 위치 설정
+function setScrollTopInstant(ref: React.RefObject<HTMLDivElement>, top: number) {
+  if (!ref.current) return;
+  const el = ref.current;
+  const prev = el.style.scrollBehavior;
+  el.style.scrollBehavior = "auto";
+  el.scrollTop = top;
+  requestAnimationFrame(() => {
+    if (el) el.style.scrollBehavior = prev || "smooth";
+  });
+}
 
-  const initialSelected: Time = useMemo(
-    () => reservation?.time ?? { ampm: "오전", hour: 6, minute: "00" },
-    [reservation]
-  );
-  const [selected, setSelected] = useState<Time>(initialSelected);
+// 가운데 보정 기준값
+function getCenterScroll<T>(list: T[], baseList: T[], itemHeight: number): number {
+  const cycles = Math.floor(list.length / baseList.length / 2);
+  const centerCycleStart = cycles * baseList.length;
+  return (centerCycleStart + 1) * itemHeight;
+}
 
+// 12시간 → "HH:MM"
+function to24h(ampm: "오전" | "오후", hour12: number, minute: string): string {
+  let h = hour12 % 12;
+  if (ampm === "오후") h += 12;
+  return `${String(h).padStart(2, "0")}:${minute}`;
+}
+
+// 시간 선택 UI를 메모ized 컴포넌트로 분리(요일 클릭 시 재렌더 방지)
+const TimePicker = React.memo(function TimePicker(props: {
+  selected: Time;
+  onChange: (next: Time) => void;
+}) {
+  const { selected, onChange } = props;
   const ampmRef = useRef<HTMLDivElement>(null!);
   const hourRef = useRef<HTMLDivElement>(null!);
   const minuteRef = useRef<HTMLDivElement>(null!);
@@ -61,76 +89,30 @@ export default function ScheduledAddPage() {
   const minuteRafRef = useRef<number | null>(null);
   const ampmDebounceRef = useRef<number | null>(null);
   const lastIdxRef = useRef<{ ampm: number; hour: number; minute: number }>({
-    ampm: initialSelected.ampm === "오전" ? 0 : 1,
-    hour: Math.max(0, baseHourList.findIndex((h) => Number(h) === initialSelected.hour)),
-    minute: Math.max(0, baseMinuteList.findIndex((m) => m === initialSelected.minute)),
+    ampm: selected.ampm === "오전" ? 0 : 1,
+    hour: Math.max(0, BASE_HOURS.findIndex((h) => Number(h) === selected.hour)),
+    minute: Math.max(0, BASE_MINUTES.findIndex((m) => m === selected.minute)),
   });
   const hourCommitMsRef = useRef(0);
   const minuteCommitMsRef = useRef(0);
-
-  const days = ["일", "월", "화", "수", "목", "금", "토"] as const;
-
-  const initialDate: SelectedDate = useMemo(() => {
-    const label = reservation?.dateLabel;
-    if (!label) {
-      const now = new Date();
-      return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
-    }
-    let m = label.match(/^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
-    if (m) {
-      const [, y, mo, d] = m.map(Number);
-      return { year: y, month: mo, day: d };
-    }
-    m = label.match(/^(\d{1,2})월\s*(\d{1,2})일/);
-    if (m) {
-      const [, mo, d] = m.map(Number);
-      const now = new Date();
-      return { year: now.getFullYear(), month: mo, day: d };
-    }
-    const now = new Date();
-    return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
-  }, [reservation]);
-
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [selectedDate, setSelectedDate] = useState<SelectedDate>(initialDate);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-
-  function createInfiniteList<T extends string>(items: T[], repeat: number): T[] {
-    return Array.from({ length: repeat }, () => items).flat();
-  }
-  function setScrollTopInstant(ref: React.RefObject<HTMLDivElement>, top: number) {
-    if (!ref.current) return;
-    const el = ref.current;
-    const prev = el.style.scrollBehavior;
-    el.style.scrollBehavior = "auto";
-    el.scrollTop = top;
-    requestAnimationFrame(() => {
-      if (el) el.style.scrollBehavior = prev || "smooth";
-    });
-  }
-  function getCenterScroll<T>(list: T[], baseList: T[]): number {
-    const cycles = Math.floor(list.length / baseList.length / 2);
-    const centerCycleStart = cycles * baseList.length;
-    return (centerCycleStart + 1) * itemHeight;
-  }
 
   useLayoutEffect(() => {
     if (!ampmRef.current || !hourRef.current || !minuteRef.current) return;
     suppressScrollRef.current = true;
 
-    const ampmIndex = initialSelected.ampm === "오전" ? 0 : 1;
-    setScrollTopInstant(ampmRef, ampmIndex * itemHeight);
+    const ampmIndex = selected.ampm === "오전" ? 0 : 1;
+    setScrollTopInstant(ampmRef, ampmIndex * ITEM_HEIGHT);
     lastIdxRef.current.ampm = ampmIndex;
 
-    const hourIndex = baseHourList.findIndex((h) => Number(h) === initialSelected.hour);
+    const hourIndex = BASE_HOURS.findIndex((h) => Number(h) === selected.hour);
     if (hourIndex !== -1) {
-      setScrollTopInstant(hourRef, getCenterScroll(hourList, baseHourList) + hourIndex * itemHeight);
+      setScrollTopInstant(hourRef, getCenterScroll(HOUR_LIST, BASE_HOURS, ITEM_HEIGHT) + hourIndex * ITEM_HEIGHT);
       lastIdxRef.current.hour = hourIndex;
     }
 
-    const minuteIndex = baseMinuteList.findIndex((m) => m === initialSelected.minute);
+    const minuteIndex = BASE_MINUTES.findIndex((m) => m === selected.minute);
     if (minuteIndex !== -1) {
-      setScrollTopInstant(minuteRef, getCenterScroll(minuteList, baseMinuteList) + minuteIndex * itemHeight);
+      setScrollTopInstant(minuteRef, getCenterScroll(MINUTE_LIST, BASE_MINUTES, ITEM_HEIGHT) + minuteIndex * ITEM_HEIGHT);
       lastIdxRef.current.minute = minuteIndex;
     }
 
@@ -138,7 +120,7 @@ export default function ScheduledAddPage() {
       suppressScrollRef.current = false;
     }, 80);
     return () => window.clearTimeout(t);
-  }, [initialSelected.ampm, initialSelected.hour, initialSelected.minute]);
+  }, [selected.ampm, selected.hour, selected.minute]);
 
   function handleScroll<T extends string>(
     ref: React.RefObject<HTMLDivElement>,
@@ -150,10 +132,10 @@ export default function ScheduledAddPage() {
 
     if (key === "ampm") {
       const top = ref.current.scrollTop;
-      const clamped = Math.max(0, Math.min(itemHeight, top));
+      const clamped = Math.max(0, Math.min(ITEM_HEIGHT, top));
       if (ampmDebounceRef.current) window.clearTimeout(ampmDebounceRef.current);
       ampmDebounceRef.current = window.setTimeout(() => {
-        const snapped = clamped < itemHeight / 2 ? 0 : itemHeight;
+        const snapped = clamped < ITEM_HEIGHT / 2 ? 0 : ITEM_HEIGHT;
         const newIdx = snapped === 0 ? 0 : 1;
         suppressScrollRef.current = true;
         setScrollTopInstant(ref, snapped);
@@ -161,7 +143,7 @@ export default function ScheduledAddPage() {
         if (newIdx !== lastIdxRef.current.ampm) {
           lastIdxRef.current.ampm = newIdx;
           const value = newIdx === 0 ? "오전" : "오후";
-          setSelected((prev) => (prev.ampm === value ? prev : { ...prev, ampm: value }));
+          onChange({ ...selected, ampm: value });
         }
       }, 80);
       return;
@@ -173,21 +155,21 @@ export default function ScheduledAddPage() {
     const work = () => {
       if (!ref.current) return;
       const container = ref.current;
-      const centerOffset = container.clientHeight / 2 - itemHeight / 2;
-      const index = Math.round((container.scrollTop + centerOffset) / itemHeight) - 2;
+      const centerOffset = container.clientHeight / 2 - ITEM_HEIGHT / 2;
+      const index = Math.round((container.scrollTop + centerOffset) / ITEM_HEIGHT) - 2;
       const realIndex = ((index % baseList.length) + baseList.length) % baseList.length;
 
-      const low = itemHeight * 3;
-      const high = (list.length - 4) * itemHeight;
+      const low = ITEM_HEIGHT * 3;
+      const high = (list.length - 4) * ITEM_HEIGHT;
       if (container.scrollTop < low || container.scrollTop > high) {
         suppressScrollRef.current = true;
         const selIndex =
           key === "hour"
-            ? baseHourList.findIndex((h) => Number(h) === selected.hour)
-            : baseMinuteList.findIndex((m) => m === selected.minute);
+            ? BASE_HOURS.findIndex((h) => Number(h) === selected.hour)
+            : BASE_MINUTES.findIndex((m) => m === selected.minute);
         setScrollTopInstant(
           ref,
-          getCenterScroll(list, baseList) + (selIndex >= 0 ? selIndex : 0) * itemHeight
+          getCenterScroll(list, baseList, ITEM_HEIGHT) + (selIndex >= 0 ? selIndex : 0) * ITEM_HEIGHT
         );
         suppressScrollRef.current = false;
       }
@@ -197,13 +179,13 @@ export default function ScheduledAddPage() {
         if (now - hourCommitMsRef.current >= 50 && realIndex !== lastIdxRef.current.hour) {
           lastIdxRef.current.hour = realIndex;
           hourCommitMsRef.current = now;
-          setSelected((prev) => ({ ...prev, hour: Number(baseList[realIndex]) }));
+          onChange({ ...selected, hour: Number(baseList[realIndex]) });
         }
       } else {
         if (now - minuteCommitMsRef.current >= 50 && realIndex !== lastIdxRef.current.minute) {
           lastIdxRef.current.minute = realIndex;
           minuteCommitMsRef.current = now;
-          setSelected((prev) => ({ ...prev, minute: baseList[realIndex] as string }));
+          onChange({ ...selected, minute: baseList[realIndex] as string });
         }
       }
     };
@@ -211,47 +193,140 @@ export default function ScheduledAddPage() {
     rafRef.current = requestAnimationFrame(work);
   }
 
-  function renderColumn<T extends string>(
-    list: T[],
-    baseList: T[],
-    key: "ampm" | "hour" | "minute",
-    ref: React.RefObject<HTMLDivElement>,
-    fontSize: string
-  ) {
-    const paddedItems =
-      key === "ampm" ? (["", ...baseList, ""] as unknown as T[]) : (["", "", ...list, "", ""] as unknown as T[]);
-    return (
-      <div
-        className={`${styles.column} ${key === "ampm" ? styles.ampmColumn : ""}`}
-        ref={ref}
-        onScroll={() => handleScroll(ref, key, list, baseList)}
-        style={{ scrollBehavior: "smooth" }}
-      >
-        <ul>
-          {paddedItems.map((item, idx) => {
-            const realIdx = key === "ampm" ? idx - 1 : idx - 2;
-            const selStr = key === "hour" ? String(selected.hour) : (selected[key] as string);
-            const isSelected = key === "ampm" ? baseList[realIdx] === selStr : list[realIdx] === selStr;
-            return (
-              <li
-                key={`${String(item)}-${idx}`}
-                style={{
-                  color: isSelected ? "#000" : "#aaa",
-                  fontWeight: isSelected ? "500" : "normal",
-                  fontSize,
-                  textAlign: "center",
-                  height: itemHeight,
-                  lineHeight: `${itemHeight}px`,
-                  userSelect: "none",
-                }}
-              >
-                {item === "" ? "\u00A0" : String(item)}
-              </li>
-            );
-          })}
-        </ul>
+  return (
+    <div className={styles.timeBox}>
+      <div className={styles.timeSelector}>
+        <div
+          className={`${styles.column} ${styles.ampmColumn}`}
+          ref={ampmRef}
+          onScroll={() => handleScroll(ampmRef, "ampm", ["오전", "오후"], ["오전", "오후"])}
+          style={{ scrollBehavior: "smooth" }}
+        >
+          <ul>
+            {["", "오전", "오후", ""].map((item, idx) => {
+              const realIdx = idx - 1;
+              const isSelected = ["오전", "오후"][realIdx] === selected.ampm;
+              return (
+                <li
+                  key={`ampm-${idx}`}
+                  style={{
+                    color: isSelected ? "#000" : "#aaa",
+                    fontWeight: isSelected ? "500" : "normal",
+                    fontSize: "28px",
+                    textAlign: "center",
+                    height: ITEM_HEIGHT,
+                    lineHeight: `${ITEM_HEIGHT}px`,
+                    userSelect: "none",
+                  }}
+                >
+                  {item === "" ? "\u00A0" : String(item)}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <div
+          className={styles.column}
+          ref={hourRef}
+          onScroll={() => handleScroll(hourRef, "hour", HOUR_LIST, BASE_HOURS)}
+          style={{ scrollBehavior: "smooth" }}
+        >
+          <ul>
+            {["", "", ...HOUR_LIST, "", ""].map((item, idx) => {
+              const realIdx = idx - 2;
+              const isSelected = HOUR_LIST[realIdx] === String(selected.hour);
+              return (
+                <li
+                  key={`hour-${idx}`}
+                  style={{
+                    color: isSelected ? "#000" : "#aaa",
+                    fontWeight: isSelected ? "500" : "normal",
+                    fontSize: "45px",
+                    textAlign: "center",
+                    height: ITEM_HEIGHT,
+                    lineHeight: `${ITEM_HEIGHT}px`,
+                    userSelect: "none",
+                  }}
+                >
+                  {item === "" ? "\u00A0" : String(item)}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <div className={styles.colon}>:</div>
+
+        <div
+          className={styles.column}
+          ref={minuteRef}
+          onScroll={() => handleScroll(minuteRef, "minute", MINUTE_LIST, BASE_MINUTES)}
+          style={{ scrollBehavior: "smooth" }}
+        >
+          <ul>
+            {["", "", ...MINUTE_LIST, "", ""].map((item, idx) => {
+              const realIdx = idx - 2;
+              const isSelected = MINUTE_LIST[realIdx] === selected.minute;
+              return (
+                <li
+                  key={`minute-${idx}`}
+                  style={{
+                    color: isSelected ? "#000" : "#aaa",
+                    fontWeight: isSelected ? "500" : "normal",
+                    fontSize: "45px",
+                    textAlign: "center",
+                    height: ITEM_HEIGHT,
+                    lineHeight: `${ITEM_HEIGHT}px`,
+                    userSelect: "none",
+                  }}
+                >
+                  {item === "" ? "\u00A0" : String(item)}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <div className={styles.centerHighlight}></div>
       </div>
-    );
+    </div>
+  );
+}, (prev, next) => (
+  prev.selected.ampm === next.selected.ampm &&
+  prev.selected.hour === next.selected.hour &&
+  prev.selected.minute === next.selected.minute
+));
+
+export default function ScheduledAddPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { controllers } = useControllerData();
+
+  const reservation = location.state?.reservation as ReservationState | undefined;
+  const controllerIdFromState: number =
+    (location.state as any)?.controllerId ?? reservation?.controllerId ?? 1;
+
+  const targetCtrl = controllers.find((c) => c.id === controllerIdFromState);
+
+  const [selected, setSelected] = useState<Time>(() => reservation?.time ?? { ampm: "오전", hour: 6, minute: "00" });
+  const days = DAYS;
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [selectedDate, setSelectedDate] = useState<SelectedDate>(() => parseInitialDate(reservation?.dateLabel));
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [flash, setFlash] = useState("");
+
+  function buildDateLabel(): string {
+    if (selectedDate) {
+      const { year, month, day } = selectedDate;
+      const dateObj = new Date(year, month - 1, day);
+      const dayName = days[dateObj.getDay()];
+      return `${year}년 ${month}월 ${day}일 (${dayName})`;
+    }
+    if (selectedDays.length > 0) return `매일 ${selectedDays.join(", ")}`;
+    const now = new Date();
+    const dayName = days[now.getDay()];
+    return `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${dayName})`;
   }
 
   function getSelectedDateLabel(): string {
@@ -261,27 +336,18 @@ export default function ScheduledAddPage() {
       const dayName = days[dateObj.getDay()];
       return `${year}년 ${month}월 ${day}일 (${dayName})`;
     }
-    if (selectedDays.length > 0) return `매주 ${selectedDays.join(", ")}`;
+    if (selectedDays.length > 0) return `매일 ${selectedDays.join(", ")}`;
     return "요일을 선택하세요";
   }
 
-  function to24h(ampm: "오전" | "오후", hour12: number, minute: string): string {
-    let h = hour12 % 12;
-    if (ampm === "오후") h += 12;
-    return `${String(h).padStart(2, "0")}:${minute}`;
+  function handleDayClick(day: string) {
+    setSelectedDate(null);
+    setSelectedDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
   }
 
-  function buildDateLabel(): string {
-    if (selectedDate) {
-      const { year, month, day } = selectedDate;
-      const dateObj = new Date(year, month - 1, day);
-      const dayName = days[dateObj.getDay()];
-      return `${year}년 ${month}월 ${day}일 (${dayName})`;
-    }
-    if (selectedDays.length > 0) return `매주 ${selectedDays.join(", ")}`;
-    const now = new Date();
-    const dayName = days[now.getDay()];
-    return `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${dayName})`;
+  function goList() {
+    localStorage.setItem("lastControllerId", String(controllerIdFromState));
+    navigate("/scheduled-block", { state: { initialControllerId: controllerIdFromState } });
   }
 
   function handleSave() {
@@ -292,15 +358,15 @@ export default function ScheduledAddPage() {
     const list: ReservationRaw[] = saved ? JSON.parse(saved) : [];
 
     const hasDup = list.some(
-      r => r.controllerId === controllerIdFromState && r.time === newTime && r.dateLabel === newDateLabel
+      (r) => r.controllerId === controllerIdFromState && r.time === newTime && r.dateLabel === newDateLabel
     );
     if (hasDup) {
-      setFlash("이미 동일한 예약이 있습니다.");
+      setFlash("동일한 예약이 있습니다.");
       setTimeout(() => setFlash(""), 2000);
       return;
     }
 
-    const nextId = list.length > 0 ? Math.max(...list.map(i => i.id)) + 1 : 1;
+    const nextId = list.length > 0 ? Math.max(...list.map((i) => i.id)) + 1 : 1;
     const newReservation: ReservationRaw = {
       id: nextId,
       controllerId: controllerIdFromState,
@@ -312,7 +378,6 @@ export default function ScheduledAddPage() {
     const updated = [...list, newReservation];
     localStorage.setItem("reservations", JSON.stringify(updated));
 
-    // 🔔 알림: 예약 생성 → ON
     if (targetCtrl) {
       logAlarm({
         type: "예약제어",
@@ -330,15 +395,8 @@ export default function ScheduledAddPage() {
       <Main id="sub">
         <div className={styles.scheduledBlockingBox}>
           <div className={styles.scheduledAddBox}>
-            <div className={styles.timeBox}>
-              <div className={styles.timeSelector}>
-                {renderColumn(ampmList, baseAmpmList, "ampm", ampmRef, "28px")}
-                {renderColumn(hourList, baseHourList, "hour", hourRef, "45px")}
-                <div className={styles.colon}>:</div>
-                {renderColumn(minuteList, baseMinuteList, "minute", minuteRef, "45px")}
-                <div className={styles.centerHighlight}></div>
-              </div>
-            </div>
+            {/* 시간 선택: 메모ized 컴포넌트로 렌더 비용 최소화 */}
+            <TimePicker selected={selected} onChange={setSelected} />
 
             <div className={styles.dateBox}>
               <span className={styles.date}>{getSelectedDateLabel()}</span>
@@ -378,7 +436,7 @@ export default function ScheduledAddPage() {
 
             <CalendarModal
               isOpen={isCalendarOpen}
-              initial={initialDate!}
+              initial={selectedDate!}
               onCancel={() => setIsCalendarOpen(false)}
               onConfirm={(value) => {
                 setSelectedDate(value);
@@ -397,7 +455,9 @@ export default function ScheduledAddPage() {
           </div>
         </div>
 
-        {flash && <div className={styles.toast}>{flash}</div>}
+        {flash && <div className={styles.toast}>
+          <span>{flash}</span>
+        </div>}
       </Main>
       <Footer />
     </>

@@ -25,26 +25,16 @@ export default function ScheduledDeletePage() {
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-  const filteredReservations = reservations.filter(
-    (r) => r.controllerId === selectedControllerId
-  );
-
+  const filteredReservations = reservations.filter((r) => r.controllerId === selectedControllerId);
   const allSelected = filteredReservations.length > 0 && selectedIds.length === filteredReservations.length;
 
-  function toggleSelection(id: number) {
-    setSelectedIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((itemId) => itemId !== id)
-        : [...prev, id]
-    );
+  function toggleSelection(itemId: number) {
+    setSelectedIds((prev) => (prev.includes(itemId) ? prev.filter((x) => x !== itemId) : [...prev, itemId]));
   }
 
   function toggleSelectAll() {
-    if (allSelected) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(filteredReservations.map((item) => item.id));
-    }
+    if (allSelected) setSelectedIds([]);
+    else setSelectedIds(filteredReservations.map((item) => item.id));
   }
 
   function handleDelete() {
@@ -52,9 +42,8 @@ export default function ScheduledDeletePage() {
     setReservations(updated);
     localStorage.setItem("reservations", JSON.stringify(updated));
 
-    const targetCtrl = controllers.find(c => c.id === selectedControllerId);
+    const targetCtrl = controllers.find((c) => c.id === selectedControllerId);
     if (targetCtrl) {
-      // 🔔 알림: 예약 삭제 → OFF
       logAlarm({
         type: "예약제어",
         controller: targetCtrl.title,
@@ -62,11 +51,11 @@ export default function ScheduledDeletePage() {
       });
     }
 
-    navigate("/scheduled-block");
+    navigate("/scheduled-block", { state: { initialControllerId: selectedControllerId } });
   }
 
   function handleCancel() {
-    navigate("/scheduled-block");
+    navigate("/scheduled-block", { state: { initialControllerId: selectedControllerId } });
   }
 
   function handleItemKeyDown(e: React.KeyboardEvent<HTMLLIElement>, id: number) {
@@ -79,7 +68,6 @@ export default function ScheduledDeletePage() {
   return (
     <>
       <Header type="pageLink" title="예약 차단" prevLink="/scheduled-block" />
-
       <Main id="sub">
         <div className={styles.scheduledBlockingBox}>
           <div className={styles.scheduledDeleteBox}>
@@ -90,35 +78,18 @@ export default function ScheduledDeletePage() {
               disabled={true}
             />
 
-            <div className={styles.topBox} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className={styles.topBox} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
               <div className={styles.checkedBox}>
-                <input
-                  id="allChk"
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={toggleSelectAll}
-                  className="blind"
-                />
+                <input id="allChk" type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="blind" />
                 <label htmlFor="allChk">
                   <span className="blind">전체선택</span>
                 </label>
-
-                <span className={styles.selectText}>
-                  {selectedIds.length}개 선택됨
-                </span>
+                <span className={styles.selectText}>{selectedIds.length}개 선택됨</span>
               </div>
 
-              <div className={styles.btnBox} style={{ marginLeft: 'auto' }}>
-                <button onClick={handleCancel} className={styles.reservationAddBtn}>
-                  취소
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className={styles.delBtn}
-                  disabled={selectedIds.length === 0}
-                >
-                  삭제
-                </button>
+              <div className={styles.btnBox} style={{ marginLeft: "auto" }}>
+                <button onClick={handleCancel} className={styles.reservationAddBtn}>취소</button>
+                <button onClick={handleDelete} className={styles.delBtn} disabled={selectedIds.length === 0}>삭제</button>
               </div>
             </div>
 
