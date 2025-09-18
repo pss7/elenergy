@@ -1,4 +1,3 @@
-// src/pages/ControllerUpdatePage.tsx
 import { useParams } from "react-router-dom";
 import Main from "../components/layout/Main";
 import Button from "../components/ui/Button";
@@ -13,32 +12,49 @@ import { logAlarm } from "../utils/logAlarm";
 const MAX_LEN = 15;
 
 export default function ControllerUpdatePage() {
+
+  //URL 파라미터로 대상 제어기 식별
   const { id } = useParams();
+  const numericId = Number(id);
+
+  //네비게이션/컨텍스트 훅
   const { navigateTo } = useNavigateTo();
   const { controllers, setControllers } = useControllerData();
 
-  const numericId = Number(id);
+  //대상 제어기 조회
   const target = controllers.find((c) => c.id === numericId);
 
+  //입력 상태 (초기값: 대상의 기존 값)
   const [title, setTitle] = useState(target?.title ?? "");
   const [location, setLocation] = useState(target?.location ?? "");
 
+  //저장 시 사용할 트림 값
   const titleTrim = title.trim();
   const locationTrim = location.trim();
 
-  // 15자 초과일 때만 에러 문구
-  const titleError =
-    titleTrim.length > MAX_LEN ? `${MAX_LEN}자 이내로 작성해주세요.` : "";
-  const locationError =
-    locationTrim.length > MAX_LEN ? `${MAX_LEN}자 이내로 작성해주세요.` : "";
+  //안내 문구: **15자 도달(또는 붙여넣기 초과 시 슬라이스된 결과가 15자)** 일 때만 노출
+  const titleError = title.length >= MAX_LEN ? `${MAX_LEN}자 이내로 작성해주세요.` : "";
+  const locationError = location.length >= MAX_LEN ? `${MAX_LEN}자 이내로 작성해주세요.` : "";
 
-  // 저장 버튼 활성: 둘 다 1~15자
+  //저장 가능: 각 필드 1~15자 (빈 값은 저장 불가지만, 안내 문구는 띄우지 않음)
   const canSave = useMemo(() => {
     const okTitle = titleTrim.length >= 1 && titleTrim.length <= MAX_LEN;
     const okLocation = locationTrim.length >= 1 && locationTrim.length <= MAX_LEN;
     return okTitle && okLocation;
   }, [titleTrim, locationTrim]);
 
+  //입력 핸들러: 15자 초과 입력(타이핑/붙여넣기)을 즉시 차단
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setTitle(v.length <= MAX_LEN ? v : v.slice(0, MAX_LEN));
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setLocation(v.length <= MAX_LEN ? v : v.slice(0, MAX_LEN));
+  };
+
+  //저장: 컨텍스트 업데이트 + 알림 로그 + 홈으로 이동
   function handleSave() {
     if (!target || !canSave) return;
 
@@ -48,20 +64,22 @@ export default function ControllerUpdatePage() {
       )
     );
 
-    // 🔔 알림: 제어기 이름/위치 변경을 '수동제어'로 기록
+    //변경 이벤트를 '수동제어'로 기록 (스키마상 status는 ON 고정 사용)
     logAlarm({
       type: "수동제어",
-      controller: titleTrim, // 변경된 명칭
-      status: "ON",          // 스키마상 필수, 의미상 변경 이벤트로 ON 고정
+      controller: titleTrim,
+      status: "ON",
     });
 
     navigateTo("/");
   }
 
+  //취소: 홈으로 이동
   function handleCancel() {
     navigateTo("/");
   }
 
+  //잘못된 ID 처리
   if (!target) return <p>제어기를 찾을 수 없습니다.</p>;
 
   return (
@@ -76,12 +94,15 @@ export default function ControllerUpdatePage() {
         <Input
           type="text"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          aria-invalid={titleTrim.length > MAX_LEN}
+          onChange={handleTitleChange}
+          maxLength={MAX_LEN} // 브라우저 레벨 제한
+          aria-invalid={!!titleError}
           aria-describedby="title-error"
+          placeholder="제어기 명칭을 입력하세요 (최대 15자)"
         />
+        {/* 15자 도달 시에만 안내 문구 표시 */}
         {titleError && (
-          <p id="title-error" className="errorMessage">
+          <p id="title-error" className="errorMessage" style={{ marginTop: 4 }}>
             {titleError}
           </p>
         )}
@@ -93,17 +114,21 @@ export default function ControllerUpdatePage() {
         <Input
           type="text"
           value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          aria-invalid={locationTrim.length > MAX_LEN}
+          onChange={handleLocationChange}
+          maxLength={MAX_LEN}
+          aria-invalid={!!locationError}
           aria-describedby="location-error"
+          placeholder="위치를 입력하세요 (최대 15자)"
         />
+        {/* 15자 도달 시에만 안내 문구 표시 */}
         {locationError && (
-          <p id="location-error" className="errorMessage">
+          <p id="location-error" className="errorMessage" style={{ marginTop: 4 }}>
             {locationError}
           </p>
         )}
       </div>
 
+      {/* 하단 버튼 */}
       <div className="btnBox">
         <Button styleType="grayType" onClick={handleCancel}>
           취소
