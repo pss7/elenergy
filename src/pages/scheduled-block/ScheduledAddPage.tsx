@@ -27,18 +27,23 @@ const HOUR_LIST = createInfiniteList(BASE_HOURS, 16);
 const MINUTE_LIST = createInfiniteList(BASE_MINUTES, 20);
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
 
-// 라벨 → 초기 날짜
+// 라벨 → 초기 날짜(null = 반복 선택 의미)
 function parseInitialDate(label?: string): SelectedDate {
   if (!label) {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
   }
-  let m = label.match(/^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+  const trimmed = label.trim();
+  // "매일/매주 ..." 라벨이면 특정 일자 아님 → null
+  if (/^매일/.test(trimmed) || /^매주/.test(trimmed)) {
+    return null;
+  }
+  let m = trimmed.match(/^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
   if (m) {
     const [, y, mo, d] = m.map(Number);
     return { year: y, month: mo, day: d };
   }
-  m = label.match(/^(\d{1,2})월\s*(\d{1,2})일/);
+  m = trimmed.match(/^(\d{1,2})월\s*(\d{1,2})일/);
   if (m) {
     const [, mo, d] = m.map(Number);
     const now = new Date();
@@ -199,7 +204,7 @@ const TimePicker = React.memo(function TimePicker(props: {
         <div
           className={`${styles.column} ${styles.ampmColumn}`}
           ref={ampmRef}
-          onScroll={() => handleScroll(ampmRef, "ampm", ["오전", "오후"], ["오전", "오후"])}
+          onScroll={() => handleScroll(ampmRef, "ampm", ["오전", "오후"], ["오전", "오후"]) }
           style={{ scrollBehavior: "smooth" }}
         >
           <ul>
@@ -311,7 +316,22 @@ export default function ScheduledAddPage() {
 
   const [selected, setSelected] = useState<Time>(() => reservation?.time ?? { ampm: "오전", hour: 6, minute: "00" });
   const days = DAYS;
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+
+  // 🔽 라벨에서 반복 요일 초기화 (유틸 분리 없이 inline)
+  const [selectedDays, setSelectedDays] = useState<string[]>(() => {
+    const l = reservation?.dateLabel?.trim() ?? "";
+    if (l.startsWith("매일")) {
+      const m = l.match(/^매일\s+([일월화수목금토](?:\s*,\s*[일월화수목금토])*)/);
+      return m ? m[1].split(",").map(s => s.trim()) : [...DAYS]; // "매일" 단독이면 7일 모두
+    }
+    if (l.startsWith("매주")) {
+      const m = l.match(/^매주\s+([일월화수목금토](?:\s*,\s*[일월화수목금토])*)/);
+      return m ? m[1].split(",").map(s => s.trim()) : [];
+    }
+    return [];
+  });
+
+  // 🔽 라벨 → 날짜 (매일/매주면 null)
   const [selectedDate, setSelectedDate] = useState<SelectedDate>(() => parseInitialDate(reservation?.dateLabel));
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [flash, setFlash] = useState("");
@@ -323,6 +343,7 @@ export default function ScheduledAddPage() {
       const dayName = days[dateObj.getDay()];
       return `${year}년 ${month}월 ${day}일 (${dayName})`;
     }
+    if (selectedDays.length === 7) return "매일"; // ✅ 7개 모두
     if (selectedDays.length > 0) return `매일 ${selectedDays.join(", ")}`;
     const now = new Date();
     const dayName = days[now.getDay()];
@@ -336,6 +357,7 @@ export default function ScheduledAddPage() {
       const dayName = days[dateObj.getDay()];
       return `${year}년 ${month}월 ${day}일 (${dayName})`;
     }
+    if (selectedDays.length === 7) return "매일"; // ✅
     if (selectedDays.length > 0) return `매일 ${selectedDays.join(", ")}`;
     return "요일을 선택하세요";
   }
@@ -436,7 +458,7 @@ export default function ScheduledAddPage() {
 
             <CalendarModal
               isOpen={isCalendarOpen}
-              initial={selectedDate!}
+    
               onCancel={() => setIsCalendarOpen(false)}
               onConfirm={(value) => {
                 setSelectedDate(value);

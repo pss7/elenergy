@@ -14,18 +14,22 @@ type Time = { ampm: "오전" | "오후"; hour: number; minute: string };
 type ReservationState = Omit<ReservationRaw, "time"> & { time: Time };
 type SelectedDate = { year: number; month: number; day: number } | null;
 
-// 라벨 → 초기 날짜
+// 라벨 → 초기 날짜(null = 반복 선택 의미)
 function parseInitialDate(label?: string): SelectedDate {
   if (!label) {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
   }
-  let m = label.match(/^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+  const trimmed = label.trim();
+  if (/^매일/.test(trimmed) || /^매주/.test(trimmed)) {
+    return null;
+  }
+  let m = trimmed.match(/^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
   if (m) {
     const [, y, mo, d] = m.map(Number);
     return { year: y, month: mo, day: d };
   }
-  m = label.match(/^(\d{1,2})월\s*(\d{1,2})일/);
+  m = trimmed.match(/^(\d{1,2})월\s*(\d{1,2})일/);
   if (m) {
     const [, mo, d] = m.map(Number);
     const now = new Date();
@@ -105,7 +109,22 @@ export default function ScheduledEditPage() {
   const minuteCommitMsRef = useRef(0);
 
   const days = ["일", "월", "화", "수", "목", "금", "토"] as const;
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+
+  // 🔽 라벨에서 반복 요일 초기화 (inline)
+  const [selectedDays, setSelectedDays] = useState<string[]>(() => {
+    const l = reservation?.dateLabel?.trim() ?? "";
+    if (l.startsWith("매일")) {
+      const m = l.match(/^매일\s+([일월화수목금토](?:\s*,\s*[일월화수목금토])*)/);
+      return m ? m[1].split(",").map(s => s.trim()) : ["일","월","화","수","목","금","토"];
+    }
+    if (l.startsWith("매주")) {
+      const m = l.match(/^매주\s+([일월화수목금토](?:\s*,\s*[일월화수목금토])*)/);
+      return m ? m[1].split(",").map(s => s.trim()) : [];
+    }
+    return [];
+  });
+
+  // 🔽 라벨 → 날짜 (매일/매주면 null)
   const [selectedDate, setSelectedDate] = useState<SelectedDate>(() => parseInitialDate(reservation?.dateLabel));
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -215,6 +234,7 @@ export default function ScheduledEditPage() {
       const dayName = ["일", "월", "화", "수", "목", "금", "토"][dateObj.getDay()];
       return `${year}년 ${month}월 ${day}일 (${dayName})`;
     }
+    if (selectedDays.length === 7) return "매일"; // ✅ 7개 모두
     if (selectedDays.length > 0) return `매일 ${selectedDays.join(", ")}`;
     return reservation?.dateLabel ?? "";
   }
@@ -226,6 +246,7 @@ export default function ScheduledEditPage() {
       const dayName = ["일", "월", "화", "수", "목", "금", "토"][dateObj.getDay()];
       return `${year}년 ${month}월 ${day}일 (${dayName})`;
     }
+    if (selectedDays.length === 7) return "매일"; // ✅
     if (selectedDays.length > 0) return `매일 ${selectedDays.join(", ")}`;
     return "요일을 선택하세요";
   }
@@ -413,7 +434,7 @@ export default function ScheduledEditPage() {
 
             <CalendarModal
               isOpen={isCalendarOpen}
-              initial={selectedDate!}
+
               onCancel={() => setIsCalendarOpen(false)}
               onConfirm={(value) => {
                 setSelectedDate(value);

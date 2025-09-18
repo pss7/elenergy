@@ -7,26 +7,26 @@ interface YMD { year: number; month: number; day: number; }
 
 // 컴포넌트가 받는 props
 interface Props {
-  isOpen: boolean;              // 모달 열림 여부
-  initial?: YMD | null;         // 처음에 표시/선택할 날짜 (없으면 오늘)
-  onCancel: () => void;         // 취소 버튼 클릭
-  onConfirm: (value: YMD) => void; // 완료 버튼 클릭(선택한 날짜 전달)
-  showMonth?: boolean;          // 년/월 선택기에서 월 표시 여부
-  showDay?: boolean;            // 년/월 선택기에서 일 표시 여부
-  tab: PickerTab;               // 년/월 선택기의 탭 종류
-  minDate?: YMD;                // 이 날짜 이전은 클릭 불가(표시는 됨)
+  isOpen: boolean;
+  initial?: YMD | null;
+  onCancel: () => void;
+  onConfirm: (value: YMD) => void;
+  showMonth?: boolean;
+  showDay?: boolean;
+  tab: PickerTab;
+  minDate?: YMD;
 }
 
 // 캘린더 셀의 정보를 담는 타입
 type Cell = {
-  y: number;        // 연도
-  m: number;        // 월(1~12)
-  d: number;        // 일(1~31)
-  inMonth: boolean; // 현재 화면에 보이는 "해당 월"인지 여부
-  isPast: boolean;  // minDate 이전인지 여부(클릭 불가)
+  y: number;
+  m: number;
+  d: number;
+  inMonth: boolean;
+  isPast: boolean;
 };
 
-// === 날짜 관련 유틸 함수 ===
+//날짜 관련 유틸 함수
 
 // Y-M-D를 Date로 변환
 function ymd(y: number, m: number, d: number) {
