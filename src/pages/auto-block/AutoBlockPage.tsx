@@ -1,10 +1,8 @@
-// src/pages/auto-block/AutoBlockPage.tsx
 import { useMemo, useState, useEffect } from "react";
 import Header from "../../components/layout/Header";
 import Main from "../../components/layout/Main";
 import styles from "./AutoBlockPage.module.css";
 
-// UI 탭(요구사항에 맞춰 yearly 없음)
 type UITab = "hourly" | "daily" | "weekly" | "monthly";
 
 import type { PowerUsageDataByController } from "../../data/AutoBlock";
@@ -17,11 +15,11 @@ import {
 import PowerBarChart from "../../components/ui/PowerBarChart";
 import {
   addDays, subDays,
-  addMonths, subMonths,
+  addMonths,
   addWeeks, subWeeks,
-  addYears, subYears,
-  format, subWeeks as dfSubWeeks,
-  isSameDay, isSameMonth, isSameYear,
+  addYears,
+  differenceInCalendarDays,
+  format,
 } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Link } from "react-router-dom";
@@ -30,8 +28,23 @@ import Footer from "../../components/layout/Footer";
 import CustomSelect from "../../components/ui/CustomSelect";
 import controllerData from "../../data/Controllers";
 
+/** 시간별(24개 막대) 임시 빌더: 실제 hourly 데이터가 있으면 교체 */
+function buildHourlyForChart(controllerId: number, date: Date) {
+  // 컨트롤러별 다르게 보이도록 약간의 시드 사용
+  const seed = (controllerId % 7) + 1;
+  return Array.from({ length: 24 }, (_, h) => {
+    const base = Math.sin((h + seed) * 0.7) * 120 + 260;
+    const jitter = ((h * seed) % 17) * 3;
+    const value = Math.max(0, Math.round(base + jitter));
+    return {
+      hour: h + 1, // 1~24 (xDomain [-0.5, 24.5]에서 24시 눈금 포함)
+      value,
+      label: `${date.getMonth() + 1}월 ${date.getDate()}일 ${String(h).padStart(2, "0")}시`,
+    };
+  });
+}
+
 export default function AutoBlockPage() {
-  // 탭: 시간/일/주/월
   const [tab, setTab] = useState<UITab>("hourly");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -65,23 +78,23 @@ export default function AutoBlockPage() {
     setDataByController(zeroSeeded);
   }, []);
 
-  /** ===== 날짜 네비게이션 ===== */
+  /** 날짜 네비게이션 */
   function handlePrevDate() {
     switch (tab) {
-      case "hourly":  setCurrentDate((p) => subDays(p, 1));   break; // 하루 전
-      case "daily":   setCurrentDate((p) => subMonths(p, 1)); break; // 1개월
-      case "weekly":  setCurrentDate((p) => subWeeks(p, 24)); break; // 24주 전
-      case "monthly": setCurrentDate((p) => subYears(p, 1));  break; // 1년 전
+      case "hourly":  setCurrentDate((p) => subDays(p, 1));   break;
+      case "daily":   setCurrentDate((p) => addMonths(p, -1)); break;
+      case "weekly":  setCurrentDate((p) => subWeeks(p, 24)); break;
+      case "monthly": setCurrentDate((p) => addYears(p, -1));  break;
     }
   }
 
   const today = new Date();
   const atMaxPeriod = useMemo(() => {
     switch (tab) {
-      case "hourly":  return isSameDay(currentDate, today);   // 같은 날 도달 시 막기
-      case "daily":   return isSameMonth(currentDate, today); // 같은 달 도달 시 막기
-      case "weekly":  return isSameDay(currentDate, today);   // 창 끝=선택일이 오늘일 때 막기
-      case "monthly": return isSameYear(currentDate, today);  // 같은 해 도달 시 막기
+      case "hourly":  return format(currentDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
+      case "daily":   return format(currentDate, "yyyy-MM") === format(today, "yyyy-MM");
+      case "weekly":  return format(currentDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
+      case "monthly": return format(currentDate, "yyyy") === format(today, "yyyy");
       default:        return false;
     }
   }, [tab, currentDate]);
@@ -89,51 +102,60 @@ export default function AutoBlockPage() {
   function handleNextDate() {
     if (atMaxPeriod) return;
     switch (tab) {
-      case "hourly":  setCurrentDate((p) => addDays(p, 1));   break; // 하루 후
-      case "daily":   setCurrentDate((p) => addMonths(p, 1)); break; // 1개월 후
-      case "weekly":  setCurrentDate((p) => addWeeks(p, 24)); break; // 24주 후
-      case "monthly": setCurrentDate((p) => addYears(p, 1));  break; // 1년 후
+      case "hourly":  setCurrentDate((p) => addDays(p, 1));   break;
+      case "daily":   setCurrentDate((p) => addMonths(p, 1)); break;
+      case "weekly":  setCurrentDate((p) => addWeeks(p, 24)); break;
+      case "monthly": setCurrentDate((p) => addYears(p, 1));  break;
     }
   }
 
-  /** ===== 날짜 라벨 ===== */
+  /** 주별 24주 창: 종료일(end) 기준, 시작일(start)=end - 24주 + 1일 */
+  const weeklyWindow = useMemo(() => {
+    const end = currentDate;
+    const start = addDays(subWeeks(end, 24), 1); // 예시: 2025-08-14 → 2025-02-28
+    const days = differenceInCalendarDays(end, start) + 1;   // 참고용(표시는 안 함)
+    return { start, end, days };
+  }, [currentDate]);
+
+  /** 상단 날짜 라벨 (주별: 168일 텍스트 제거 상태) */
   function getFormattedDate() {
     switch (tab) {
       case "hourly":
-        return format(currentDate, "yyyy년 MM월 dd일", { locale: ko });
+        return format(currentDate, "yyyy년 M월 d일", { locale: ko });
       case "daily":
-        return format(currentDate, "yyyy년 MM월", { locale: ko });
+        return format(currentDate, "yyyy년 M월", { locale: ko });
       case "weekly": {
-        // 24주 창: 시작 = 23주 전, 끝 = 선택일
-        const start = dfSubWeeks(currentDate, 23);
-        const end = currentDate;
-        return `${format(start, "yyyy년 MM월 dd일", { locale: ko })} ~ ${format(end, "yyyy년 MM월 dd일", { locale: ko })}`;
+        const { start, end } = weeklyWindow;
+        return `${format(start, "yyyy년 M월 d일", { locale: ko })} ~ ${format(end, "yyyy년 M월 d일", { locale: ko })}`;
       }
       case "monthly":
-        // 12개월 창의 기준 해만 표기
         return format(currentDate, "yyyy년", { locale: ko });
       default:
         return "";
     }
   }
 
-  /** ===== 차트 데이터 & 통계 ===== */
+  /** 차트 원본 데이터 */
   const chartData = useMemo(() => {
     const id = selectedControllerId;
     switch (tab) {
-      // ⛳ 데이터 모듈에 buildHourly가 있다면 아래 한 줄로 교체하세요:
-      // case "hourly":  return buildHourly(id, currentDate);
-      case "hourly":  return buildDaily(id, currentDate);  // 임시: 일단 일별 빌더로 대체
+      // ⛳ buildHourly가 있다면 교체: return buildHourly(id, currentDate);
+      case "hourly":  return buildHourlyForChart(id, currentDate); // 24개 막대
       case "daily":   return buildDaily(id, currentDate);
-      case "weekly":  return buildWeekly(id, currentDate);   // 24주 데이터 반환 가정
-      case "monthly": return buildMonthly(id, currentDate);  // 12개월 데이터 반환 가정
+      case "weekly":  return buildWeekly(id, currentDate);   // 24주 데이터 가정
+      case "monthly": return buildMonthly(id, currentDate);  // 12개월 데이터 가정
       default:        return [];
     }
   }, [tab, currentDate, selectedControllerId]);
 
+  /** 숫자형 X축을 위한 idx 부여 (일/주/월) */
+  const chartDataWithIdx = useMemo(() => {
+    return chartData.map((d, i) => ({ ...d, idx: i }));
+  }, [chartData]);
+
   const stats = useMemo(() => computeStatsFromChart(chartData), [chartData]);
 
-  // 임계값(0도 유효값 그대로 표시)
+  // 임계값(0도 유효값)
   const id = selectedControllerId as 1 | 2 | 3 | 4;
   const rawThreshold = dataByController?.[id]?.autoBlockThreshold;
   const threshold =
@@ -141,10 +163,79 @@ export default function AutoBlockPage() {
       ? rawThreshold
       : 0;
 
-  /** ===== 날짜 선택 모달 표시 규칙 ===== */
-  // 시간별/주별은 일까지 필요, 일별/월별은 일 불필요
-  const showMonthForPicker = true;                           // 네 탭 모두 월 표기
+  /** 날짜 선택 모달 표기 규칙 (✅ 월별은 연도만, 주별/시간별만 일 표시) */
+  const showMonthForPicker = tab !== "monthly";
   const showDayForPicker   = tab === "hourly" || tab === "weekly";
+
+  /** X축 설정: 숫자형으로 고정 틱 노출 + 경계 패딩으로 축선 침범 방지 */
+  const xConf = useMemo(() => {
+    if (tab === "hourly") {
+      return {
+        xType: "number" as const,
+        xDataKey: "hour",
+        xTicks: [0, 4, 8, 12, 16, 20, 24],
+        xTickFormatter: (v: number) => (v === 24 ? "24시" : `${v}h`),
+        xDomain: [-0.5, 24.5],
+      };
+    }
+
+    if (tab === "daily") {
+      const lastIdx = Math.max(0, chartDataWithIdx.length - 1);
+      const month = currentDate.getMonth() + 1;
+      return {
+        xType: "number" as const,
+        xDataKey: "idx",
+        xTicks: [0, 14, lastIdx].filter(n => n <= lastIdx),
+        xTickFormatter: (v: number) => {
+          if (v === 0) return `${month}월1일`;
+          if (v === 14) return `${month}월15일`;
+          if (v === lastIdx) return `${month}월${lastIdx + 1}일`;
+          return "";
+        },
+        xDomain: [-0.5, lastIdx + 0.5],
+      };
+    }
+
+    if (tab === "weekly") {
+      const lastIdx = Math.max(0, chartDataWithIdx.length - 1);
+      const ticks = [0, 6, 12, 18, lastIdx].filter(n => n <= lastIdx);
+
+      const { start, end } = weeklyWindow;
+      const d = (w: number) => addWeeks(start, w);
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const fmt = (date: Date) => `${pad(date.getMonth() + 1)}월${date.getDate()}일`;
+
+      const tickFormatter = (v: number) => {
+        if (v === 0) return fmt(start);
+        if (v === 6) return fmt(d(6));
+        if (v === 12) return fmt(d(12));
+        if (v === 18) return fmt(d(18));
+        if (v === lastIdx) return fmt(end);
+        return "";
+      };
+
+      return {
+        xType: "number" as const,
+        xDataKey: "idx",
+        xTicks: ticks,
+        xTickFormatter: tickFormatter,
+        xDomain: [-0.5, lastIdx + 0.5],
+      };
+    }
+
+    // monthly (12개월 가정): 0,3,7,11 인덱스
+    const lastIdx = Math.max(0, chartDataWithIdx.length - 1);
+    const ticks = [0, 3, 7, 11].filter(n => n <= lastIdx);
+    const labelMap: Record<number, string> = { 0: "1월", 3: "4월", 7: "8월", 11: "12월" };
+
+    return {
+      xType: "number" as const,
+      xDataKey: "idx",
+      xTicks: ticks,
+      xTickFormatter: (v: number) => labelMap[v] ?? "",
+      xDomain: [-0.5, lastIdx + 0.5],
+    };
+  }, [tab, currentDate, weeklyWindow, chartDataWithIdx]);
 
   return (
     <>
@@ -197,6 +288,7 @@ export default function AutoBlockPage() {
             )}
           </div>
 
+          {/* 요약 박스 */}
           <div className={styles.amountUsedBox}>
             <div className={`${styles.averageBox} ${styles.box}`}>
               <span>평균 사용량</span>
@@ -212,12 +304,18 @@ export default function AutoBlockPage() {
             </div>
           </div>
 
+          {/* 차트 */}
           <PowerBarChart
-            data={chartData}
+            data={tab === "hourly" ? chartData : chartDataWithIdx}
             unit="Wh"
             showAverageLine
             averageValue={stats.average}
-            barColor="#0F7685" // 필요하면 #FF1E00 로
+            barColor="#0F7685"
+            xType={xConf.xType}
+            xDataKey={xConf.xDataKey}
+            xTicks={xConf.xTicks}
+            xTickFormatter={xConf.xTickFormatter}
+            xDomain={xConf.xDomain}
           />
 
           {chartData.length === 0 && (
@@ -241,8 +339,8 @@ export default function AutoBlockPage() {
               setShowDatePicker(false);
             }}
             tab={tab}
-            showMonth={showMonthForPicker}
-            showDay={showDayForPicker}
+            showMonth={showMonthForPicker}   // ✅ 월별이면 false → 연도만 표시
+            showDay={showDayForPicker}       // ✅ 주별/시간별만 true
             /** 오늘 이후 금지 */
             limitToToday
           />

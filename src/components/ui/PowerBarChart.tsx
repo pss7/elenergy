@@ -4,6 +4,10 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Label, Refer
 export interface ChartDataPoint {
   label: string;
   value: number;
+  /** 시간별 전용: 숫자형 X축을 위해 사용 (1~24 권장) */
+  hour?: number;
+  /** 일/주/월 전용: 인덱스 기반 숫자축 */
+  idx?: number;
 }
 
 interface PowerBarChartProps {
@@ -16,6 +20,13 @@ interface PowerBarChartProps {
   /** 평균선 표시 여부 & 값 (없으면 data로 평균 계산) */
   showAverageLine?: boolean;
   averageValue?: number;
+
+  /** X축 제어 */
+  xType?: 'category' | 'number';
+  xDataKey?: string;
+  xTicks?: (string | number)[];
+  xTickFormatter?: (v: any) => string;
+  xDomain?: any; // [min,max] or ['dataMin','dataMax']
 }
 
 function calcNiceMax(vals: number[]) {
@@ -28,11 +39,12 @@ function calcNiceMax(vals: number[]) {
 
 const CustomTooltip = ({ active, payload, label, unit = 'Wh' }: any) => {
   if (active && payload && payload.length > 0) {
-    const { value } = payload[0];
+    const { value } = payload[0] || {};
     return (
       <div style={{ background: 'white', border: '1px solid #ccc', padding: 8, fontSize: 12, lineHeight: 1.4 }}>
         <div><strong>사용량:</strong> {value} {unit}</div>
-        <div><strong>날짜:</strong> {label}</div>
+        {/* number형 X축일 때는 payload의 label 사용 */}
+        <div><strong>날짜:</strong> {payload?.[0]?.payload?.label ?? label}</div>
       </div>
     );
   }
@@ -48,6 +60,12 @@ const PowerBarChart: React.FC<PowerBarChartProps> = ({
   unit = 'Wh',
   showAverageLine = false,
   averageValue,
+
+  xType = 'category',
+  xDataKey = 'label',
+  xTicks,
+  xTickFormatter,
+  xDomain,
 }) => {
   const values = useMemo(() => data.map(d => d.value), [data]);
   const computedAvg = useMemo(() => {
@@ -66,11 +84,20 @@ const PowerBarChart: React.FC<PowerBarChartProps> = ({
   return (
     <div style={{ width, height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 34, right: yAxisWidth, left: yAxisWidth, bottom: 0 }}>
+        <BarChart
+          data={data}
+          // ✅ 우측 여백 살짝 추가(축선/툴팁 겹침 완화)
+          margin={{ top: 34, right: yAxisWidth + 6, left: yAxisWidth, bottom: 0 }}
+        >
           <XAxis
-            dataKey="label"
+            type={xType}
+            dataKey={xDataKey}
+            ticks={xTicks}
+            tickFormatter={xTickFormatter}
             tick={{ fontSize: 11, fill: '#909090', fontWeight: 500 }}
             padding={{ left: 0, right: 0 }}
+            domain={xDomain}
+            allowDuplicatedCategory={false}
           />
           <YAxis
             width={yAxisWidth}
@@ -102,7 +129,6 @@ const PowerBarChart: React.FC<PowerBarChartProps> = ({
               ifOverflow="extendDomain"
             />
           )}
-
         </BarChart>
       </ResponsiveContainer>
     </div>

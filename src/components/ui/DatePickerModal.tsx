@@ -7,8 +7,8 @@ interface Props {
   initial: { year: number; month: number; day: number };
   onCancel: () => void;
   onConfirm: (value: { year: number; month: number; day: number }) => void;
-  showMonth?: boolean; // 기본 규칙 덮어쓰기
-  showDay?: boolean;   // 기본 규칙 덮어쓰기
+  showMonth?: boolean; // 기본 규칙 덮어쓰기 (true/false로 강제)
+  showDay?: boolean;   // 기본 규칙 덮어쓰기 (true/false로 강제)
   tab: PickerTab;
   /** 이 날짜 이전은 완전히 제거(리스트에서 제외) */
   minDate?: { year: number; month: number; day: number };
@@ -44,27 +44,27 @@ export default function DatePickerModal({
   minDate,
   limitToToday = false,
 }: Props) {
-  /** ===== 표시 규칙 ===== */
-  const showMonth = forceShowMonth ?? tab !== "yearly";
-  const showDay = forceShowDay ?? (tab === "weekly" || tab === "hourly");
+  /** 표시 규칙 기본값 */
+  const defaultShowMonth = tab !== "monthly" && tab !== "yearly";
+  const defaultShowDay = tab === "weekly" || tab === "hourly";
+  const showMonth = forceShowMonth ?? defaultShowMonth;
+  const showDay = forceShowDay ?? defaultShowDay;
 
-  /** ===== 하한/상한 계산 ===== */
+  /** 하한/상한 계산 */
   const TODAY = useMemo(() => {
     const t = new Date();
     return new Date(t.getFullYear(), t.getMonth(), t.getDate());
   }, []);
 
-  // 과거 하한(없으면 null) — 예약차단같이 과거 제거가 필요한 페이지에서 사용
   const MIN: Date | null = useMemo(() => {
     return minDate ? ymd(minDate.year, minDate.month, minDate.day) : null;
   }, [minDate]);
 
-  // 미래 상한(오늘) — 이번 요구사항: 올해 이후/오늘 이후 제거
   const MAX: Date | null = useMemo(() => {
     return limitToToday ? TODAY : null;
   }, [limitToToday, TODAY]);
 
-  /** ===== 초기 선택값: 사용자가 준 initial을 기본으로, 범위를 벗어나면 최소/최대로만 보정 ===== */
+  /** 초기 선택값(범위를 벗어나면 보정) */
   const init = useMemo(() => {
     const raw = ymd(initial.year, initial.month, initial.day);
     const base = clampDate(raw, MIN, MAX);
@@ -75,14 +75,14 @@ export default function DatePickerModal({
     };
   }, [initial, MIN, MAX]);
 
-  /** ===== 선택 상태 ===== */
+  /** 선택 상태 */
   const [year, setYear] = useState(init.y);
   const [month, setMonth] = useState(init.m);
   const [day, setDay] = useState(init.d);
 
-  /** ===== 리스트 구성: min~max 범위 안에서만 생성 ===== */
-  const YEARS_BEFORE_FALLBACK = 120; // 하한 없을 때 과거로 넉넉히
-  const YEARS_AFTER_FALLBACK = 120;  // 상한 없을 때 미래로 넉넉히
+  /** 리스트 구성: min~max 범위 안에서만 생성 */
+  const YEARS_BEFORE_FALLBACK = 120;
+  const YEARS_AFTER_FALLBACK = 120;
 
   const yearMin = MIN ? MIN.getFullYear() : (MAX ? MAX.getFullYear() - YEARS_BEFORE_FALLBACK : init.y - 60);
   const yearMax = MAX ? MAX.getFullYear() : (MIN ? MIN.getFullYear() + YEARS_AFTER_FALLBACK : init.y + 60);
@@ -94,7 +94,6 @@ export default function DatePickerModal({
   }, [yearMin, yearMax]);
 
   const months = useMemo(() => {
-    // 하한/상한에 맞춰 월 범위를 제한
     let minM = 1;
     let maxM = 12;
     if (MIN && year === MIN.getFullYear()) minM = MIN.getMonth() + 1;
@@ -104,7 +103,6 @@ export default function DatePickerModal({
   }, [year, MIN, MAX]);
 
   const days = useMemo(() => {
-    // 하한/상한에 맞춰 일 범위를 제한
     const maxDim = dim(year, month);
     let minD = 1;
     let maxD = maxDim;
@@ -114,7 +112,7 @@ export default function DatePickerModal({
     return Array.from({ length: len }, (_, i) => minD + i);
   }, [year, month, MIN, MAX]);
 
-  /** ===== 스크롤 refs & 스냅 유틸 ===== */
+  /** 스크롤 refs & 스냅 유틸 */
   const yearRef = useRef<HTMLDivElement | null>(null);
   const monthRef = useRef<HTMLDivElement | null>(null);
   const dayRef = useRef<HTMLDivElement | null>(null);
@@ -127,19 +125,16 @@ export default function DatePickerModal({
     return Math.round(scrollTop / ITEM_HEIGHT);
   }
 
-  /** ===== 초기 정렬 ===== */
+  /** 초기 정렬 */
   useEffect(() => {
-    // year
     const yi = Math.max(0, years.indexOf(year));
     snapTo(yearRef, yi);
 
-    // month
     if (showMonth) {
       const mi = Math.max(0, months.indexOf(month));
       snapTo(monthRef, mi);
     }
 
-    // day
     if (showDay) {
       const di = Math.max(0, days.indexOf(day));
       snapTo(dayRef, di);
@@ -147,26 +142,19 @@ export default function DatePickerModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** ===== 연도 변경 시 월/일 보정 ===== */
+  /** 연도 변경 시 월/일 보정 */
   useEffect(() => {
-    // 월 보정
     if (showMonth) {
       let nextMonth = month;
-      if (!months.includes(nextMonth)) {
-        // 범위 밖이면 가장 가까운 값으로
-        nextMonth = months[0] ?? 1;
-      }
+      if (!months.includes(nextMonth)) nextMonth = months[0] ?? 1;
       if (nextMonth !== month) setMonth(nextMonth);
       const mi = Math.max(0, months.indexOf(nextMonth));
       snapTo(monthRef, mi);
     }
 
-    // 일 보정
     if (showDay) {
       let nextDay = day;
-      if (!days.includes(nextDay)) {
-        nextDay = days[0] ?? 1;
-      }
+      if (!days.includes(nextDay)) nextDay = days[0] ?? 1;
       if (nextDay !== day) setDay(nextDay);
       const di = Math.max(0, days.indexOf(nextDay));
       snapTo(dayRef, di);
@@ -174,7 +162,7 @@ export default function DatePickerModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year, months.length, days.length]);
 
-  /** ===== 월 변경 시 일 보정 ===== */
+  /** 월 변경 시 일 보정 */
   useEffect(() => {
     if (!showDay) return;
     let nextDay = day;
@@ -185,7 +173,7 @@ export default function DatePickerModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month, days.length]);
 
-  /** ===== 스크롤 핸들러 (스냅) ===== */
+  /** 스크롤 핸들러 */
   function onYearScroll() {
     if (!yearRef.current) return;
     const idx = nearestIndex(yearRef.current.scrollTop);
@@ -205,13 +193,13 @@ export default function DatePickerModal({
     if (d !== day) setDay(d);
   }
 
-  /** ===== 완료 ===== */
+  /** 완료 */
   function handleConfirm() {
     onConfirm({ year, month: showMonth ? month : 1, day: showDay ? day : 1 });
     onCancel();
   }
 
-  /** ===== 렌더 ===== */
+  /** 렌더 */
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
