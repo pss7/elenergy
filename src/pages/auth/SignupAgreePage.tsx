@@ -8,8 +8,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import useNavigateTo from "../../hooks/useNavigateTo";
 
-export default function SignupAgreePage() {
+const NOTI_STORAGE_KEY = "notificationSettings";
 
+export default function SignupAgreePage() {
   //경로이동
   const { navigateTo } = useNavigateTo();
 
@@ -19,7 +20,7 @@ export default function SignupAgreePage() {
   //체크박스 상태관리
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
-  const [agreeInfo, setAgreeInfo] = useState(false);
+  const [agreeInfo, setAgreeInfo] = useState(false); // 이벤트/혜택 수신(선택)
 
   //약관 전체 동의 토글 함수
   function toggleAllAgreements() {
@@ -32,13 +33,28 @@ export default function SignupAgreePage() {
 
   //네비이동
   function handleConfirm() {
+    // 필수 체크 확인 (원하면 가드 추가)
+    // if (!agreeTerms || !agreePrivacy) return;
+
+    // ✅ 회원가입 시 알림 설정 초기화/저장
+    // - marketing은 이벤트 수신 동의(agreeInfo)에 따라 반영
+    // - appPush, sms는 디폴트 활성화
+    const nextSettings = {
+      marketing: !!agreeInfo,
+      appPush: true,
+      sms: true,
+    };
+    try {
+      localStorage.setItem(NOTI_STORAGE_KEY, JSON.stringify(nextSettings));
+    } catch {
+      // 저장 실패는 무시
+    }
+
     navigateTo("/signup");
   }
 
   return (
-
     <>
-
       <Header
         type="pageLink"
         title="회원가입"
@@ -46,11 +62,9 @@ export default function SignupAgreePage() {
         className="white-bg"
       />
 
-      <Main id="sub"
-        className="white-bg">
+      <Main id="sub" className="white-bg">
         <div className={styles.authBox}>
           <div className={styles.signupAgreeBox}>
-
             <form>
               <div className={`${styles.formBox} mb-30`}>
                 <InputCheckbox
@@ -76,15 +90,9 @@ export default function SignupAgreePage() {
                     checked={agreeTerms}
                     onChange={() => setAgreeTerms(!agreeTerms)}
                   />
-
-                  <Link to="/terms" className={styles.view}>
-                    전체
-                  </Link>
+                  <Link to="/terms" className={styles.view}>전체</Link>
                 </div>
-
-                <div className={styles.box}>
-                  <Textarea />
-                </div>
+                <div className={styles.box}><Textarea /></div>
               </div>
 
               <div className={`${styles.formBox} mb-30`}>
@@ -96,15 +104,9 @@ export default function SignupAgreePage() {
                     checked={agreePrivacy}
                     onChange={() => setAgreePrivacy(!agreePrivacy)}
                   />
-
-                  <Link to="/data-collection" className={styles.view}>
-                    전체
-                  </Link>
+                  <Link to="/data-collection" className={styles.view}>전체</Link>
                 </div>
-
-                <div className={styles.box}>
-                  <Textarea />
-                </div>
+                <div className={styles.box}><Textarea /></div>
               </div>
 
               <div className={`${styles.formBox} mb-30`}>
@@ -116,30 +118,16 @@ export default function SignupAgreePage() {
                     checked={agreeInfo}
                     onChange={() => setAgreeInfo(!agreeInfo)}
                   />
-
-                  <Link to="/event-notifications" className={styles.view}>
-                    전체
-                  </Link>
+                  <Link to="/event-notifications" className={styles.view}>전체</Link>
                 </div>
-
-                <div className={styles.box}>
-                  <Textarea />
-                </div>
+                <div className={styles.box}><Textarea /></div>
               </div>
             </form>
           </div>
 
-          <Button
-            onClick={handleConfirm}
-          >
-            확인
-          </Button>
+          <Button onClick={handleConfirm}>확인</Button>
         </div>
-
       </Main>
-
     </>
-
-  )
-
+  );
 }

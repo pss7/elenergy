@@ -32,7 +32,7 @@ export default function ManualControlPage() {
   const [isToggleOn, setIsToggleOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ✅ 팝업 표시 조건: 평균 < 현재
+  // 팝업 안내 스타일 조건(배경/문구)
   const shouldWarn = statsWeek.average < statsWeek.current;
 
   // 저장된 전원 상태로 토글 초기화
@@ -62,24 +62,23 @@ export default function ManualControlPage() {
     );
   }
 
-  // 토글 변경 핸들러
+  /** =========================
+   * 토글 클릭 동작 (요청대로 반대 로직)
+   *  - 현재 OFF에서 클릭 → 팝업 없이 즉시 ON
+   *  - 현재 ON에서 클릭  → 팝업 열고 확인 시 OFF
+   * ========================= */
   function handleToggle() {
-    const nextState = !isToggleOn;
-    setIsToggleOn(nextState);
+    if (!target) return;
 
-    if (target) {
-      setControllerPower(target.id, nextState ? "ON" : "OFF");
-      logAlarm({
-        type: "수동제어",
-        controller: target.title,
-        status: nextState ? "ON" : "OFF",
-      });
-    }
-
-    if (nextState) {
-      if (shouldWarn) setIsModalOpen(true);
-    } else {
+    if (!isToggleOn) {
+      // OFF → ON : 팝업 없이 즉시 ON
+      setIsToggleOn(true);
+      setControllerPower(target.id, "ON");
+      logAlarm({ type: "수동제어", controller: target.title, status: "ON" });
       setIsModalOpen(false);
+    } else {
+      // ON → OFF : 팝업 오픈(상태는 그대로 유지)
+      setIsModalOpen(true);
     }
   }
 
@@ -87,18 +86,18 @@ export default function ManualControlPage() {
     setIsModalOpen(false);
   }
 
+  // 모달의 '전력차단' 버튼: 실제 OFF 수행 (UI 문구/구성 변경 없음)
   function handleOffClick() {
     setIsModalOpen(false);
-    setIsToggleOn(true);
+    if (!target) return;
 
-    if (target) {
-      setControllerPower(target.id, "OFF");
-      logAlarm({
-        type: "수동제어",
-        controller: target.title,
-        status: "OFF",
-      });
-    }
+    setIsToggleOn(false);
+    setControllerPower(target.id, "OFF");
+    logAlarm({
+      type: "수동제어",
+      controller: target.title,
+      status: "OFF",
+    });
   }
 
   if (!target) {
@@ -164,7 +163,7 @@ export default function ManualControlPage() {
             </div>
           </div>
 
-          {/* 막대 차트 + ✅ 평균선 표시 */}
+          {/* 막대 차트 + 평균선 표시 */}
           <PowerBarChart
             data={lastWeekChart}
             yMax={400}
@@ -197,7 +196,7 @@ export default function ManualControlPage() {
           </section>
         </div>
 
-        {/* 전력차단 모달 */}
+        {/* 전력차단 모달 (UI 텍스트/구성 그대로 유지) */}
         {isModalOpen && (
           <div className={`${styles.modalWrap} ${styles.active}`}>
             <div className={styles.modalBox}>

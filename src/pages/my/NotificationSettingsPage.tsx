@@ -32,15 +32,18 @@ export default function NotificationSettingsPage() {
   const [settings, setSettings] = useState<NotificationSettings>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { marketing: false, appPush: false, sms: false };
+      if (!raw) {
+        // ✅ 기본값: 앱푸시/SMS 활성화
+        return { marketing: false, appPush: true, sms: true };
+      }
       const parsed = JSON.parse(raw);
       return {
         marketing: !!parsed.marketing,
-        appPush: !!parsed.appPush,
-        sms: !!parsed.sms,
+        appPush: parsed.appPush === undefined ? true : !!parsed.appPush,
+        sms: parsed.sms === undefined ? true : !!parsed.sms,
       };
     } catch {
-      return { marketing: false, appPush: false, sms: false };
+      return { marketing: false, appPush: true, sms: true };
     }
   });
 
